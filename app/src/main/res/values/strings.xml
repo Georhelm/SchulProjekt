@@ -3,4 +3,9 @@
     <string name="textUserName">Benutzername</string>
     <string name="textPassword">Passwort</string>
     <string name="textLogin">Login</string>
+    <string name="textSingleplayer">Einzelspieler</string>
+    <string name="textMultiplayer">Mehrspieler</string>
+    <string name="textOptions">Optionen</string>
+    <string name="textBack">Zurück</string>
+    <string name="textEquipment">Ausrüstung</string>
 </resources>
