@@ -1,0 +1,122 @@
+GEORHELM
+GAME DESIGN DOCUMENT
+20.09.2018
+ÜBERSICHT
+1.	Name des Spiels
+2.	Projekthintergrund und Beschreibung
+3.	Gameplay
+4.	Design / User Interface
+
+
+NAME DES SPIELS
+Jousting (Wird noch geändert)
+
+
+PROJEKTHINTERGRUND UND BESCHREIBUNG
+Tjost-Spiel (Zweikampfspiel mit der „Lanze“ zu „Pferd“)
+Beim Schulprojekt geht es darum, eine Android App zu entwickeln. Dabei können sich die Schüler entscheiden, eine normale App oder ein Spiel zu Programmieren. Wilhelm Fedorak und Georg Gar entwickeln zusammen das Spiel, bei dem es darum geht, seinen Gegner (Player versus Enemy und Player versus Player) beim Tjost zu schlagen.
+
+
+
+
+GAMEPLAY
+Kernelement: Das Gefecht, 2D
+Zwei Ritter stehen sich auf einer Zwei-Dimensionalen Ebene gegenüber. Beide sitzen auf einem „Pferd“, haben eine „Lanze“ und einen „Schild“. Die in Anführungszeichen geführten Begriffe können mit Objekten ähnlicher Art ersetzt werden, um dem Spiel einen Humorvollen „Touch“ zu geben. So kann statt dem Pferd in der Aufbauphase des Spiels beispielsweise nur ein Esel oder ein Schwein vorhanden sein, gegen Ende des Spiels hingegen eine Rakete.
+4 Phasen des Kernspiels
+1.	Start: 
+Beide Spieler stehen auf der x-Achse eine gewisse Reichweite entfernt. Diese Reichweite kann variieren, was für gewisse Elemente des Spiels (Geschwindigkeit, Impuls) entscheidend sein wird.
+2.	Beschleunigung: 
+Beide Spieler starten zeitgleich die Beschleunigungsphase, in der sie – je nach Gefährt und sonstiger Ausrüstung, die sie besitzen – entgegen beschleunigen. Ein Beispiel dafür:
+Der Esel beschleunigt nur langsam, und nur auf eine bestimmte Geschwindigkeit, die Rakete hingegen beschleunigt schneller und kann insgesamt schneller werden.
+Die Spieler besitzen während der Beschleunigungsphase die Möglichkeit, sowohl Lanze, als auch Schild zu bewegen, um das Ergebnis des Kampfes zu beeinflussen.
+3.	Treffpunkt:
+Die Lanzen der Spieler kreuzen sich nun. Abhängig von der Position des Schildes und der Lanze wird das Ergebnis des Kampfes berechnet.
+
+Eigene Lanze zeigt auf den Gegner im:
+	Positiven Fall: Auf eine offene Trefferfläche des Gegners
+	Neutralen / Ausrüstungsabhängigem Fall: Auf das Schild des Gegners
+	Negativen Fall: Ganz daneben (Weder Trefferflächen des Gegners noch das Schild)
+
+Gegnerische Lanze zeigt auf dich im:
+	Positiven Fall: Ganz daneben
+	Neutralen / Ausrüstungsabhängigem Fall: Auf dein Schild
+	Negativen Fall: Auf eine offene Trefferfläche
+
+4.	Ergebnis:
+Abhängig vom Treffpunkt wird nun das Ergebnis berechnet.
+Die Detailgenaue Planung der Berechnung wird während der Entwicklung angepeilt, getestet und möglicherweise geändert, doch im allgemein kann wie folgt gerechnet werden:
+
+
+
+
+	Eigener Treffer	Positiv	Neutral	Negativ
+Gegnerischer Treffer				
+Positiv		Ausrüstungsabhängig	Tendenz: Du Gewinnst (Aber auch ausrüstungsabhängig	Du verlierst
+Neutral		Tendenz: Du Gewinnst (Aber auch ausrüstungsabhängig)	Ausrüstungsabhängig	Tendenz: Du Verlierst (Aber auch ausrüstungsabhängig)
+Negativ		Du gewinnst	Tendenz: Du Gewinnst (Aber auch ausrüstungsabhängig)	Nichts passiert
+
+Behandlung des Sieges in einem Ergebnis (4. Phase)
+
+In der vorherigen Tabelle wird allgemein Beschrieben, wie die verschiedenen Treffer das Ergebnis beeinflussen können. Sie legen den Sieg jedoch nicht fest.
+Es werden die beliebten Regeln des Tjostens eingehalten, was bedeutet:
+Der Sieger des gesamten Gefechts ist derjenige, der als erster 3 Punkte erreicht. Es wird also (meistens) mehr als einmal Gekämpft.
+Die punkte werden wie folgt gewonnen:
+	Helm und Schildtreffer: 1 Punkt
+	Den Gegner vom Pferd stoßen: 2 Punkte
+	(Tod des Gegners: 3 Punkte, der Tod wird in diesem Spiel jedoch nicht behandelt.)
+	Keine Treffer: Keine Punkte
+Steht es zum Ende 3 zu 3, gewann der Ritter, der als LETZTER sein Visier hochklappte. Dies wird entweder in einem Mini-Spiel implementiert werden, oder stattdessen ein „Goldener Punkt“ ausgefochten werden (Es wird weitergespielt, bis der Punktegleichstand beseitigt ist). 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DESIGN / USER INTERFACE
+Herausforderung an den Spieler
+Wie oben genannt, wird der Spieler im Gefecht also versuchen, als erster die 3 erforderlichen Punkte zum Sieg zu erreichen. Dafür muss er sowohl Lanze als auch Schild kontrollieren und bewegen. Hierin soll die Kern-Herausforderung bestehen. 
+Lanze und Schild sollen unterschiedliche Bewegungsabläufe haben.
+1.	Lanze:
+a.	Ist lang und schwer, fällt also stetig nach unten ab. Je nach Lanze kann dieser Effekt stärker oder schwächer sein.
+b.	Wird durch die Kraft des Ritters (Also des Spielers) oben gehalten: Der Spieler muss dem abfallen der Lanze durch seine Interaktion entgegenwirken. Auch dieses Entgegenwirken verhält sich je nach Lanze unterschiedlich.
+c.	BONUS Sollte das Spiel zu einfach sein (wird festzustellen sein), kann hier noch das Gefährt zusätzliche Auswirkungen haben (Esel -> Bockig, zufällige und ruckartige Bewegungen addieren. Rakete -> Gleichmäßige Bewegung, ruhigere Lanze)
+2.	Schild:
+a.	Ist ebenfalls schwer, jedoch näher am Körper. Besitzt also eine langsame, aber gleichmäßige Bewegung. Das Schild bewegt sich dauerhaft nach oben oder nach unten. Der Spieler kann die Bewegungsrichtung des Schildes ändern, sie ändert sich aber auch zufällig Spontan. 
+b.	Die Anzahl, wie oft die Richtung geändert werden kann, muss begrenzt werden (Da sonst durch dauerhaftes Ändern das Schild auf einer Position gehalten werden kann). Somit muss der Spieler also genau einschätzen, wann und wie oft er die Richtung der Bewegung ändert, sodass das Schild zum Treffpunkt eine möglichst gute Position hat. Hierbei hat die Länge der Strecke einen großen Einfluss, der Spieler muss also die Streckenlenge gut einschätzen können und seine Schildbewegungen richtig timen.
+c.	BONUS Es können zusätzliche Zeitblockaden eingebaut werden, die dem Spieler verbieten, die Richtung in einem gewissen Zeitraum zu oft zu benutzen.
+
+Controls
+Für die Interaktion mit dem Spiel im Gefecht werden also nur 2 Buttons zur Verfügung stehen:
+1.	Einer für die Lanze:
+Durch Tippen des Buttons wird die Lanzenspitze ein wenig angehoben. Diese Bewegung ist jedoch auch träge, d.h. sie erfolgt nicht sofort, und schwingt etwas „nach“.
+An dieser Stelle kann – je nach Bedarf – Die Herausforderung an den Spieler erhöht oder gesenkt werden. Man kann das Anheben der Lanze z.B. so gering machen, dass der Spieler allein durch die Tippgeschwindigkeit herausgefordert wird. Oder man überspitzt den Effekt des Anhebens so sehr, dass Timing eine wichtigere Rolle spielt. Dies kann auch von der Lanze abhängig gemacht werden.
+Wird es zu einfach sein, eine gewisse Strategie dabei auszuführen, kann ein weiterer Faktor eingebaut werden, z.B. „Kraft des Ritters“, die durch Tippen verbraucht wird.
+2.	Einer für den Schild:
+
+Durch Tippen des Buttons wird die Bewegungsrichtung des Schildes geändert. Die Anzahl der erlaubten Änderungen ist für jedes Gefecht begrenzt. Sinkt das „Konto“ der erlaubten Richtungsänderungen auf 0, kann kein Einfluss mehr auf den Schild genommen werden, der Zufall übernimmt für den Rest der Strecke. Das Tippen hat jetzt keine Auswirkung mehr.
+
+Rahmen
+Der Kern des Spiels ist nun beschrieben. Um zum Kern zu gelangen, wird es jedoch noch eine Maske am Anfange geben, das „Main Menu“. Außerdem muss es am Ende eines Gefechts noch eine Zusammenfassung der Ergebnisse geben, mit der Information, ob man gewonnen oder verloren hat.
+Der Aufbau der App ist also wie folgt:
+1.	Main Menu:
+a.	Wahl der Ausrüstung
+b.	Single Player
+c.	Multi Player
+d.	Quit
+2.	Kern-Spiel
+3.	Gefechtszusammenfassung:
+Zeigt die Ergebnisse der Einzelnen Kämpfe an
+Button: Back to Main Menu
+
+
