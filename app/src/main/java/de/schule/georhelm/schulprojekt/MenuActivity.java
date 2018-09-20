@@ -19,7 +19,8 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     public void startMultiplayer(View v){
-
+        Intent intent = new Intent(this, GameActivity.class);
+        this.startActivity(intent);
     }
 
     public void showOptions(View v) {
