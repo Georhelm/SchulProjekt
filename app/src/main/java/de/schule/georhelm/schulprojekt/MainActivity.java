@@ -2,6 +2,7 @@ package de.schule.georhelm.schulprojekt;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -23,6 +24,20 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("username", "Ich");
         editor.putString("password", "pass");
         editor.apply();
+
+        final MediaPlayer themeMusicIntroMP = MediaPlayer.create(this, R.raw.medievalsongintro);
+        final MediaPlayer themeMusicLoopMP = MediaPlayer.create(this, R.raw.medievalsongloop);
+        themeMusicLoopMP.setLooping(true);
+        themeMusicIntroMP.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                themeMusicLoopMP.start();
+                themeMusicIntroMP.stop();
+            }
+        });
+
+        themeMusicIntroMP.start();
+
     }
 
     public void tryLogin(View v){
