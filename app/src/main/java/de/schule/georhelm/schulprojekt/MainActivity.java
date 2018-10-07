@@ -21,8 +21,8 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences.Editor editor = this.prefs.edit();
 
-        editor.putString("username", "Ich");
-        editor.putString("password", "pass");
+        editor.putString("username", "");
+        editor.putString("password", "");
         editor.apply();
 
         final MediaPlayer themeMusicIntroMP = MediaPlayer.create(this, R.raw.medievalsongintro);
