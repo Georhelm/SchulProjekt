@@ -1,0 +1,26 @@
+{
+  "name": "gameserver",
+  "version": "0.0.1",
+  "description": "A gameserver",
+  "main": "/dist/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/typescript/bin/tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Georhelm/SchulProjekt.git"
+  },
+  "author": "Georhelm",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Georhelm/SchulProjekt/issues"
+  },
+  "homepage": "https://github.com/Georhelm/SchulProjekt#readme",
+  "dependencies": {
+    "socket.io": "^2.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.1.1"
+  }
+}
