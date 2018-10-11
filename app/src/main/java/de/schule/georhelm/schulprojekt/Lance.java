@@ -20,9 +20,9 @@ public class Lance {
 
     private int speed = 0;
 
-    public Lance(int playerLocationX, int playerLocationY, Context context, int screenX, int screenY){
-        x = playerLocationX + 165;
-        y = playerLocationY + 350;
+    public Lance(Player player, Context context, int screenX, int screenY){
+        x = (int)Math.round(screenX*0.17);
+        y = (int)Math.round(screenY*0.665);
 
         rotation = 90;
 

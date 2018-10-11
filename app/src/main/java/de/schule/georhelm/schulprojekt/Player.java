@@ -10,6 +10,18 @@ public class Player {
     private int x;
     private int y;
 
+    private int playerHeight;
+
+    private int playerWidth;
+
+    public int getPlayerHeight() {
+        return playerHeight;
+    }
+
+    public int getPlayerWidth() {
+        return playerWidth;
+    }
+
     private int speed;
 
     private boolean liftingLance;
@@ -20,17 +32,20 @@ public class Player {
     public Mount mount;
 
     public Player(Context context, int screenX, int screenY){
-        x = 75;
-        y = 200;
+        x = (int)Math.round(screenX*0.1);
+        y = (int)Math.round(screenY*0.4);
         speed = 1;
         liftingLance = false;
 
+        playerHeight = (int)Math.round(screenY*0.4);
+        playerWidth = (int)Math.round(playerHeight* (360.0 / 540.0)); //Verhältnis des Bildes
+
 
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight);
-        bitmap = Bitmap.createScaledBitmap(bitmap, 360, 540, false);
+        bitmap = Bitmap.createScaledBitmap(bitmap, playerWidth, playerHeight, false);
 
-        lance = new Lance(x, y, context, screenX, screenY);
-        mount = new Mount(x, y, context, screenX, screenY);
+        lance = new Lance(this, context, screenX, screenY);
+        mount = new Mount(this,context, screenX, screenY);
     }
 
     public void update(){
