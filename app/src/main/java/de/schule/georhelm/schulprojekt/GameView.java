@@ -15,7 +15,6 @@ public class GameView extends SurfaceView implements Runnable{
     private Thread gameThread = null;
 
     private Player player;
-
     private Paint paint;
     private Canvas canvas;
     private SurfaceHolder surfaceHolder;
@@ -48,12 +47,16 @@ public class GameView extends SurfaceView implements Runnable{
         if (surfaceHolder.getSurface().isValid()) {
             canvas = surfaceHolder.lockCanvas();
             canvas.drawColor(Color.BLACK); //background here
-            drawPlayer();
+            drawPlayerObjects();
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
     }
 
-    private void drawPlayer() {
+    private void drawPlayerObjects() {
+        canvas.drawBitmap(
+            player.mount.getBitmap(),
+            player.mount.matrix,
+                paint);
         canvas.drawBitmap(
                 player.getBitmap(),
                 player.getX(),
@@ -66,11 +69,11 @@ public class GameView extends SurfaceView implements Runnable{
     }
 
     private void control(){
-        try{
-            gameThread.sleep(17);
-        }catch(InterruptedException e){
-            e.printStackTrace();
-        }
+        //try{
+        //    gameThread.sleep(17);
+        //}catch(InterruptedException e){
+        //   e.printStackTrace();
+        //}
     }
 
     public void pause(){

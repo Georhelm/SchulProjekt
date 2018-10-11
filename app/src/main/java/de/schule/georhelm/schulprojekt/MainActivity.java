@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("password", "");
         editor.apply();
 
+
         final MediaPlayer themeMusicIntroMP = MediaPlayer.create(this, R.raw.medievalsongintro);
         final MediaPlayer themeMusicLoopMP = MediaPlayer.create(this, R.raw.medievalsongloop);
         themeMusicLoopMP.setLooping(true);

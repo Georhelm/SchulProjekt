@@ -17,10 +17,11 @@ public class Player {
     private final int GRAVITY = -10;
 
     public Lance lance;
+    public Mount mount;
 
     public Player(Context context, int screenX, int screenY){
         x = 75;
-        y = 400;
+        y = 200;
         speed = 1;
         liftingLance = false;
 
@@ -28,7 +29,8 @@ public class Player {
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight);
         bitmap = Bitmap.createScaledBitmap(bitmap, 360, 540, false);
 
-        lance = new Lance(context, screenX, screenY);
+        lance = new Lance(x, y, context, screenX, screenY);
+        mount = new Mount(x, y, context, screenX, screenY);
     }
 
     public void update(){

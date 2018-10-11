@@ -20,22 +20,23 @@ public class Lance {
 
     private int speed = 0;
 
-    public Lance(Context context, int screenX, int screenY){
-        x = 120;
-        y = 300;
+    public Lance(int playerLocationX, int playerLocationY, Context context, int screenX, int screenY){
+        x = playerLocationX + 165;
+        y = playerLocationY + 350;
 
         rotation = 90;
 
         speed = 1;
         matrix = new Matrix();
 
-        matrix.postTranslate(100,300);
-
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.weaponlance);
 
-        bitmap = Bitmap.createScaledBitmap(bitmap, 700, 700, false);
+        bitmap = Bitmap.createScaledBitmap(bitmap, 500, 500, false);
 
-        matrix.setRotate(rotation,bitmap.getWidth()/2,bitmap.getHeight()/2);
+        matrix.reset();
+        matrix.postTranslate(-bitmap.getWidth() / 2, -bitmap.getHeight() / 1.5f); // Centers image
+        matrix.postRotate(rotation);
+        matrix.postTranslate(x, y);
 
     }
 
@@ -45,14 +46,20 @@ public class Lance {
             if(rotation< highestPositionIsLowDegree){
                 rotation = highestPositionIsLowDegree;
             }
-            matrix.setRotate(rotation,bitmap.getWidth()/2,bitmap.getHeight()/2+150);
+            matrix.reset();
+            matrix.postTranslate(-bitmap.getWidth() / 2, -bitmap.getHeight() / 1.5f); // Centers image
+            matrix.postRotate(rotation);
+            matrix.postTranslate(x, y);
 
         }else{
             rotation += 2;
             if(rotation> lowestPositionIsHighDegree){
                 rotation = lowestPositionIsHighDegree;
             }
-            matrix.setRotate(rotation,bitmap.getWidth()/2,bitmap.getHeight()/2+150);
+            matrix.reset();
+            matrix.postTranslate(-bitmap.getWidth() / 2, -bitmap.getHeight() / 1.5f); // Centers image
+            matrix.postRotate(rotation);
+            matrix.postTranslate(x, y);
         }
 
     }
