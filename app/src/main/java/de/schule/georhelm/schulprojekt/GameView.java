@@ -1,8 +1,9 @@
 package de.schule.georhelm.schulprojekt;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -13,19 +14,26 @@ public class GameView extends SurfaceView implements Runnable{
     volatile boolean playing;
 
     private Thread gameThread = null;
-
+    private int location;
     private Player player;
     private Paint paint;
     private Canvas canvas;
     private SurfaceHolder surfaceHolder;
+    private Bitmap backGround;
+    private int screenWidth;
+    private int screenHeight;
 
     public GameView(Context context, int screenX, int screenY) {
         super(context);
-
-        player = new Player(context, screenX, screenY);
+        screenWidth = screenX;
+        screenHeight = screenY;
+        player = new Player(context, screenWidth, screenHeight);
 
         surfaceHolder = getHolder();
         paint = new Paint();
+        location = 0;
+        backGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds);
+        backGround = Bitmap.createScaledBitmap(backGround,screenWidth*12,(int)Math.round(screenHeight*1.2),true);
     }
 
     @Override
@@ -41,12 +49,15 @@ public class GameView extends SurfaceView implements Runnable{
 
     private void update(){
         player.update();
+        System.out.println("player speed: " +player.getSpeed());
+        location = location - player.getSpeed();
+        System.out.println("location: " +location);
     }
 
     private void draw(){
         if (surfaceHolder.getSurface().isValid()) {
             canvas = surfaceHolder.lockCanvas();
-            canvas.drawColor(Color.BLACK); //background here
+            canvas.drawBitmap(backGround,location,(int)Math.round(-screenHeight*0.25), paint); //background here R.drawable.backgroundwithclouds
             drawPlayerObjects();
             surfaceHolder.unlockCanvasAndPost(canvas);
         }

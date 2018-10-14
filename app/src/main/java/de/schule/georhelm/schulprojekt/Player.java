@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 
 public class Player {
     private Bitmap bitmap;
-
     private int x;
     private int y;
 
@@ -23,18 +22,19 @@ public class Player {
     }
 
     private int speed;
+    private double exactSpeed;
 
     private boolean liftingLance;
-
-    private final int GRAVITY = -10;
 
     public Lance lance;
     public Mount mount;
 
     public Player(Context context, int screenX, int screenY){
+
         x = (int)Math.round(screenX*0.1);
         y = (int)Math.round(screenY*0.4);
         speed = 1;
+        exactSpeed = 1;
         liftingLance = false;
 
         playerHeight = (int)Math.round(screenY*0.4);
@@ -49,8 +49,8 @@ public class Player {
     }
 
     public void update(){
-        //x++;
-
+        exactSpeed = exactSpeed + mount.getAcceleration();
+        speed = (int)Math.round(exactSpeed);
         lance.update(liftingLance);
     }
 

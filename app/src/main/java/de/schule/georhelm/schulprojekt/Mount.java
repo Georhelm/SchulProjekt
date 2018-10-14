@@ -9,16 +9,34 @@ public class Mount {
     private Bitmap bitmap;
     private int x;
     private int y;
-    int mountHeight;
-    int mountWidth;
+    private int mountHeight;
+    private int mountWidth;
+
+    public int getMountHeight() {
+        return mountHeight;
+    }
+
+    public int getMountWidth() {
+        return mountWidth;
+    }
+
+    public double getAcceleration() {
+        return acceleration;
+    }
+
+    private double acceleration;
 
     protected Matrix matrix;
     public Mount(Player player, Context context, int screenX, int screenY){
-        x = (int)Math.round(screenX*0.12);
-        y = (int)Math.round(screenY*0.7);
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pterodactyl);
+        x = (int)Math.round(screenX*0.15);
+        y = (int)Math.round(screenY*0.76);
+        //Pterodactyl: x*0.19 y*0.71
+        //Aptosaurus: x*0.15 y*0.76
 
-        mountWidth = (int)Math.round(player.getPlayerWidth() * 2.5);//Invertiert, weil die Rakete noch um 90 grad gedreht wird!!!
+        acceleration = 0.02;
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.aptosaurus);
+
+        mountWidth = (int)Math.round(player.getPlayerWidth() * 2);//Invertiert, weil die Rakete noch um 90 grad gedreht wird!!!
         mountHeight= (int)Math.round(mountWidth * ((double)bitmap.getHeight() / (double)bitmap.getWidth())); //Maße des Bildes
 
         bitmap = Bitmap.createScaledBitmap(bitmap, mountWidth, mountHeight, false);
