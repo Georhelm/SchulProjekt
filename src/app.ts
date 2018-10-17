@@ -7,9 +7,11 @@ const config: Config = require("../config.json");
 
 const app: express.Application = express();
 
+app.use(express.json());
+
 app.use("/", GameRouter);
+
 
 app.listen(config.port, () => {
 	console.log("server started at port " + config.port);
-	console.log(config.serverName);
 });
