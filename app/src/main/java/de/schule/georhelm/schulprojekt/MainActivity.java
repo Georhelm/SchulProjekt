@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences prefs;
@@ -44,16 +46,28 @@ public class MainActivity extends AppCompatActivity {
     public void tryLogin(View v){
         EditText userField = this.findViewById(R.id.inputUser);
         String user = userField.getText().toString();
+        EditText passwordField = this.findViewById(R.id.inputPassword);
+        String password = passwordField.getText().toString();
+        ServerCommunicator communicator = new ServerCommunicator(this);
+        user = "testboiIII";
+        password = "yeahMannen";
+        communicator.execute("login",user,password);
+    }
+
+    public void tryRegister(){
+        ServerCommunicator communicator = new ServerCommunicator(this);
+
+        EditText userField = this.findViewById(R.id.inputUser);
+        String user = userField.getText().toString();
 
         EditText passwordField = this.findViewById(R.id.inputPassword);
         String password = passwordField.getText().toString();
+        user = "testboiIII";
+        password = "yeahMannen";
+        communicator.execute("register",user,password);
+    }
 
-        if (user.equals(this.prefs.getString("username", null)) && password.equals(this.prefs.getString("password", null))){
-            Intent intent = new Intent(this, MenuActivity.class);
-            this.startActivity(intent);
-            this.finish();
-        }else {
-            Toast.makeText(this, "wrong login", Toast.LENGTH_LONG).show();
-        }
+    public void loginResult(JSONObject result){
+
     }
 }
