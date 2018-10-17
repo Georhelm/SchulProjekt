@@ -42,7 +42,7 @@ GameRouter.post("/register", (req: Request, resp: Response) => {
                         }
 
                         const msg = {
-                            "result": "success",
+                            "result": "registerSuccess",
                         };
 
                         resp.send(msg);
@@ -88,7 +88,7 @@ GameRouter.post("/login", (req: Request, resp: Response) => {
                         }
 
                         const msg = {
-                            "result": "success",
+                            "result": "loginSuccess",
                             "token": hashToken
                         }
     
