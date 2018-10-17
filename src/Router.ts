@@ -42,13 +42,15 @@ GameRouter.post("/register", (req: Request, resp: Response) => {
                         }
 
                         const msg = {
-                            "result": "registerSuccess",
+                            "method": "register",
+                            "result": "success"
                         };
 
                         resp.send(msg);
                     });
                 }else {
                     const msg = {
+                        "method": "register",
                         "result": "error",
                         "msg": "user_exists"
                     }
@@ -88,7 +90,8 @@ GameRouter.post("/login", (req: Request, resp: Response) => {
                         }
 
                         const msg = {
-                            "result": "loginSuccess",
+                            "method": "login",
+                            "result": "success",
                             "token": hashToken
                         }
     
@@ -98,6 +101,7 @@ GameRouter.post("/login", (req: Request, resp: Response) => {
                     
                 }else {
                     const msg = {
+                        "method": "login",
                         "result": "error",
                         "msg": "wrong_login"
                     }
