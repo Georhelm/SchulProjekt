@@ -6,58 +6,70 @@
     android:layout_height="match_parent">
 
     <Button
+        android:id="@+id/buttonLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="logOut"
+        android:text="@string/logOutButtonText"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.065"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.895" />
+
+    <Button
         android:id="@+id/buttonSingleplayer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="startSingleplayer"
         android:text="@string/textSingleplayer"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.073"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.07"
-        app:layout_constraintVertical_bias="0.3"
-        android:onClick="startSingleplayer"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.14" />
 
     <Button
         android:id="@+id/buttonMultiplayer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="startMultiplayer"
         android:text="@string/textMultiplayer"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.078"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.07"
-        app:layout_constraintVertical_bias="0.5"
-        android:onClick="startMultiplayer"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.341" />
 
 
     <Button
         android:id="@+id/buttonEquipment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="showEquipment"
         android:text="@string/textEquipment"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.078"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.07"
-        app:layout_constraintVertical_bias="0.7"
-        android:onClick="showEquipment"
-         />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.541" />
 
     <Button
         android:id="@+id/buttonOptions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="showOptions"
         android:text="@string/textOptions"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.065"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.07"
-        app:layout_constraintVertical_bias="0.9"
-        android:onClick="showOptions"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.739" />
 
 
 

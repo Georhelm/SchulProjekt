@@ -7,10 +7,14 @@ import android.view.View;
 
 public class MenuActivity extends AppCompatActivity {
 
+    ConnectionSocket socket;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_menu);
+        this.socket = SocketManager.getSocket();
+
     }
 
     public void startSingleplayer(View v) {
@@ -31,5 +35,10 @@ public class MenuActivity extends AppCompatActivity {
     public void showEquipment(View v) {
         Intent intent = new Intent(this, EquipmentActivity.class);
         this.startActivity(intent);
+    }
+
+    public void logOut(View v){
+        socket.logOut();
+        this.finish();
     }
 }

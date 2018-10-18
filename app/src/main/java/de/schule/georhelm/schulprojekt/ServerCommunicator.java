@@ -63,6 +63,8 @@ public class ServerCommunicator extends AsyncTask<String,Void,String> {
         return null;
 
     }
+
+    @Override
     protected void onPostExecute(String result) {
         System.out.println(result);
         try{

@@ -8,4 +8,5 @@
     <string name="textOptions">Optionen</string>
     <string name="textBack">Zurück</string>
     <string name="textEquipment">Ausrüstung</string>
+    <string name="logOutButtonText">Logout</string>
 </resources>
