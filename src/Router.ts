@@ -27,7 +27,6 @@ export function createGameRouter(con: DatabaseConnection): Router {
     });
 
     GameRouter.post("/login", (req: Request, resp: Response) => {
-        console.log(req.body);
         if (req.body.user && req.body.password) {
             connection.loginUser(req.body.user, req.body.password).then((result) => {
                 resp.send(result);

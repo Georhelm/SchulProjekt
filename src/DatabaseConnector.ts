@@ -34,10 +34,8 @@ export class DatabaseConnection {
 
         this.connectionPool.getConnection((err: mysql.MysqlError, connection: mysql.PoolConnection) => {
             if (err) {
-                console.log("error: " + err);
                 defer.reject();
             }
-            console.log(connection);
             connection.query("Select * from users where name=?", [user], (err, result) => {
                 if (err) {
                     connection.release();
@@ -101,7 +99,7 @@ export class DatabaseConnection {
                     const hmac = Crypto.createHmac("sha256", config.hashkey);
                     hmac.update(result[0].name + Date.now());
                     const hashToken = hmac.digest("hex");
-                    this.connectionPool.query("Update users set token=SHA(?) where name=?", [hashToken, result[0].name], (err, result) => {
+                    this.connectionPool.query("Update users set token=? where name=?", [hashToken, result[0].name], (err, result) => {
                         connection.release();
                         if(err) {
                             defer.reject();
