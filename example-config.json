@@ -1,0 +1,8 @@
+{
+    "serverName": "server",
+    "database": "database",
+    "username": "user",
+    "password": "pass",
+    "hashkey": "key",
+    "port": 1234
+}
