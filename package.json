@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node dist/app.js",
-    "build": "tsc"
+    "buildserver": "tsc"
   },
   "repository": {
     "type": "git",
