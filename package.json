@@ -5,7 +5,8 @@
   "main": "/dist/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node dist/app.js"
+    "start": "tsc && node dist/app.js",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -26,7 +27,8 @@
     "express": "^4.16.4",
     "mysql": "^2.16.0",
     "q": "^1.5.1",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.1.1",
+    "tslint": "^5.11.0"
   },
   "devDependencies": {
     "typescript": "^3.1.1"
