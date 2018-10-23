@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/loginScreen"
+    android:id="@+id/registerScreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:textSize="50sp"
-    tools:context=".MainActivity"
+    tools:context=".RegisterActivity"
     android:background="@drawable/background">
 
-    <!--app:layout_constraintWidth_default="100dp"-->
-
     <EditText
-        android:id="@+id/inputUser"
+        android:id="@+id/inputRegisterUser"
         android:layout_width="210dp"
         android:layout_height="wrap_content"
         android:inputType="text"
@@ -24,7 +23,19 @@
         app:layout_constraintVertical_bias="0.4" />
 
     <EditText
-        android:id="@+id/inputPassword"
+        android:id="@+id/inputRegisterPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPassword"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.6"
+        app:layout_constraintVertical_bias="0.5"/>
+    <EditText
+        android:id="@+id/inputRegisterPasswordCheck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -35,6 +46,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintHorizontal_bias="0.6"
         app:layout_constraintVertical_bias="0.6"/>
+
 
     <TextView
         android:id="@+id/labelUserInput"
@@ -54,25 +66,51 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:labelFor="@+id/inputPassword"
-        android:text="@string/textPassword"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="@string/textPasswordCheck"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.08"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.6" />
+
+    <TextView
+        android:id="@+id/labelPasswordCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:labelFor="@+id/inputPassword"
+        android:text="@string/textPassword"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.08"
-        app:layout_constraintVertical_bias="0.6"/>
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
 
     <Button
         android:background="@drawable/button_red_medium"
-        android:id="@+id/buttonLogin"
+        android:id="@+id/buttonRegisterConfirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/textLogin"
+        android:text="@string/textRegister"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.75"
-        app:layout_constraintVertical_bias="0.75"
-        android:onClick="tryLogin"/>
+        app:layout_constraintHorizontal_bias="0.67"
+        app:layout_constraintVertical_bias="0.8"
+        android:onClick="tryRegister"/>
+    <Button
+        android:background="@drawable/button_red_medium"
+        android:id="@+id/buttonRegisterCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/textBack"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.97"
+        app:layout_constraintVertical_bias="0.8"
+        android:onClick="cancelRegister"/>
 </android.support.constraint.ConstraintLayout>

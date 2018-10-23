@@ -1,12 +1,14 @@
 <resources>
     <string name="app_name">SchulProjekt</string>
-    <string name="textUserName">Benutzername</string>
-    <string name="textPassword">Passwort</string>
+    <string name="textUserName">Username</string>
+    <string name="textPassword">Password</string>
     <string name="textLogin">Login</string>
-    <string name="textSingleplayer">Einzelspieler</string>
-    <string name="textMultiplayer">Mehrspieler</string>
-    <string name="textOptions">Optionen</string>
-    <string name="textBack">Zurück</string>
-    <string name="textEquipment">Ausrüstung</string>
+    <string name="textSingleplayer">Single player</string>
+    <string name="textMultiplayer">Multiplayer</string>
+    <string name="textOptions">Options</string>
+    <string name="textBack">Back</string>
+    <string name="textEquipment">Equipment</string>
     <string name="logOutButtonText">Logout</string>
+    <string name="textPasswordCheck">Repeat password</string>
+    <string name="textRegister">Register</string>
 </resources>

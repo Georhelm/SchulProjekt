@@ -1,12 +1,11 @@
 package de.schule.georhelm.schulprojekt;
 
+import android.arch.core.util.Function;
 import android.os.AsyncTask;
-import android.util.JsonReader;
 
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -14,11 +13,12 @@ import java.net.URL;
 public class ServerCommunicator extends AsyncTask<String,Void,String> {
 
     private String baseURL;
-    private MainActivity mainActivity;
 
-    public ServerCommunicator(MainActivity mainActivity){
+    private ICommunicationResult communicationResult;
+
+    public ServerCommunicator(ICommunicationResult communicationResult){
         this.baseURL = "http://siffers.de:1234"; //Get out of config later
-        this.mainActivity = mainActivity;
+        this.communicationResult = communicationResult;
     }
 
     private String postToURL(String URL, String username, String password){
@@ -66,12 +66,9 @@ public class ServerCommunicator extends AsyncTask<String,Void,String> {
 
     @Override
     protected void onPostExecute(String result) {
-        System.out.println(result);
         try{
             JSONObject responseObject = new JSONObject(result);
-            if(responseObject.getString("method").equals("login")) {
-                this.mainActivity.loginResult(responseObject);
-            }
+            this.communicationResult.onResult(responseObject);
         }catch(Exception e){
             e.printStackTrace();
         }

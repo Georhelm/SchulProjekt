@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import java.io.File;
+
 public class MenuActivity extends AppCompatActivity {
 
     ConnectionSocket socket;
@@ -39,6 +41,9 @@ public class MenuActivity extends AppCompatActivity {
 
     public void logOut(View v){
         socket.logOut();
+        File appInternalDirectory = getFilesDir();
+        File tokenSave = new File(appInternalDirectory + "/accessToken.txt");
+        tokenSave.delete();
         this.finish();
     }
 }

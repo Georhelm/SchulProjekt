@@ -7,32 +7,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
-public class MainActivity extends AppCompatActivity {
-    private SharedPreferences prefs;
+public class LoginActivity extends AppCompatActivity implements ICommunicationResult {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        this.prefs = this.getSharedPreferences("users", MODE_PRIVATE);
-
-        SharedPreferences.Editor editor = this.prefs.edit();
-
-        editor.putString("username", "");
-        editor.putString("password", "");
-        editor.apply();
-
+        setContentView(R.layout.activity_login);
 
         final MediaPlayer themeMusicIntroMP = MediaPlayer.create(this, R.raw.medievalsongintro);
         final MediaPlayer themeMusicLoopMP = MediaPlayer.create(this, R.raw.medievalsongloop);
@@ -74,34 +62,14 @@ public class MainActivity extends AppCompatActivity {
         String user = userField.getText().toString();
         EditText passwordField = this.findViewById(R.id.inputPassword);
         String password = passwordField.getText().toString();
+        passwordField.setText("");
         ServerCommunicator communicator = new ServerCommunicator(this);
-        user = "testboiIII";
-        password = "yeahMannen";
         communicator.execute("login",user,password);
     }
 
-    public void tryRegister(){
-        ServerCommunicator communicator = new ServerCommunicator(this);
 
-        EditText userField = this.findViewById(R.id.inputUser);
-        String user = userField.getText().toString();
 
-        EditText passwordField = this.findViewById(R.id.inputPassword);
-        String password = passwordField.getText().toString();
-        user = "testboiIII";
-        password = "yeahMannen";
-        communicator.execute("register",user,password);
-    }
-
-    public void registerSuccessfull(JSONObject result){
-        try{
-            System.out.println(result.getString("result"));
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public void loginResult(JSONObject result){
+    public void onResult(JSONObject result){
 
         boolean success = false;
         try{
@@ -125,6 +93,11 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, MenuActivity.class);
             this.startActivity(intent);
         }
+    }
+
+    public void openRegisterView(View v){
+        Intent intent = new Intent(this, RegisterActivity.class);
+        this.startActivity(intent);
     }
 
     public void saveToken(String token) {
