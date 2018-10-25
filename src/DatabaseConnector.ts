@@ -133,8 +133,8 @@ export class DatabaseConnection {
             
     }
 
-    public checkAuthToken(token: string): Q.IPromise<{}> {
-        const defer = Q.defer();
+    public checkAuthToken(token: string): Q.IPromise<{name: string}> {
+        const defer = Q.defer<{name: string}>();
         this.connectionPool.getConnection((err: mysql.MysqlError, connection: mysql.PoolConnection) => {
             if(err) {
                 defer.reject();
