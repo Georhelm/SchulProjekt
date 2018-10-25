@@ -3,33 +3,56 @@ package de.schule.georhelm.schulprojekt;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.JsonReader;
+
+import org.json.JSONObject;
 
 public class Player {
     private Bitmap bitmap;
-    private int x;
-    private int y;
 
+    public int getPos() {
+        return pos;
+    }
+
+    private int pos;
+    private String name;
+
+    public int getX() {
+        return x;
+    }
+
+    private int x;
+
+    public int getY() {
+        return y;
+    }
+
+    private int y;
+    private boolean isEnemy;
     private int playerHeight;
 
     private int playerWidth;
 
-    public int getPlayerHeight() {
-        return playerHeight;
-    }
-
-    public int getPlayerWidth() {
-        return playerWidth;
-    }
-
-    private int speed;
-    private double exactSpeed;
-
-    private boolean liftingLance;
-
     public Lance lance;
     public Mount mount;
 
-    public Player(Context context, int screenX, int screenY){
+    public Player(Context context, JSONObject player, boolean isEnemy){
+        this.isEnemy = isEnemy;
+        this.x = 50;
+        this.y = 50;
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight);
+        try{
+            this.pos = player.getInt("position");
+            this.name = player.getString("username");
+            this.lance = Lance.getLanceByID(player.getInt("weaponId"));
+            this.mount = Mount.getMountByID(player.getInt("mountId"));
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    //Old
+    /*public Player(Context context, int screenX, int screenY){
 
         x = (int)Math.round(screenX*0.1);
         y = (int)Math.round(screenY*0.4);
@@ -46,35 +69,12 @@ public class Player {
 
         lance = new Lance(this, context, screenX, screenY);
         mount = new Mount(this,context, screenX, screenY);
-    }
+    }*/
 
     public void update(){
-        exactSpeed = exactSpeed + mount.getAcceleration();
-        speed = (int)Math.round(exactSpeed);
-        lance.update(liftingLance);
     }
 
     public Bitmap getBitmap() {
         return bitmap;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public int getSpeed() {
-        return speed;
-    }
-
-    public void liftLance(){
-        liftingLance = true;
-    }
-
-    public void stopLiftingLance() {
-        liftingLance = false;
     }
 }

@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import org.json.JSONObject;
+
 import java.io.File;
 
 public class MenuActivity extends AppCompatActivity {
@@ -19,8 +21,9 @@ public class MenuActivity extends AppCompatActivity {
 
     }
 
-    public void startSingleplayer(View v) {
+    public void startSingleplayer(JSONObject startGameSetting) {
         Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra("gamedata", startGameSetting.toString());
         this.startActivity(intent);
     }
 
@@ -45,5 +48,9 @@ public class MenuActivity extends AppCompatActivity {
         File tokenSave = new File(appInternalDirectory + "/accessToken.txt");
         tokenSave.delete();
         this.finish();
+    }
+
+    public void startSinglePlayerGame(View v){
+        socket.startSingleplayerGame(this);
     }
 }

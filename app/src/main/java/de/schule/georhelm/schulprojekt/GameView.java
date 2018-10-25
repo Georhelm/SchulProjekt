@@ -9,31 +9,39 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import org.json.JSONObject;
+
 public class GameView extends SurfaceView implements Runnable{
 
     volatile boolean playing;
 
     private Thread gameThread = null;
-    private int location;
     private Player player;
+    private Player enemy;
     private Paint paint;
     private Canvas canvas;
     private SurfaceHolder surfaceHolder;
     private Bitmap backGround;
-    private int screenWidth;
-    private int screenHeight;
 
-    public GameView(Context context, int screenX, int screenY) {
+    public GameView(Context context,JSONObject gameData) {
         super(context);
-        screenWidth = screenX;
-        screenHeight = screenY;
-        player = new Player(context, screenWidth, screenHeight);
+        JSONObject player1 = new JSONObject();
+        JSONObject player2 = new JSONObject();
+
+        try{
+            player1 = gameData.getJSONObject("player1");
+            player2 = gameData.getJSONObject("player2");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        player = new Player(context,player1,false);
+        enemy = new Player(context,player2, true);
 
         surfaceHolder = getHolder();
         paint = new Paint();
-        location = 0;
         backGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds);
-        backGround = Bitmap.createScaledBitmap(backGround,screenWidth*12,(int)Math.round(screenHeight*1.2),true);
+        backGround = Bitmap.createScaledBitmap(backGround,7680,1080,true);
     }
 
     @Override
@@ -48,16 +56,12 @@ public class GameView extends SurfaceView implements Runnable{
     }
 
     private void update(){
-        player.update();
-        System.out.println("player speed: " +player.getSpeed());
-        location = location - player.getSpeed();
-        System.out.println("location: " +location);
     }
 
     private void draw(){
         if (surfaceHolder.getSurface().isValid()) {
             canvas = surfaceHolder.lockCanvas();
-            canvas.drawBitmap(backGround,location,(int)Math.round(-screenHeight*0.25), paint); //background here R.drawable.backgroundwithclouds
+            canvas.drawBitmap(backGround,-player.getPos(),0, paint); //background here R.drawable.backgroundwithclouds
             drawPlayerObjects();
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
@@ -104,14 +108,14 @@ public class GameView extends SurfaceView implements Runnable{
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+        /*switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_UP:
                 player.stopLiftingLance();
                 break;
             case MotionEvent.ACTION_DOWN:
                 player.liftLance();
                 break;
-        }
+        }*/
         return true;
     }
 }

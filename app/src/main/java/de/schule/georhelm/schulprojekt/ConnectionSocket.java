@@ -1,5 +1,9 @@
 package de.schule.georhelm.schulprojekt;
 
+import android.util.JsonReader;
+
+import org.json.JSONObject;
+
 import io.socket.client.IO;
 import io.socket.client.Manager;
 import io.socket.client.Socket;
@@ -46,10 +50,22 @@ public class ConnectionSocket {
 
     public boolean logOut(){
         try{
-            socket.close();
+            socket.disconnect();
+            //socket.close();
             return true;
         }catch(Exception e){
             return false;
         }
+    }
+
+    public void startSingleplayerGame(final MenuActivity menuActivity){
+        socket.once("found_game", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                System.out.println((JSONObject)args[0]);
+                menuActivity.startSingleplayer((JSONObject)args[0]);
+            }
+        });
+        socket.emit("start_singleplayer");
     }
 }
