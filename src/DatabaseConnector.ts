@@ -1,7 +1,10 @@
 import mysql = require("mysql");
 import Crypto = require("crypto");
 import {Config} from "./Config";
-import * as Q from "q";
+import {Player} from "./Player";
+import { Mount } from "./Mount";
+import {Weapon} from "./Weapon";
+import {Game} from "./Game";
 
 const config: Config = require("../config.json");
 
@@ -12,6 +15,7 @@ export class DatabaseConnection {
     private server : string;
     private database: string;
     private connectionPool : mysql.Pool;
+    private static connection: DatabaseConnection;
 
     constructor(server: string, username: string, password: string, database: string) {
         this.username = username;
@@ -27,129 +31,122 @@ export class DatabaseConnection {
         }
 
         this.connectionPool = mysql.createPool(connectionInfo);
+        DatabaseConnection.connection = this;
     }
 
-    public registerUser(user: string, pass: string): Q.Promise<CommunicationData> {
-        const defer = Q.defer<CommunicationData>();
+    public static getDatabaseConnection() {
+        return DatabaseConnection.connection;
+    }
 
-        this.connectionPool.getConnection((err: mysql.MysqlError, connection: mysql.PoolConnection) => {
-            if (err) {
-                defer.reject();
-            }
-            connection.query("Select * from users where name=?", [user], (err, result) => {
+    private query(query: string, args: Array<any>): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.connectionPool.query(query, args, (err, result) => {
                 if (err) {
-                    connection.release();
-                    defer.reject();
+                    console.error("error", err);
+                    throw err;
                 }
-    
-                if (result.length === 0)  {
-                    const hashedPass = Crypto.createHmac("sha256", config.hashkey);
-                    hashedPass.update(pass);
-                    this.connectionPool.query("Insert into users (name, password) Values (?,?)", [user, hashedPass.digest("hex")], (err, response) => {
-                        
-                        connection.release();
-
-                        if (err) {
-                            defer.reject();
-                        }
-    
-                        const msg: CommunicationData = {
-                            "method": "register",
-                            "result": "success"
-                        };
-                        defer.resolve(msg);
-                    });
-                }else {
-                    const msg: CommunicationData = {
-                        "method": "register",
-                        "result": "error",
-                        "msg": "user_exists"
-                    }
-                    connection.release();
-                    defer.resolve(msg);
-                }
-                
+                resolve(result);
             });
-
         });
+    }
+
+
+    public async registerUser(user: string, pass: string): Promise<CommunicationData> {
+
+        const userExists: any[] = await this.query("Select * from users where name=?", [user]); 
+
+        if (userExists.length !== 0) {
+            const msg: CommunicationData = {
+                "method": "register",
+                "result": "error",
+                "msg": "user_exists"
+            }
+            return msg;
+        }
+
+        const hashedPass = Crypto.createHmac("sha256", config.hashkey);
+        hashedPass.update(pass);
+
+        const createUser = await this.query("Insert into users (name, password) Values (?,?)", [user, hashedPass.digest("hex")]);
+
+        const msg: CommunicationData = {
+            "method": "register",
+            "result": "success"
+        };
+
+        return msg;
+
+    }
+
+    public async loginUser(user: string, pass: string): Promise<CommunicationData> {
+
+        const hashedPass = Crypto.createHmac("sha256", config.hashkey);
+        hashedPass.update(pass);
+
+        const userCorrect = await this.query("Select * from users where name=? and password=?", [user, hashedPass.digest("hex")]); 
         
-
-        return defer.promise;
-
-    }
-
-    public loginUser(user: string, pass: string): Q.Promise<CommunicationData> {
-
-        const defer = Q.defer<CommunicationData>();
-
-        this.connectionPool.getConnection((err: mysql.MysqlError, connection: mysql.PoolConnection) => {
-            if(err) {
-                defer.reject();
+        if (userCorrect.length !== 1) {
+            const msg: CommunicationData = {
+                "method": "login",
+                "result": "error",
+                "msg": "wrong_login"
             }
+            return msg;
+        }
 
-            const hashedPass = Crypto.createHmac("sha256", config.hashkey);
-            hashedPass.update(pass);
-    
-            connection.query("Select * from users where name=? and password=?", [user, hashedPass.digest("hex")], (err, result) => {
-                if (err) {
-                    connection.release();
-                    defer.reject();
-                }
-                if (result.length > 0) {
-                    const hmac = Crypto.createHmac("sha256", config.hashkey);
-                    hmac.update(result[0].name + Date.now());
-                    const hashToken = hmac.digest("hex");
-                    this.connectionPool.query("Update users set token=? where name=?", [hashToken, result[0].name], (err, result) => {
-                        connection.release();
-                        if(err) {
-                            defer.reject();
-                        }
-    
-                        const msg: CommunicationData = {
-                            "method": "login",
-                            "result": "success",
-                            "token": hashToken
-                        }
-    
-                        defer.resolve(msg);
-                    });
-    
-                    
-                }else {
-                    const msg: CommunicationData = {
-                        "method": "login",
-                        "result": "error",
-                        "msg": "wrong_login"
-                    }
-                    connection.release();
-                   defer.resolve(msg);
-                }
-            });
-        });
+        const hmac = Crypto.createHmac("sha256", config.hashkey);
+        hmac.update(userCorrect[0].name + Date.now());
+        const hashToken = hmac.digest("hex");
+        const token = await this.query("Update users set token=? where name=?", [hashToken, userCorrect[0].name]);
+        
+        const msg: CommunicationData = {
+            "method": "login",
+            "result": "success",
+            "token": hashToken
+        };
 
-       
-
-        return defer.promise;
+        return msg;
             
     }
 
-    public checkAuthToken(token: string): Q.IPromise<{name: string}> {
-        const defer = Q.defer<{name: string}>();
-        this.connectionPool.getConnection((err: mysql.MysqlError, connection: mysql.PoolConnection) => {
-            if(err) {
-                defer.reject();
-            }
+    public async checkAuthToken(token: string): Promise<{name: string, id: number}> {
 
-            connection.query("Select * from users where token=?", [token], (err, result) => {
-                if(err || result.length === 0) {
-                    defer.reject();
-                }
-    
-                defer.resolve(result[0]);
-            });
-        });
+        const result: {name: string, id: number}[] = await this.query("Select id, name from users where token=?", [token]);
         
-        return defer.promise;
+        if (result.length === 0) {
+            throw new Error("Auth token wrong");
+        }
+
+        return result[0];
+    }
+
+    public async getMountById(mountId: number): Promise<Mount> {
+        const result = await this.query("Select id, name, maxSpeed, acceleration from mounts where id=?", [mountId]);
+        if (result.length === 0) {
+            throw new Error("Mount does not exist");
+        }
+
+        return new Mount(result[0].id, result[0].name, result[0].maxSpeed, result[0].acceleration);
+    }
+
+    public async getWeaponById(weaponId: number): Promise<Weapon> {
+        const result = await this.query("Select id, name from weapons where id=?", [weaponId]);
+        if(result.length === 0) {
+            throw new Error("Weapon does not exist");
+        }
+
+        return new Weapon(result[0].id, result[0].name);
+    }
+
+    public async createGame(player1: Player, player2: Player, type: string): Promise<Game> {
+        let result;
+        result = await this.query("Insert into gamedata (type) Select id from gametype where name=?", [type]);
+        await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 0)", [result.insertId, player1.getDatabaseId()]);
+        if (player2.getDatabaseId() != -1) {
+            await this.query("Insert into user_game (game_id playerid, side) Values (?, ?, 1)", [result.insertId, player2.getDatabaseId()]);
+        }
+        return new Game(result.insertId, player1, player2);
+        
     }
 
 }

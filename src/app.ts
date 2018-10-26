@@ -13,7 +13,7 @@ const connection = new DatabaseConnection(config.serverName, config.username, co
 
 app.use(express.json());
 
-app.use("/", GameRouter.createGameRouter(connection));
+app.use("/", GameRouter.createGameRouter());
 
 
 const server = app.listen(config.port, () => {
