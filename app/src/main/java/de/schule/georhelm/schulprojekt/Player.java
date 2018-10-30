@@ -3,73 +3,61 @@ package de.schule.georhelm.schulprojekt;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.util.JsonReader;
 
 import org.json.JSONObject;
 
 public class Player {
     private Bitmap bitmap;
+    private int pos;
+    private String name;
+    private int x;
+    private int y;
+    private boolean isEnemy;
+    private Matrix matrix;
 
     public int getPos() {
         return pos;
     }
 
-    private int pos;
-    private String name;
-
-    public int getX() {
-        return x;
+    public void setPos(int pos) {
+        this.pos = pos;
     }
-
-    private int x;
-
-    public int getY() {
-        return y;
-    }
-
-    private int y;
-    private boolean isEnemy;
-    private int playerHeight;
-
-    private int playerWidth;
 
     public Lance lance;
     public Mount mount;
 
+    public Matrix getMatrix() {
+        return matrix;
+    }
+
     public Player(Context context, JSONObject player, boolean isEnemy){
         this.isEnemy = isEnemy;
-        this.x = 50;
-        this.y = 50;
+        if(isEnemy){
+            this.x = 1230;
+        }else{
+            this.x = 330;
+
+        }
+        this.y = 490;
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight);
+        bitmap = Bitmap.createScaledBitmap(bitmap, 300, 450, false);
+        matrix = new Matrix();
+        matrix.reset();
+        matrix.postTranslate(x, y);
         try{
             this.pos = player.getInt("position");
             this.name = player.getString("username");
             this.lance = Lance.getLanceByID(player.getInt("weaponId"));
             this.mount = Mount.getMountByID(player.getInt("mountId"));
+            this.lance.updateMatrix(this.x,this.y);
+            this.mount.updateMatrix(this.x,this.y);
         }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    //Old
-    /*public Player(Context context, int screenX, int screenY){
-
-        x = (int)Math.round(screenX*0.1);
-        y = (int)Math.round(screenY*0.4);
-        speed = 1;
-        exactSpeed = 1;
-        liftingLance = false;
-
-        playerHeight = (int)Math.round(screenY*0.4);
-        playerWidth = (int)Math.round(playerHeight* (360.0 / 540.0)); //Verhältnis des Bildes
-
-
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight);
-        bitmap = Bitmap.createScaledBitmap(bitmap, playerWidth, playerHeight, false);
-
-        lance = new Lance(this, context, screenX, screenY);
-        mount = new Mount(this,context, screenX, screenY);
-    }*/
 
     public void update(){
     }

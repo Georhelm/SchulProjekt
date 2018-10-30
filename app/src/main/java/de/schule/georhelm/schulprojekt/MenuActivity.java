@@ -17,8 +17,7 @@ public class MenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_menu);
-        this.socket = SocketManager.getSocket();
-
+        this.socket = ConnectionSocket.getSocket();
     }
 
     public void startSingleplayer(JSONObject startGameSetting) {

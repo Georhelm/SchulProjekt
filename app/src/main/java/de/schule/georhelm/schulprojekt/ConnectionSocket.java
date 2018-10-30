@@ -12,6 +12,14 @@ import io.socket.emitter.Emitter;
 public class ConnectionSocket {
     Socket socket;
     String token;
+    public static ConnectionSocket getSocket() {
+        return ConnectionSocket.connectionSocket;
+    }
+    public static void setSocket(ConnectionSocket socket) {
+        ConnectionSocket.connectionSocket = socket;
+    }
+    private static ConnectionSocket connectionSocket;
+
     public ConnectionSocket(String token) {
         this.token = token;
     }
@@ -58,6 +66,10 @@ public class ConnectionSocket {
         }
     }
 
+    public void playerReady(){
+        socket.emit("player_ready");
+    }
+
     public void startSingleplayerGame(final MenuActivity menuActivity){
         socket.once("found_game", new Emitter.Listener() {
             @Override
@@ -67,5 +79,31 @@ public class ConnectionSocket {
             }
         });
         socket.emit("start_singleplayer");
+    }
+
+    public void initGame(final GameView gameView){
+        socket.on("game_update", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                try{
+                    JSONObject jsonObject = (JSONObject)args[0];
+                    String type = jsonObject.getString("type");
+                    if(type.equals("countdown")){
+                        gameView.countDown(jsonObject.getInt("value"));
+                    }else if(type.equals("partialUpdate")){
+                        JSONObject value = jsonObject.getJSONObject("value");
+                        JSONObject player = value.getJSONObject("player1");
+                        JSONObject enemy = value.getJSONObject("player2");
+
+                        int playerPos = player.getInt("position");
+                        int enemyPos = enemy.getInt("position");
+                        gameView.setPlayerPositions(playerPos,enemyPos);
+                    }
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+        });
     }
 }

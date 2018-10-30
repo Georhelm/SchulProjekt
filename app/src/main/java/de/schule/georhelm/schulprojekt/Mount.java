@@ -9,36 +9,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Mount {
+    private String name;
     private Bitmap bitmap;
     private int x;
     private int y;
-   // private int mountHeight;
-    //private int mountWidth;
     private int id;
     private static List<Mount> mounts;
-    //public double getAcceleration() {
-       // return acceleration;
-    //}
+    private Matrix matrix;
 
-    //private double acceleration;
+    public Matrix getMatrix() {
+        return matrix;
+    }
 
-    protected Matrix matrix;
-    public Mount(Context context, int id){
-        x = 50;
-        y = 50;
+    public Mount(Context context, int id, int x, int y, int width, int height, String name){
+        this.name = name;
+        this.x = x;
+        this.y = y;
         this.id = id;
-        //acceleration = 0.02;
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.aptosaurus);
-
-        //mountWidth = (int)Math.round(player.getPlayerWidth() * 2);//Invertiert, weil die Rakete noch um 90 grad gedreht wird!!!
-        //mountHeight= (int)Math.round(mountWidth * ((double)bitmap.getHeight() / (double)bitmap.getWidth())); //Maße des Bildes
-
-        //bitmap = Bitmap.createScaledBitmap(bitmap, mountWidth, mountHeight, false);
-
+        Integer bitmapId = context.getResources().getIdentifier(name,"drawable",context.getPackageName());
+        bitmap = BitmapFactory.decodeResource(context.getResources(), bitmapId);
+        bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
         matrix = new Matrix();
         matrix.reset();
-        matrix.postTranslate(-bitmap.getWidth() / 2, -bitmap.getHeight() / 1.5f); // Centers image
-        //matrix.postRotate(90);
         matrix.postTranslate(x, y);
 
         if(Mount.mounts==null){
@@ -46,13 +38,21 @@ public class Mount {
         }
         Mount.mounts.add(this);
     }
+    public Mount (Mount mount){
+        this.id = mount.id;
+        this.x = mount.x;
+        this.y = mount.y;
+        this.name = mount.name;
+        this.bitmap = mount.bitmap.copy(mount.bitmap.getConfig(),true);
+        this.matrix = new Matrix(mount.matrix);
+    }
 
     public static Mount getMountByID(int id){
         List<Mount> mounts = Mount.mounts;
 
         for(Mount mount: mounts){
             if(mount.id == id){
-                return mount;
+                return new Mount(mount);
             }
         }
         return null;
@@ -62,11 +62,7 @@ public class Mount {
         return bitmap;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+    public void updateMatrix(int playerX, int playerY){
+        this.matrix.postTranslate(playerX, playerY);
     }
 }

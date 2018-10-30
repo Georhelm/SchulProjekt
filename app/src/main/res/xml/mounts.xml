@@ -1,0 +1,18 @@
+<Resources>
+    <Mount>
+        <Id value="1"></Id>
+        <Name value="aptosaurus"/>
+        <X value= "-300"/>
+        <Y value="120"/>
+        <Width value="706"/>
+        <Height value="426"/>
+    </Mount>
+    <Mount>
+        <Id value="2"></Id>
+        <Name value="pterodactyl"/>
+        <X value= "-300"/>
+        <Y value="120"/>
+        <Width value="706"/>
+        <Height value="426"/>
+    </Mount>
+</Resources>

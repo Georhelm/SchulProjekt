@@ -88,7 +88,7 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
 
     public void createConnection(String token){
         ConnectionSocket socket = new ConnectionSocket(token);
-        SocketManager.setSocket(socket);
+        ConnectionSocket.setSocket(socket);
         if (socket.init()){
             Intent intent = new Intent(this, MenuActivity.class);
             this.startActivity(intent);
