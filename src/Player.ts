@@ -12,13 +12,16 @@ export class Player {
     public username: string;
     public mount: Mount;
     public weapon: Weapon;
+    protected ready: boolean;
     private position: number;
+    private onPlayerReady: () =>  void;
     private static playerList: Player[];
 
     constructor( username: string, databaseId: number = -1) {
         this.username = username;
         this.position = 0;
         this.databaseId = databaseId;
+        this.ready = false;
         
         if (Player.playerList === undefined) {
             Player.playerList = [];
@@ -34,7 +37,7 @@ export class Player {
     }
 
     protected async loadEquipment() {
-        this.mount = await DatabaseConnection.getDatabaseConnection().getMountById(1);
+        this.mount = await DatabaseConnection.getDatabaseConnection().getMountById(2);
         this.weapon = await DatabaseConnection.getDatabaseConnection().getWeaponById(1);
     }
 
@@ -43,18 +46,42 @@ export class Player {
             username: this.username,
             mountId: this.mount.getId(),
             weaponId: this.weapon.getId(),
-            position: this.position
+            position: Math.round(this.position)
         }
 
         return result;
     }
+    
+    public updatePosition(timeDelta: number) {
+        this.position += this.mount.getSpeed() * timeDelta;
+    } 
 
     public async sendGameUpdate(update: GameUpdate) {
-        this.socket.emit("gameUpdate", update);
+        this.socket.emit("game_update", update);
+    }
+
+    public getPosition(): number {
+        return this.position;
     }
 
     public getDatabaseId(): number {
         return this.databaseId;
+    }
+
+    public setPlayerReadyListener(fn: () => void) {
+        this.onPlayerReady = fn;
+        this.socket.on("player_ready", this.playerReady.bind(this));
+    }
+
+    private playerReady() {
+        this.ready = true;
+        if (this.onPlayerReady !== undefined) {
+            this.onPlayerReady();
+        }
+    }
+
+    public setPosition(pos: number) {
+        this.position = pos;
     }
 
     public static addPlayer(player: Player) {
@@ -105,6 +132,16 @@ export class Player {
         return logObj;
     }
 
+    public isReady(): boolean {
+        return this.ready;
+    }
+
+    public getUpdatedGameState(): PlayerGameUpdate {
+        return {
+            position: Math.round(this.position)
+        }
+    }
+
 }
 
 export interface PlayerGameData {
@@ -113,3 +150,7 @@ export interface PlayerGameData {
     weaponId: number,
     position: number
 } 
+
+export interface PlayerGameUpdate {
+    position: number
+}

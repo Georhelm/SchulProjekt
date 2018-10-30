@@ -50,7 +50,11 @@ export class GameSocket {
 
     private onDisconnected(client: Socket.Socket) {
         console.log("client disconnected");
-        console.log(Player.getPlayerBySocketId(client.id));
+        const player = Player.getPlayerBySocketId(client.id)
+        if (player === null) {
+            return;
+        }
+        console.log(player.getLogObj());
         Player.removePlayerBySocketId(client.id);
         console.log("playercount: " + Player.getPlayerCount());
     }
@@ -68,8 +72,7 @@ export class GameSocket {
             await npc.init();
             const game = await DatabaseConnection.getDatabaseConnection().createGame(player, npc, "singleplayer");
             console.log(game.getLogObj());
-            client.emit("found_game", game.getStartGameState()); 
-            game.startGameCountdown();
+            client.emit("found_game", game.getFullGameState());
         }catch(error) {
             client.disconnect();
             return;

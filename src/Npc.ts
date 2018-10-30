@@ -13,6 +13,9 @@ export class Npc extends Player  {
 
     public async sendGameUpdate(update: GameUpdate) {
         console.log("NPC recieved gameupdate");
-        console.log(update);
+    }
+
+    public setPlayerReadyListener(fn: () => void) {
+        this.ready = true;
     }
 }

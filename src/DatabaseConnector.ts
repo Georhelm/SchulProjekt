@@ -139,8 +139,7 @@ export class DatabaseConnection {
     }
 
     public async createGame(player1: Player, player2: Player, type: string): Promise<Game> {
-        let result;
-        result = await this.query("Insert into gamedata (type) Select id from gametype where name=?", [type]);
+        const result = await this.query("Insert into gamedata (type) Select id from gametype where name=?", [type]);
         await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 0)", [result.insertId, player1.getDatabaseId()]);
         if (player2.getDatabaseId() != -1) {
             await this.query("Insert into user_game (game_id playerid, side) Values (?, ?, 1)", [result.insertId, player2.getDatabaseId()]);
