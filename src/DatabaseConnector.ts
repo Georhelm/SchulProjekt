@@ -130,12 +130,12 @@ export class DatabaseConnection {
     }
 
     public async getWeaponById(weaponId: number): Promise<Weapon> {
-        const result = await this.query("Select id, name from weapons where id=?", [weaponId]);
+        const result = await this.query("Select id, name, lift_speed, fall_speed from weapons where id=?", [weaponId]);
         if(result.length === 0) {
             throw new Error("Weapon does not exist");
         }
 
-        return new Weapon(result[0].id, result[0].name);
+        return new Weapon(result[0].id, result[0].name, result[0].lift_speed, result[0].fall_speed);
     }
 
     public async createGame(player1: Player, player2: Player, type: string): Promise<Game> {

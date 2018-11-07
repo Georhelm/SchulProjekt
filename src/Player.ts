@@ -1,7 +1,7 @@
 import {DatabaseConnection} from "./DatabaseConnector";
 import {Mount} from "./Mount";
 import {Weapon} from "./Weapon";
-import {GameUpdate} from "./Game";
+import {GameUpdate, Game} from "./Game";
 import {Socket} from "socket.io";
 
 
@@ -16,12 +16,15 @@ export class Player {
     private position: number;
     private onPlayerReady: () =>  void;
     private static playerList: Player[];
+    private isLiftingWeapon: boolean;
+
 
     constructor( username: string, databaseId: number = -1) {
         this.username = username;
         this.position = 0;
         this.databaseId = databaseId;
         this.ready = false;
+        this.isLiftingWeapon = false;
         
         if (Player.playerList === undefined) {
             Player.playerList = [];
@@ -80,6 +83,17 @@ export class Player {
         }
     }
 
+    public initGameInputListeners() {
+        this.socket.on("game_input", this.onGameInput.bind(this));
+    }
+
+    private onGameInput(data: string) {
+        const json: GameInput = JSON.parse(data);
+        if (json.type === "lance") {
+            this.isLiftingWeapon = json.value;
+        }
+    }
+
     public setPosition(pos: number) {
         this.position = pos;
     }
@@ -121,6 +135,10 @@ export class Player {
         return;
     }
 
+    public updateWeaponPosition(timeDelta: number) {
+        this.weapon.updateAngle(timeDelta, this.isLiftingWeapon);
+    }
+
     public static getPlayerCount(): number {
         return Player.playerList.length;
     }
@@ -138,7 +156,8 @@ export class Player {
 
     public getUpdatedGameState(): PlayerGameUpdate {
         return {
-            position: Math.round(this.position)
+            position: Math.round(this.position),
+            weaponAngle: Math.round(this.weapon.getAngle())
         }
     }
 
@@ -152,5 +171,11 @@ export interface PlayerGameData {
 } 
 
 export interface PlayerGameUpdate {
-    position: number
+    position: number,
+    weaponAngle: number
+}
+
+interface GameInput {
+    type: string;
+    value: boolean;
 }

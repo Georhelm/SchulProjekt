@@ -13,7 +13,7 @@ export class Game {
         this.id = id;
         this.player1 = player1;
         this.player2 = player2;
-        this.gameWidth = 100000;
+        this.gameWidth = 10000;
 
         this.player1.setPlayerReadyListener(this.playerReady.bind(this));
         this.player2.setPlayerReadyListener(this.playerReady.bind(this));
@@ -41,15 +41,15 @@ export class Game {
 
     private async startGameCountdown() {
         this.gameStartTime = Date.now();
-        this.doCountdown(3);
-        console.log(Date.now());
+        console.log("game started");
         this.timeOfLastUpdate = Date.now();
+        this.player1.initGameInputListeners();
+        this.player2.initGameInputListeners();
+        this.doCountdown(3);    
     }
 
     private async doCountdown(time: number) {
         const newTime = Date.now();
-        console.log("newTime: " + newTime);
-        console.log("timesince last update= " + (newTime - this.timeOfLastUpdate));
         this.timeOfLastUpdate = newTime;
         const update: GameUpdate = {
             "type": "countdown",
@@ -74,17 +74,15 @@ export class Game {
     }
 
     private async startGame() {
-        setTimeout(() => {
-            this.updateGame();
-        }, 33);
+        this.updateGame();
     }
 
     private updateGame() {
         const newTime = Date.now();
         const timeDelta = (newTime - this.timeOfLastUpdate) / 1000;
-        console.log("gametick timesince last update: " + timeDelta);
         this.timeOfLastUpdate = newTime;
         if (this.player1.getPosition() >= this.player2.getPosition()){
+            this.endGame();
             return;
         }
 
@@ -94,17 +92,30 @@ export class Game {
         this.player1.updatePosition(timeDelta);
         this.player2.updatePosition(-timeDelta);
 
+        this.player1.updateWeaponPosition(timeDelta);
+        this.player2.updateWeaponPosition(timeDelta);
+
         const gameUpdate: GameUpdate = {
             type: "partialUpdate",
             value: this.getGameUpdate()
         }
-        console.log(gameUpdate);
+
         this.player1.sendGameUpdate(gameUpdate);
         this.player2.sendGameUpdate(gameUpdate);
 
         setTimeout(() => {
             this.updateGame();
         }, 33);
+    }
+
+    private endGame() {
+        const endGameUpdate: GameUpdate = {
+            type: "gameEnd",
+            value: ""
+        }
+        this.player1.sendGameUpdate(endGameUpdate);
+        this.player2.sendGameUpdate(endGameUpdate);
+        console.log("game ended");
     }
 
     public getLogObj(): any {
