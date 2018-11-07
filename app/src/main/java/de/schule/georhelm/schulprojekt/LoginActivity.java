@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -71,7 +72,7 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
 
     public void onResult(JSONObject result){
 
-        boolean success = false;
+        boolean success;
         try{
             success = result.getString("result").equals("success");
             if(success){
@@ -79,7 +80,7 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
                 saveToken(token);
                 createConnection(token);
             }else{
-
+                Toast.makeText(this, "Wrong username or password", Toast.LENGTH_SHORT).show();
             }
         }catch(Exception e){
 
@@ -89,7 +90,7 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
     public void createConnection(String token){
         ConnectionSocket socket = new ConnectionSocket(token);
         ConnectionSocket.setSocket(socket);
-        if (socket.init()){
+        if (socket.init(this)){
             Intent intent = new Intent(this, MenuActivity.class);
             this.startActivity(intent);
         }

@@ -1,6 +1,10 @@
 package de.schule.georhelm.schulprojekt;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Looper;
 import android.util.JsonReader;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -10,8 +14,8 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 public class ConnectionSocket {
-    Socket socket;
-    String token;
+    private Socket socket;
+    private String token;
     public static ConnectionSocket getSocket() {
         return ConnectionSocket.connectionSocket;
     }
@@ -24,9 +28,8 @@ public class ConnectionSocket {
         this.token = token;
     }
 
-    public boolean init(){
+    public boolean init(final Context context){
         try{
-            Manager manager = new Manager();
             IO.Options options = new IO.Options();
             options.query = "token=" + token;
             String[] transportArray = {"websocket"};
@@ -38,15 +41,15 @@ public class ConnectionSocket {
                     System.out.println("Event_Connect of socket triggered :)");
                 }
 
-            }).on("event", new Emitter.Listener() { //Unsere Events
-
-                @Override
-                public void call(Object... args) {}
-
             }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() { //Disconnect event
 
                 @Override
-                public void call(Object... args) {}
+                public void call(Object... args) {
+                    Intent intent = new Intent(context, LoginActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    context.startActivity(intent);
+                }
 
             });
             socket.connect();
@@ -74,7 +77,6 @@ public class ConnectionSocket {
         socket.once("found_game", new Emitter.Listener() {
             @Override
             public void call(Object... args) {
-                System.out.println((JSONObject)args[0]);
                 menuActivity.startSingleplayer((JSONObject)args[0]);
             }
         });
@@ -88,16 +90,22 @@ public class ConnectionSocket {
                 try{
                     JSONObject jsonObject = (JSONObject)args[0];
                     String type = jsonObject.getString("type");
-                    if(type.equals("countdown")){
-                        gameView.countDown(jsonObject.getInt("value"));
-                    }else if(type.equals("partialUpdate")){
-                        JSONObject value = jsonObject.getJSONObject("value");
-                        JSONObject player = value.getJSONObject("player1");
-                        JSONObject enemy = value.getJSONObject("player2");
+                    switch(type) {
+                        case "countdown":
+                            gameView.countDown(jsonObject.getInt("value"));
+                            break;
+                        case "partialUpdate":
+                            JSONObject value = jsonObject.getJSONObject("value");
+                            JSONObject player = value.getJSONObject("player1");
+                            JSONObject enemy = value.getJSONObject("player2");
 
-                        int playerPos = player.getInt("position");
-                        int enemyPos = enemy.getInt("position");
-                        gameView.setPlayerPositions(playerPos,enemyPos);
+                            int playerPos = player.getInt("position");
+                            int enemyPos = enemy.getInt("position");
+                            gameView.setPlayerPositions(playerPos,enemyPos);
+                            break;
+                        case "gameEnd":
+                            gameView.endGame();
+                            break;
                     }
                 }catch(Exception e){
                     e.printStackTrace();

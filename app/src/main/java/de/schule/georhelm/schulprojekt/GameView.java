@@ -1,5 +1,6 @@
 package de.schule.georhelm.schulprojekt;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -52,17 +53,11 @@ public class GameView extends SurfaceView implements Runnable{
         backGround = Bitmap.createScaledBitmap(backGround,7680,1080,true);
 
         backGroundMatrix = new Matrix();
-        //backGroundMatrix.preScale(-1,1,backGround.getWidth()/2,backGround.getHeight()/2);
-        backGroundMatrix.postTranslate(0,-60);
-        //backGroundMatrix.postScale(0.5f,0.5f);
 
         enemyBackGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds);
         enemyBackGround = Bitmap.createScaledBitmap(enemyBackGround,7680,1080,true);
 
         enemyBackGroundMatrix = new Matrix();
-        enemyBackGroundMatrix.preScale(-1,1,enemyBackGround.getWidth()/2,enemyBackGround.getHeight()/2);
-        enemyBackGroundMatrix.postTranslate(960,-60);
-        enemyBackGroundMatrix.postScale(0.8f,0.8f);
 
 
         this.socket = ConnectionSocket.getSocket();
@@ -89,15 +84,14 @@ public class GameView extends SurfaceView implements Runnable{
         if (surfaceHolder.getSurface().isValid()) {
             canvas = surfaceHolder.lockCanvas();
 
-            backGroundMatrix = new Matrix();
-            backGroundMatrix.postTranslate(-player.getPos(),-60);
+            backGroundMatrix.reset();
+            backGroundMatrix.postTranslate(-(player.getPos() % (backGround.getWidth() - 960)),-60);
 
-            enemyBackGroundMatrix = new Matrix();
-            enemyBackGroundMatrix.preScale(-1,1,enemyBackGround.getWidth()/2,enemyBackGround.getHeight()/2);
-            enemyBackGroundMatrix.postTranslate((-(enemy.getPos()-100000)-5760)-(enemy.getPos()-100000),-60);
-            System.out.println(-(enemy.getPos()-100000));
-            croppedEnemyBackground = Bitmap.createBitmap(enemyBackGround,(5760-(-(enemy.getPos()-100000))+900)-(-(enemy.getPos()-100000)/4),0,(enemyBackGround.getWidth()-5760+(-(enemy.getPos()-100000))-900)-(enemy.getPos()-100000)/4,enemyBackGround.getHeight());
-            //enemyBackGroundMatrix.postTranslate(900,-60);
+            enemyBackGroundMatrix.reset();
+            enemyBackGroundMatrix.postTranslate(960, -60);
+
+            int bitmapPos = (enemy.getPos() % (enemyBackGround.getWidth() - 960));
+            croppedEnemyBackground = Bitmap.createBitmap(enemyBackGround, bitmapPos,0, 960,enemyBackGround.getHeight());
 
 
             canvas.drawBitmap(backGround,backGroundMatrix, paint); //background here R.drawable.backgroundwithclouds
@@ -203,6 +197,11 @@ public class GameView extends SurfaceView implements Runnable{
                 break;
         }*/
         return true;
+    }
+
+    public void endGame() {
+        Activity activity = (Activity)this.getContext();
+        activity.finish();
     }
 
     public void countDown(int count){
