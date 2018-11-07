@@ -24,6 +24,10 @@ public class GameView extends SurfaceView implements Runnable{
     private Canvas canvas;
     private SurfaceHolder surfaceHolder;
     private Bitmap backGround;
+    private Bitmap croppedEnemyBackground;
+    private Matrix enemyBackGroundMatrix;
+    private Bitmap enemyBackGround;
+    private Matrix backGroundMatrix;
     private ConnectionSocket socket;
     private int countDownCount;
 
@@ -46,6 +50,20 @@ public class GameView extends SurfaceView implements Runnable{
         paint = new Paint();
         backGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds);
         backGround = Bitmap.createScaledBitmap(backGround,7680,1080,true);
+
+        backGroundMatrix = new Matrix();
+        //backGroundMatrix.preScale(-1,1,backGround.getWidth()/2,backGround.getHeight()/2);
+        backGroundMatrix.postTranslate(0,-60);
+        //backGroundMatrix.postScale(0.5f,0.5f);
+
+        enemyBackGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds);
+        enemyBackGround = Bitmap.createScaledBitmap(enemyBackGround,7680,1080,true);
+
+        enemyBackGroundMatrix = new Matrix();
+        enemyBackGroundMatrix.preScale(-1,1,enemyBackGround.getWidth()/2,enemyBackGround.getHeight()/2);
+        enemyBackGroundMatrix.postTranslate(960,-60);
+        enemyBackGroundMatrix.postScale(0.8f,0.8f);
+
 
         this.socket = ConnectionSocket.getSocket();
         this.socket.playerReady();
@@ -70,7 +88,20 @@ public class GameView extends SurfaceView implements Runnable{
     private void draw(){
         if (surfaceHolder.getSurface().isValid()) {
             canvas = surfaceHolder.lockCanvas();
-            canvas.drawBitmap(backGround,-player.getPos()%(backGround.getWidth()-canvas.getWidth()),-60, paint); //background here R.drawable.backgroundwithclouds
+
+            backGroundMatrix = new Matrix();
+            backGroundMatrix.postTranslate(-player.getPos(),-60);
+
+            enemyBackGroundMatrix = new Matrix();
+            enemyBackGroundMatrix.preScale(-1,1,enemyBackGround.getWidth()/2,enemyBackGround.getHeight()/2);
+            enemyBackGroundMatrix.postTranslate((-(enemy.getPos()-100000)-5760)-(enemy.getPos()-100000),-60);
+            System.out.println(-(enemy.getPos()-100000));
+            croppedEnemyBackground = Bitmap.createBitmap(enemyBackGround,(5760-(-(enemy.getPos()-100000))+900)-(-(enemy.getPos()-100000)/4),0,(enemyBackGround.getWidth()-5760+(-(enemy.getPos()-100000))-900)-(enemy.getPos()-100000)/4,enemyBackGround.getHeight());
+            //enemyBackGroundMatrix.postTranslate(900,-60);
+
+
+            canvas.drawBitmap(backGround,backGroundMatrix, paint); //background here R.drawable.backgroundwithclouds
+            canvas.drawBitmap(croppedEnemyBackground,enemyBackGroundMatrix, paint);
             drawPlayerObjects();
             drawText();
             surfaceHolder.unlockCanvasAndPost(canvas);
@@ -88,23 +119,31 @@ public class GameView extends SurfaceView implements Runnable{
     }
 
     private void drawPlayerObjects() {
+        Bitmap bitmapPlayer = Bitmap.createBitmap(1920,1080,Bitmap.Config.ARGB_8888);
+        Canvas playerCanvas = new Canvas(bitmapPlayer);
         //Player Mount
-        canvas.drawBitmap(
+        playerCanvas.drawBitmap(
                 player.mount.getBitmap(),
                 player.mount.getMatrix(),
                 paint);
         //Player
-        canvas.drawBitmap(
+        playerCanvas.drawBitmap(
                 player.getBitmap(),
                 player.getMatrix(),
                 paint);
         //Player Lance
-        canvas.drawBitmap(
+        playerCanvas.drawBitmap(
                 player.lance.getBitmap(),
                 player.lance.getMatrix(),
                 paint);
-        Bitmap bitmapTest = Bitmap.createBitmap(7680,1080,Bitmap.Config.ARGB_8888);
-        Canvas enemyCanvas = new Canvas(bitmapTest);
+        Matrix playerCanvasMatrix = new Matrix();
+        //playerCanvasMatrix.preScale(-1,1,bitmapPlayer.getWidth()/2,bitmapPlayer.getHeight()/2);
+        playerCanvasMatrix.postTranslate(0,0);
+        playerCanvasMatrix.postScale(0.9f,0.9f);
+
+
+        Bitmap bitmapEnemy = Bitmap.createBitmap(1920,1080,Bitmap.Config.ARGB_8888);
+        Canvas enemyCanvas = new Canvas(bitmapEnemy);
 
         //Enemy Mount
         enemyCanvas.drawBitmap(
@@ -121,11 +160,13 @@ public class GameView extends SurfaceView implements Runnable{
                 enemy.lance.getBitmap(),
                 enemy.lance.getMatrix(),
                 paint);
-        Matrix matrix = new Matrix();
-        matrix.preScale(-1,1,bitmapTest.getWidth()/2,bitmapTest.getHeight()/2);
-        matrix.postTranslate(bitmapTest.getWidth()/2,bitmapTest.getHeight()/2);
-        matrix.postScale(0.1f,0.1f);
-        canvas.drawBitmap(bitmapTest,matrix,paint);
+        Matrix enemyCanvasMatrix = new Matrix();
+        enemyCanvasMatrix.preScale(-1,1,bitmapEnemy.getWidth()/2,bitmapEnemy.getHeight()/2);
+        enemyCanvasMatrix.postTranslate(bitmapEnemy.getWidth()/2,0);
+        enemyCanvasMatrix.postScale(0.9f,0.9f);
+
+        canvas.drawBitmap(bitmapEnemy,enemyCanvasMatrix,paint);
+        canvas.drawBitmap(bitmapPlayer,playerCanvasMatrix,paint);
     }
 
     private void control(){
