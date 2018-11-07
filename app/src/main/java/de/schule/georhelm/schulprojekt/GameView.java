@@ -188,14 +188,14 @@ public class GameView extends SurfaceView implements Runnable{
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        /*switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_UP:
-                player.stopLiftingLance();
-                break;
+        switch(motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                player.liftLance();
+                this.player.lanceUp();
                 break;
-        }*/
+            case MotionEvent.ACTION_UP:
+                this.player.lanceDown();
+                break;
+        }
         return true;
     }
 
@@ -211,5 +211,10 @@ public class GameView extends SurfaceView implements Runnable{
     public void setPlayerPositions(int playerPos, int enemyPos){
         this.player.setPos(playerPos);
         this.enemy.setPos(enemyPos);
+    }
+
+    public void setLanceAngles(int playerLanceAngle, int enemyLanceAngle) {
+        this.player.setLanceAngle(playerLanceAngle);
+        this.enemy.setLanceAngle(enemyLanceAngle);
     }
 }

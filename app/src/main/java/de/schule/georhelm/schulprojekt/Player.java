@@ -59,7 +59,16 @@ public class Player {
     }
 
 
-    public void update(){
+    public void lanceUp() {
+        ConnectionSocket.getSocket().playerInput(true);
+    }
+
+    public void lanceDown() {
+        ConnectionSocket.getSocket().playerInput(false);
+    }
+
+    public void setLanceAngle(int angle) {
+        this.lance.setAngle(angle);
     }
 
     public Bitmap getBitmap() {

@@ -44,8 +44,7 @@ public class Lance {
         bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
 
         matrix.reset();
-        matrix.postTranslate(-width/2, -height / 1.5f); // Centers image
-        matrix.postRotate(rotation);
+        matrix.postRotate(rotation, width/2, height/2);
         matrix.postTranslate(x, y);
 
         if(Lance.lances==null){
@@ -78,7 +77,15 @@ public class Lance {
     }
 
     public void updateMatrix(int playerX, int playerY){
+        this.x += playerX;
+        this.y += playerY;
         this.matrix.postTranslate(playerX, playerY);
+    }
+
+    public void setAngle(int angle) {
+        this.matrix.reset();
+        this.matrix.postRotate(angle, this.width/2, this.height/2);
+        this.matrix.postTranslate(this.x, this.y);
     }
 
 

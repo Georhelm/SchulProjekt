@@ -2,8 +2,8 @@
     <Lance>
         <Id value="1"></Id>
         <Name value="weaponlance"/>
-        <X value= "130"/>
-        <Y value="300"/>
+        <X value= "10"/>
+        <Y value="50"/>
         <Width value="450"/>
         <Height value="450"/>
     </Lance>

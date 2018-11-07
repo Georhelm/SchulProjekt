@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.util.JsonReader;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.socket.client.IO;
@@ -69,6 +70,18 @@ public class ConnectionSocket {
         }
     }
 
+    public void playerInput(boolean lanceUp) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put("type", "lance");
+            data.put("value", lanceUp);
+            this.socket.emit("game_input", data.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public void playerReady(){
         socket.emit("player_ready");
     }
@@ -101,7 +114,10 @@ public class ConnectionSocket {
 
                             int playerPos = player.getInt("position");
                             int enemyPos = enemy.getInt("position");
+                            int playerLanceAngle = player.getInt("weaponAngle");
+                            int enemyLanceAngle = enemy.getInt("weaponAngle");
                             gameView.setPlayerPositions(playerPos,enemyPos);
+                            gameView.setLanceAngles(playerLanceAngle, enemyLanceAngle);
                             break;
                         case "gameEnd":
                             gameView.endGame();
