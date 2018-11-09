@@ -17,8 +17,8 @@ export class Game {
 
         this.player1.setPlayerReadyListener(this.playerReady.bind(this));
         this.player2.setPlayerReadyListener(this.playerReady.bind(this));
-        this.player1.setPosition(0);
-        this.player2.setPosition(this.gameWidth);
+        this.player1.startGame(0);
+        this.player2.startGame(this.gameWidth);
     }
 
     public getFullGameState(): FullGameState {

@@ -39,6 +39,13 @@ export class Player {
         await this.loadEquipment();
     }
 
+    public startGame(position: number) {
+        this.mount.reset();
+        this.weapon.reset();
+        this.isLiftingWeapon = false;
+        this.position = position;
+    }
+
     protected async loadEquipment() {
         this.mount = await DatabaseConnection.getDatabaseConnection().getMountById(2);
         this.weapon = await DatabaseConnection.getDatabaseConnection().getWeaponById(1);
@@ -92,10 +99,6 @@ export class Player {
         if (json.type === "lance") {
             this.isLiftingWeapon = json.value;
         }
-    }
-
-    public setPosition(pos: number) {
-        this.position = pos;
     }
 
     public static addPlayer(player: Player) {

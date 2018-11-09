@@ -27,6 +27,10 @@ export class Mount {
         return this.speed;
     }
 
+    public reset() {
+        this.speed = 0;
+    }
+
     public getId(): number {
         return this.id;
     }

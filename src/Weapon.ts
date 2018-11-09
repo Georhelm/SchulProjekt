@@ -42,10 +42,8 @@ export class Weapon {
         }
     }
 
-    public setAngle(angle: number) {
-        if (angle >= this.minAngle && angle <= this.maxAngle) {
-            this.angle = angle;
-        }
+    public reset() {
+        this.angle = 90;
     }
 
     public getAngle(): number {
