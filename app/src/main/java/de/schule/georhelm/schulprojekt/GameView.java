@@ -31,6 +31,7 @@ public class GameView extends SurfaceView implements Runnable{
     private Matrix backGroundMatrix;
     private ConnectionSocket socket;
     private int countDownCount;
+    private long timeOfLastUpdate;
 
     public GameView(Context context,JSONObject gameData) {
         super(context);
@@ -49,12 +50,22 @@ public class GameView extends SurfaceView implements Runnable{
 
         surfaceHolder = getHolder();
         paint = new Paint();
-        backGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds);
+
+        // reduces size of loaded bitmap by ~5MB
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds, options);
+
+        options.inSampleSize = GameView.calculateInSampleSize(options, 7680, 1080);
+        options.inJustDecodeBounds = false;
+
+        backGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds, options);
         backGround = Bitmap.createScaledBitmap(backGround,7680,1080,true);
 
         backGroundMatrix = new Matrix();
 
-        enemyBackGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds);
+        enemyBackGround = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundwithclouds, options);
         enemyBackGround = Bitmap.createScaledBitmap(enemyBackGround,7680,1080,true);
 
         enemyBackGroundMatrix = new Matrix();
@@ -68,6 +79,7 @@ public class GameView extends SurfaceView implements Runnable{
 
     @Override
     public void run(){
+        this.timeOfLastUpdate = System.nanoTime();
         while(playing){
             update();
 
@@ -77,10 +89,40 @@ public class GameView extends SurfaceView implements Runnable{
         }
     }
 
+    // copied from https://developer.android.com/topic/performance/graphics/load-bitmap#java
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
     private void update(){
     }
 
     private void draw(){
+        long newTime = System.nanoTime();
+        long timeSinceLastUpdate = (newTime - this.timeOfLastUpdate) / 1000000;
+        if(timeSinceLastUpdate > 50) {
+            System.out.println("Time since last Update: " + timeSinceLastUpdate);
+        }
+        this.timeOfLastUpdate = newTime;
         if (surfaceHolder.getSurface().isValid()) {
             canvas = surfaceHolder.lockCanvas();
 
@@ -93,12 +135,15 @@ public class GameView extends SurfaceView implements Runnable{
             int bitmapPos = (enemy.getPos() % (enemyBackGround.getWidth() - 960));
             croppedEnemyBackground = Bitmap.createBitmap(enemyBackGround, bitmapPos,0, 960,enemyBackGround.getHeight());
 
-
             canvas.drawBitmap(backGround,backGroundMatrix, paint); //background here R.drawable.backgroundwithclouds
             canvas.drawBitmap(croppedEnemyBackground,enemyBackGroundMatrix, paint);
             drawPlayerObjects();
             drawText();
             surfaceHolder.unlockCanvasAndPost(canvas);
+            long timeForUpdate = (System.nanoTime() - this.timeOfLastUpdate) / 1000000;
+            if (timeForUpdate > 50) {
+                System.out.println("Time for update: " + timeForUpdate);
+            }
         }
     }
 
@@ -113,6 +158,7 @@ public class GameView extends SurfaceView implements Runnable{
     }
 
     private void drawPlayerObjects() {
+
         Bitmap bitmapPlayer = Bitmap.createBitmap(1920,1080,Bitmap.Config.ARGB_8888);
         Canvas playerCanvas = new Canvas(bitmapPlayer);
         //Player Mount
@@ -200,6 +246,12 @@ public class GameView extends SurfaceView implements Runnable{
     }
 
     public void endGame() {
+        this.playing = false;
+        try {
+            this.gameThread.join();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
         Activity activity = (Activity)this.getContext();
         activity.finish();
     }

@@ -41,7 +41,15 @@ public class Player {
 
         }
         this.y = 490;
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight);
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeResource(context.getResources(), R.drawable.knight, options);
+        options.inSampleSize = GameView.calculateInSampleSize(options, 300, 450);
+        options.inJustDecodeBounds = false;
+
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight, options);
         bitmap = Bitmap.createScaledBitmap(bitmap, 300, 450, false);
         matrix = new Matrix();
         matrix.reset();

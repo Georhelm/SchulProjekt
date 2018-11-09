@@ -27,7 +27,15 @@ public class Mount {
         this.y = y;
         this.id = id;
         Integer bitmapId = context.getResources().getIdentifier(name,"drawable",context.getPackageName());
-        bitmap = BitmapFactory.decodeResource(context.getResources(), bitmapId);
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeResource(context.getResources(), bitmapId, options);
+        options.inSampleSize = GameView.calculateInSampleSize(options, width, height);
+        options.inJustDecodeBounds = false;
+
+        bitmap = BitmapFactory.decodeResource(context.getResources(), bitmapId, options);
         bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
         matrix = new Matrix();
         matrix.reset();

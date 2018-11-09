@@ -39,7 +39,17 @@ public class Lance {
         rotation = 90;
 
         matrix = new Matrix();
-        bitmap = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(name,"drawable", context.getPackageName()));
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        int bitmapId = context.getResources().getIdentifier(name,"drawable", context.getPackageName());
+
+        BitmapFactory.decodeResource(context.getResources(), bitmapId, options);
+        options.inSampleSize = GameView.calculateInSampleSize(options, width, height);
+        options.inJustDecodeBounds = false;
+
+        bitmap = BitmapFactory.decodeResource(context.getResources(), bitmapId, options);
 
         bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
 
