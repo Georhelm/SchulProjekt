@@ -120,7 +120,15 @@ public class ConnectionSocket {
                             gameView.setLanceAngles(playerLanceAngle, enemyLanceAngle);
                             break;
                         case "gameEnd":
-                            gameView.endGame();
+                            JSONObject endGameValues = jsonObject.getJSONObject("value");
+                            JSONObject endGamePlayer = endGameValues.getJSONObject("player1");
+                            int endGamePlayerSpeed = endGamePlayer.getInt("speed");
+                            int endGamePlayerHitpoint = endGamePlayer.getInt("hitPoint");
+
+                            JSONObject endGameEnemy = endGameValues.getJSONObject("player2");
+                            int endGameEnemySpeed = endGameEnemy.getInt("speed");
+                            int endGameEnemyHitpoint = endGameEnemy.getInt("hitPoint");
+                            gameView.endGame(endGameEnemySpeed,endGameEnemyHitpoint,endGamePlayerSpeed,endGamePlayerHitpoint);
                             break;
                     }
                 }catch(Exception e){

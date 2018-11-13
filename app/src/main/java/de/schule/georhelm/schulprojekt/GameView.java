@@ -22,7 +22,6 @@ public class GameView extends SurfaceView implements Runnable{
     private Player player;
     private Player enemy;
     private Paint paint;
-    private Canvas canvas;
     private SurfaceHolder surfaceHolder;
     private Bitmap backGround;
     private Bitmap croppedEnemyBackground;
@@ -32,11 +31,23 @@ public class GameView extends SurfaceView implements Runnable{
     private ConnectionSocket socket;
     private int countDownCount;
     private long timeOfLastUpdate;
+    private int enemyOffset;
+    private int enemyBackgroundOffset;
+    private boolean isEndgame;
+    int enemySpeed;
+    int enemyHitpoint;
+    int playerSpeed;
+    int playerHitpoint;
 
     public GameView(Context context,JSONObject gameData) {
         super(context);
         JSONObject player1 = new JSONObject();
         JSONObject player2 = new JSONObject();
+
+        this.isEndgame = false;
+        this.enemyOffset = 0;
+        this.enemyBackgroundOffset = 0;
+        this.playerSpeed = 0;
 
         try{
             player1 = gameData.getJSONObject("player1");
@@ -87,6 +98,7 @@ public class GameView extends SurfaceView implements Runnable{
 
             control();
         }
+        this.finishGame();
     }
 
     // copied from https://developer.android.com/topic/performance/graphics/load-bitmap#java
@@ -118,36 +130,53 @@ public class GameView extends SurfaceView implements Runnable{
 
     private void draw(){
         long newTime = System.nanoTime();
-        long timeSinceLastUpdate = (newTime - this.timeOfLastUpdate) / 1000000;
-        if(timeSinceLastUpdate > 50) {
+        double timeSinceLastUpdate = (newTime - this.timeOfLastUpdate) / 1000000000f;
+        /*if(timeSinceLastUpdate > 50) {
             System.out.println("Time since last Update: " + timeSinceLastUpdate);
-        }
+        }*/
         this.timeOfLastUpdate = newTime;
         if (surfaceHolder.getSurface().isValid()) {
-            canvas = surfaceHolder.lockCanvas();
-
-            backGroundMatrix.reset();
-            backGroundMatrix.postTranslate(-(player.getPos() % (backGround.getWidth() - 960)),-60);
-
-            enemyBackGroundMatrix.reset();
-            enemyBackGroundMatrix.postTranslate(960, -60);
-
-            int bitmapPos = (enemy.getPos() % (enemyBackGround.getWidth() - 960));
-            croppedEnemyBackground = Bitmap.createBitmap(enemyBackGround, bitmapPos,0, 960,enemyBackGround.getHeight());
-
-            canvas.drawBitmap(backGround,backGroundMatrix, paint); //background here R.drawable.backgroundwithclouds
-            canvas.drawBitmap(croppedEnemyBackground,enemyBackGroundMatrix, paint);
-            drawPlayerObjects();
-            drawText();
-            surfaceHolder.unlockCanvasAndPost(canvas);
-            long timeForUpdate = (System.nanoTime() - this.timeOfLastUpdate) / 1000000;
+            Canvas canvas = surfaceHolder.lockCanvas();
+            if(this.isEndgame){
+                if(canvas.getWidth()/2>this.enemyBackgroundOffset){
+                    this.enemyOffset+=10;
+                    this.enemyBackgroundOffset+=10;
+                }else{
+                    this.enemyOffset-=enemySpeed*timeSinceLastUpdate+playerSpeed*timeSinceLastUpdate;
+                    System.out.println(this.enemyOffset);
+                    if(this.enemy.getPos()<=canvas.getWidth()/5){
+                        this.playing = false;
+                    }
+                }
+            }
+            drawGameFlow(canvas,timeSinceLastUpdate);
+            /*long timeForUpdate = (System.nanoTime() - this.timeOfLastUpdate) / 1000000;
             if (timeForUpdate > 50) {
                 System.out.println("Time for update: " + timeForUpdate);
-            }
+            }*/
         }
     }
 
-    private void drawText(){
+    private void drawGameFlow(Canvas canvas, double timeSinceLastUpdate) {
+
+        backGroundMatrix.reset();
+        player.setPos(player.getPos()+(int)(playerSpeed*timeSinceLastUpdate));
+        backGroundMatrix.postTranslate(-(player.getPos() % (backGround.getWidth() -canvas.getWidth())),-60);
+
+        enemyBackGroundMatrix.reset();
+        enemyBackGroundMatrix.postTranslate(960+this.enemyBackgroundOffset, -60);
+        enemy.setPos((int)(enemy.getPos()-enemySpeed*timeSinceLastUpdate));
+        int bitmapPos = (enemy.getPos() % (enemyBackGround.getWidth() - canvas.getWidth()/2));
+        croppedEnemyBackground = Bitmap.createBitmap(enemyBackGround, bitmapPos,0, canvas.getWidth()/2,enemyBackGround.getHeight());
+
+        canvas.drawBitmap(backGround,backGroundMatrix, paint); //background here R.drawable.backgroundwithclouds
+        canvas.drawBitmap(croppedEnemyBackground,enemyBackGroundMatrix, paint);
+        drawPlayerObjects(canvas);
+        drawText(canvas);
+        surfaceHolder.unlockCanvasAndPost(canvas);
+    }
+
+    private void drawText(Canvas canvas){
         if(this.countDownCount > 0){
             Paint paint = new Paint();
             paint.setColor(Color.RED);
@@ -157,7 +186,7 @@ public class GameView extends SurfaceView implements Runnable{
         }
     }
 
-    private void drawPlayerObjects() {
+    private void drawPlayerObjects(Canvas canvas) {
 
         Bitmap bitmapPlayer = Bitmap.createBitmap(1920,1080,Bitmap.Config.ARGB_8888);
         Canvas playerCanvas = new Canvas(bitmapPlayer);
@@ -202,7 +231,7 @@ public class GameView extends SurfaceView implements Runnable{
                 paint);
         Matrix enemyCanvasMatrix = new Matrix();
         enemyCanvasMatrix.preScale(-1,1,bitmapEnemy.getWidth()/2,bitmapEnemy.getHeight()/2);
-        enemyCanvasMatrix.postTranslate(bitmapEnemy.getWidth()/2,0);
+        enemyCanvasMatrix.postTranslate(bitmapEnemy.getWidth()/2+this.enemyOffset,0);
         enemyCanvasMatrix.postScale(0.9f,0.9f);
 
         canvas.drawBitmap(bitmapEnemy,enemyCanvasMatrix,paint);
@@ -245,8 +274,15 @@ public class GameView extends SurfaceView implements Runnable{
         return true;
     }
 
-    public void endGame() {
-        this.playing = false;
+    public void endGame(int enemySpeed, int enemyHitpoint, int playerSpeed, int playerHitpoint) {
+        this.isEndgame = true;
+        this.enemySpeed = enemySpeed;
+        this.enemyHitpoint = enemyHitpoint;
+        this.playerSpeed = playerSpeed;
+        this.playerHitpoint = playerHitpoint;
+    }
+
+    private void finishGame() {
         try {
             this.gameThread.join();
         }catch(Exception e){
