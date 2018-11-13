@@ -1,52 +1,30 @@
-import {DatabaseConnection} from "./DatabaseConnector";
 import {Mount} from "./Mount";
 import {Weapon} from "./Weapon";
-import {GameUpdate, Game} from "./Game";
+import {DatabaseConnection} from "./DatabaseConnector";
 import {Socket} from "socket.io";
-
+import {GameUpdate} from "./Game";
 
 export class Player {
 
-    public socket: Socket;
-    private databaseId: number;
-    public username: string;
-    public mount: Mount;
-    public weapon: Weapon;
-    protected ready: boolean;
     private position: number;
+    private mount: Mount;
+    private weapon: Weapon;
+    protected ready: boolean;
+    protected isLiftingWeapon: boolean;
     private onPlayerReady: () =>  void;
-    private static playerList: Player[];
-    private isLiftingWeapon: boolean;
+    private socket: Socket;
+    private username: string;
+    private farPlayer: boolean;
 
-
-    constructor( username: string, databaseId: number = -1) {
-        this.username = username;
-        this.position = 0;
-        this.databaseId = databaseId;
+    constructor(username: string, position: number, farPlayer: boolean) {
+        this.position = position;
         this.ready = false;
         this.isLiftingWeapon = false;
-        
-        if (Player.playerList === undefined) {
-            Player.playerList = [];
-        }
-        if (databaseId !== -1) {
-            Player.addPlayer(this);
-        }
+        this.username = username;
+        this.farPlayer = farPlayer;
     }
 
-    public async init(socket: Socket) {
-        this.socket = socket;
-        await this.loadEquipment();
-    }
-
-    public startGame(position: number) {
-        this.mount.reset();
-        this.weapon.reset();
-        this.isLiftingWeapon = false;
-        this.position = position;
-    }
-
-    protected async loadEquipment() {
+    public async loadEquipment() {
         this.mount = await DatabaseConnection.getDatabaseConnection().getMountById(2);
         this.weapon = await DatabaseConnection.getDatabaseConnection().getWeaponById(1);
     }
@@ -61,26 +39,33 @@ export class Player {
 
         return result;
     }
-    
-    public updatePosition(timeDelta: number) {
-        this.position += this.mount.getSpeed() * timeDelta;
-    } 
 
-    public async sendGameUpdate(update: GameUpdate) {
-        this.socket.emit("game_update", update);
+    public update(timeDelta: number) {
+        this.mount.accelerate(timeDelta);
+        if (this.farPlayer) {
+            this.updatePosition(- timeDelta);
+        }else {
+            this.updatePosition(timeDelta);
+        }
+        this.updateWeaponAngle(timeDelta);
+    }
+
+    private updatePosition(timeDelta: number) {
+        this.position += this.mount.getSpeed() * timeDelta;
     }
 
     public getPosition(): number {
         return this.position;
     }
 
-    public getDatabaseId(): number {
-        return this.databaseId;
+    public init(fn: () => void, socket: Socket){
+        this.socket = socket;
+        this.setPlayerReadyListener(fn);
     }
 
-    public setPlayerReadyListener(fn: () => void) {
+    private setPlayerReadyListener(fn: () => void) {
         this.onPlayerReady = fn;
-        this.socket.on("player_ready", this.playerReady.bind(this));
+        this.socket.once("player_ready", this.playerReady.bind(this));
     }
 
     private playerReady() {
@@ -90,10 +75,6 @@ export class Player {
         }
     }
 
-    public initGameInputListeners() {
-        this.socket.on("game_input", this.onGameInput.bind(this));
-    }
-
     private onGameInput(data: string) {
         const json: GameInput = JSON.parse(data);
         if (json.type === "lance") {
@@ -101,60 +82,34 @@ export class Player {
         }
     }
 
-    public static addPlayer(player: Player) {
-        const oldPlayer = Player.getPlayerByDatabaseId(player.databaseId);
-        if(oldPlayer !== null) {
-            Player.removePlayerBySocketId(oldPlayer.socket.id);
-        }
-        Player.playerList.push(player);
-    }
-
-    public static getPlayerByDatabaseId(id: number) {
-        for (const player of Player.playerList) {
-            if (player.databaseId == id) {
-                return player;
-            }
-        }
-        return null;
-    }
-
-    public static getPlayerBySocketId(socketId: string) {
-        for (const player of Player.playerList) {
-            if (player.socket.id === socketId) {
-                return player;
-            }
-        }
-        return null;
-    }
-
-    public static removePlayerBySocketId(socketId: string) {
-        const players = Player.playerList;
-        for (let i = 0; i < players.length; i++) {
-            if (players[i].socket.id === socketId) {
-                players.splice(i, 1);
-                return;
-            }
-        }
-        return;
-    }
-
-    public updateWeaponPosition(timeDelta: number) {
-        this.weapon.updateAngle(timeDelta, this.isLiftingWeapon);
-    }
-
-    public static getPlayerCount(): number {
-        return Player.playerList.length;
-    }
-
-    public getLogObj(): any {
-        const logObj = {
-            name: this.username
-        };
-        return logObj;
-    }
-
     public isReady(): boolean {
         return this.ready;
+    }
+
+    public endGame(enemySpeed: number) {
+        const endGameUpdate: GameUpdate = {
+            type: "gameEnd",
+            value: {
+                player1: {
+                    speed: this.getSpeed(),
+                    hitPoint: HitPoint.Body  // what that player hits
+                },
+                player2: {
+                    speed: enemySpeed,
+                    hitPoint: HitPoint.Head
+                }
+            }
+        }
+        this.sendGameUpdate(endGameUpdate);
+        //this.socket.removeListener("game_input", this.onGameInput.bind(this));
+    }
+
+    public initGameInputListeners() {
+        this.socket.on("game_input", this.onGameInput.bind(this));
+    }
+
+    private updateWeaponAngle(timeDelta: number) {
+        this.weapon.updateAngle(timeDelta, this.isLiftingWeapon);
     }
 
     public getUpdatedGameState(): PlayerGameUpdate {
@@ -164,14 +119,32 @@ export class Player {
         }
     }
 
+    public async sendGameUpdate(update: GameUpdate) {
+        this.socket.emit("game_update", update);
+    }
+
+    public getSpeed(): number {
+        return this.mount.getSpeed();
+    }
+
+    //DEBUG 
+    public getLogObj() {
+        return {
+            username: this.username,
+            position: this.position,
+            weaponAngle: this.weapon.getAngle(),
+            lifting: this.isLiftingWeapon
+        }
+    }
 }
+
 
 export interface PlayerGameData {
     username: string,
     mountId: number,
     weaponId: number,
     position: number
-} 
+}
 
 export interface PlayerGameUpdate {
     position: number,
@@ -181,4 +154,10 @@ export interface PlayerGameUpdate {
 interface GameInput {
     type: string;
     value: boolean;
+}
+
+enum HitPoint {
+    Head,
+    Body,
+    Missed
 }

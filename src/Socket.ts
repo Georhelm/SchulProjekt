@@ -1,7 +1,7 @@
 import Socket =require("socket.io");
 import {DatabaseConnection} from "./DatabaseConnector";
 import { Server } from "http";
-import {Player} from "./Player";
+import {User} from "./User";
 import {Game} from "./Game";
 import {Npc} from "./Npc";
 
@@ -27,8 +27,7 @@ export class GameSocket {
     
         try {
             const result = await DatabaseConnection.getDatabaseConnection().checkAuthToken(socket.handshake.query.token);
-            const newPlayer = new Player(result.name, result.id);
-            await newPlayer.init(socket);
+            const newPlayer = new User(result.name, result.id, socket);
             return next();
         }catch(error) {
             socket.disconnect();
@@ -38,39 +37,37 @@ export class GameSocket {
 
     private onConnected(client: Socket.Socket) {
         console.log("new client:");
-        const player = Player.getPlayerBySocketId(client.id)
+        const player = User.getPlayerBySocketId(client.id)
         if (player === null) {
             client.disconnect();
             return;
         }
         console.log(player.getLogObj());
-        console.log("playercount: " + Player.getPlayerCount());
+        console.log("playercount: " + User.getPlayerCount());
         this.registerEvents(client);
     }
 
     private onDisconnected(client: Socket.Socket) {
         console.log("client disconnected");
-        const player = Player.getPlayerBySocketId(client.id)
+        const player = User.getPlayerBySocketId(client.id)
         if (player === null) {
             return;
         }
         console.log(player.getLogObj());
-        Player.removePlayerBySocketId(client.id);
-        console.log("playercount: " + Player.getPlayerCount());
+        User.removePlayerBySocketId(client.id);
+        console.log("playercount: " + User.getPlayerCount());
     }
 
     private async startSinglePlayer(client: Socket.Socket)  {
         console.log("Singleplayer game started");
-        const player = Player.getPlayerBySocketId(client.id)
+        const player = User.getPlayerBySocketId(client.id)
         if (player === null)  {
             client.disconnect();
             return;
         }
         console.log(player.getLogObj());
         try {
-            const npc = new Npc();
-            await npc.init();
-            const game = await DatabaseConnection.getDatabaseConnection().createGame(player, npc, "singleplayer");
+            const game = await DatabaseConnection.getDatabaseConnection().createGame(player, null, "singleplayer");
             console.log(game.getLogObj());
             client.emit("found_game", game.getFullGameState());
         }catch(error) {
@@ -80,7 +77,7 @@ export class GameSocket {
     }
 
     private async startMultiplayer(client: Socket.Socket) {     
-        const player = Player.getPlayerBySocketId(client.id)
+        const player = User.getPlayerBySocketId(client.id)
         console.log("Multiplayer search started");       
         if (player === null)  {
             client.disconnect();
@@ -90,7 +87,7 @@ export class GameSocket {
     }
 
     private async getPlayerEquipment(client: Socket.Socket) {
-        const player = Player.getPlayerBySocketId(client.id);
+        const player = User.getPlayerBySocketId(client.id);
         console.log("Getting equipment"); 
         if (player === null)  {
             client.disconnect();

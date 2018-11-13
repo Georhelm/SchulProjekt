@@ -1,25 +1,29 @@
 import  {Player} from "./Player";
 import {GameUpdate} from "./Game";
+import {Socket} from "socket.io";
 
 export class Npc extends Player  {
 
-    constructor(){
-        super("NPC");
+    constructor(position: number, farPlayer: boolean){
+        super("NPC", position, farPlayer);
     }
 
     public async init() {
         await this.loadEquipment();
+        this.ready = true;
     }
 
     public async sendGameUpdate(update: GameUpdate) {
         //console.log("NPC recieved gameupdate");
     }
 
-    public setPlayerReadyListener(fn: () => void) {
-        this.ready = true;
+    public initGameInputListeners() {
+        this.randomChange();
     }
 
-    public initGameInputListeners() {
-
+    private randomChange() {
+        this.isLiftingWeapon = !this.isLiftingWeapon;
+        const rand = Math.random() * 1000;
+        setTimeout(this.randomChange.bind(this), rand);
     }
 }

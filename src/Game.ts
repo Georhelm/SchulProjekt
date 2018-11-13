@@ -1,24 +1,33 @@
-import {Player, PlayerGameData, PlayerGameUpdate} from "./Player";
+import {User} from "./User";
+import { Player, PlayerGameData, PlayerGameUpdate} from "./Player";
+import { Npc } from "./Npc";
 
 export class Game {
 
     private id: number;
+    private user1: User;
+    private user2: User | null;
     private player1: Player;
     private player2: Player;
     private gameWidth: number;
     private timeOfLastUpdate: number;
     private gameStartTime: number;
 
-    constructor(id: number, player1: Player, player2: Player) {
+    constructor(id: number, player1: User, player2: User | null) {
         this.id = id;
-        this.player1 = player1;
-        this.player2 = player2;
+        this.user1 = player1;
+        this.user2 = player2;
         this.gameWidth = 10000;
+    }
 
-        this.player1.setPlayerReadyListener(this.playerReady.bind(this));
-        this.player2.setPlayerReadyListener(this.playerReady.bind(this));
-        this.player1.startGame(0);
-        this.player2.startGame(this.gameWidth);
+    public async init() {
+        this.player1 = await this.user1.startGame(0, this.playerReady.bind(this), false);
+        if (this.user2 === null) {
+            this.player2 = new Npc(this.gameWidth, true);
+            await (<Npc>this.player2).init();
+        }else {
+            this.player2 = await this.user2.startGame(this.gameWidth, this.playerReady.bind(this), true);
+        }
     }
 
     public getFullGameState(): FullGameState {
@@ -86,14 +95,8 @@ export class Game {
             return;
         }
 
-        this.player1.mount.accelerate(timeDelta);
-        this.player2.mount.accelerate(timeDelta);
-
-        this.player1.updatePosition(timeDelta);
-        this.player2.updatePosition(-timeDelta);
-
-        this.player1.updateWeaponPosition(timeDelta);
-        this.player2.updateWeaponPosition(timeDelta);
+        this.player1.update(timeDelta);
+        this.player2.update(timeDelta);
 
         const gameUpdate: GameUpdate = {
             type: "partialUpdate",
@@ -109,12 +112,8 @@ export class Game {
     }
 
     private endGame() {
-        const endGameUpdate: GameUpdate = {
-            type: "gameEnd",
-            value: ""
-        }
-        this.player1.sendGameUpdate(endGameUpdate);
-        this.player2.sendGameUpdate(endGameUpdate);
+        this.player1.endGame(this.player2.getSpeed());
+        this.player2.endGame(this.player2.getSpeed());
         console.log("game ended");
     }
 

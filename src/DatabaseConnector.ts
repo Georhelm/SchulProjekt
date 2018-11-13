@@ -1,7 +1,7 @@
 import mysql = require("mysql");
 import Crypto = require("crypto");
 import {Config} from "./Config";
-import {Player} from "./Player";
+import {User} from "./User";
 import { Mount } from "./Mount";
 import {Weapon} from "./Weapon";
 import {Game} from "./Game";
@@ -138,13 +138,16 @@ export class DatabaseConnection {
         return new Weapon(result[0].id, result[0].name, result[0].lift_speed, result[0].fall_speed);
     }
 
-    public async createGame(player1: Player, player2: Player, type: string): Promise<Game> {
+    public async createGame(player1: User, player2: User | null, type: string): Promise<Game> {
         const result = await this.query("Insert into gamedata (type) Select id from gametype where name=?", [type]);
         await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 0)", [result.insertId, player1.getDatabaseId()]);
-        if (player2.getDatabaseId() != -1) {
+        if (player2 !== null && player2.getDatabaseId() != -1) {
             await this.query("Insert into user_game (game_id playerid, side) Values (?, ?, 1)", [result.insertId, player2.getDatabaseId()]);
         }
-        return new Game(result.insertId, player1, player2);
+        
+        const game = new Game(result.insertId, player1, player2);
+        await game.init();
+        return game;
         
     }
 
