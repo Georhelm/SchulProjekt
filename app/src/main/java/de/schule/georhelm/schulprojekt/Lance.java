@@ -60,7 +60,10 @@ public class Lance {
         if(Lance.lances==null){
             Lance.lances = new ArrayList<Lance>();
         }
-        Lance.lances.add(this);
+
+        if(Lance.getLanceByID(id) == null) {
+            Lance.lances.add(this);
+        }
     }
 
     public Lance(Lance lance){
