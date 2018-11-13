@@ -44,7 +44,9 @@ public class Mount {
         if(Mount.mounts==null){
             Mount.mounts = new ArrayList<Mount>();
         }
-        Mount.mounts.add(this);
+        if (Mount.getMountByID(id) == null) {
+            Mount.mounts.add(this);
+        }
     }
     public Mount (Mount mount){
         this.id = mount.id;

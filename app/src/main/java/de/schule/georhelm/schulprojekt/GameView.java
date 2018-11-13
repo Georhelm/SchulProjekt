@@ -252,6 +252,9 @@ public class GameView extends SurfaceView implements Runnable{
         }catch(Exception e){
             e.printStackTrace();
         }
+        this.backGround.recycle();
+        this.enemyBackGround.recycle();
+        this.croppedEnemyBackground.recycle();
         Activity activity = (Activity)this.getContext();
         activity.finish();
     }
