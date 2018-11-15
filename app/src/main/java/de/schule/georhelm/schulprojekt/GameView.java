@@ -138,13 +138,14 @@ public class GameView extends SurfaceView implements Runnable{
         if (surfaceHolder.getSurface().isValid()) {
             Canvas canvas = surfaceHolder.lockCanvas();
             if(this.isEndgame){
+                player.setPos(player.getPos()+(int)(playerSpeed*timeSinceLastUpdate));
                 if(canvas.getWidth()/2>this.enemyBackgroundOffset){
                     this.enemyOffset+=10;
                     this.enemyBackgroundOffset+=10;
+                    enemy.setPos((int)(enemy.getPos()-enemySpeed*timeSinceLastUpdate));
                 }else{
                     this.enemyOffset-=enemySpeed*timeSinceLastUpdate+playerSpeed*timeSinceLastUpdate;
-                    System.out.println(this.enemyOffset);
-                    if(this.enemy.getPos()<=canvas.getWidth()/5){
+                    if(this.enemyOffset + this.enemy.getX()<=this.player.getX()){
                         this.playing = false;
                     }
                 }
@@ -160,13 +161,16 @@ public class GameView extends SurfaceView implements Runnable{
     private void drawGameFlow(Canvas canvas, double timeSinceLastUpdate) {
 
         backGroundMatrix.reset();
-        player.setPos(player.getPos()+(int)(playerSpeed*timeSinceLastUpdate));
+
         backGroundMatrix.postTranslate(-(player.getPos() % (backGround.getWidth() -canvas.getWidth())),-60);
 
         enemyBackGroundMatrix.reset();
         enemyBackGroundMatrix.postTranslate(960+this.enemyBackgroundOffset, -60);
-        enemy.setPos((int)(enemy.getPos()-enemySpeed*timeSinceLastUpdate));
         int bitmapPos = (enemy.getPos() % (enemyBackGround.getWidth() - canvas.getWidth()/2));
+        if (bitmapPos < 0){
+            enemy.setPos(enemyBackGround.getWidth() - canvas.getWidth()/2);
+            bitmapPos = enemy.getPos();
+        }
         croppedEnemyBackground = Bitmap.createBitmap(enemyBackGround, bitmapPos,0, canvas.getWidth()/2,enemyBackGround.getHeight());
 
         canvas.drawBitmap(backGround,backGroundMatrix, paint); //background here R.drawable.backgroundwithclouds

@@ -17,6 +17,10 @@ public class Player {
     private boolean isEnemy;
     private Matrix matrix;
 
+    public int getX() {
+        return this.x;
+    }
+
     public int getPos() {
         return pos;
     }
