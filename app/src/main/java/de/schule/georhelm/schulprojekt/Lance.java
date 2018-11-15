@@ -54,7 +54,7 @@ public class Lance {
         bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
 
         matrix.reset();
-        matrix.postRotate(rotation, width/2, height/2);
+        matrix.postRotate(rotation, width/2, height/1.5f);
         matrix.postTranslate(x, y);
 
         if(Lance.lances==null){
@@ -97,7 +97,7 @@ public class Lance {
 
     public void setAngle(int angle) {
         this.matrix.reset();
-        this.matrix.postRotate(angle, this.width/2, this.height/2);
+        this.matrix.postRotate(angle, this.width/2, this.height/1.5f);
         this.matrix.postTranslate(this.x, this.y);
     }
 
