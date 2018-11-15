@@ -13,6 +13,8 @@ public class Mount {
     private Bitmap bitmap;
     private int x;
     private int y;
+    private int width;
+    private int height;
     private int id;
     private static List<Mount> mounts;
     private Matrix matrix;
@@ -23,8 +25,10 @@ public class Mount {
 
     public Mount(Context context, int id, int x, int y, int width, int height, String name){
         this.name = name;
-        this.x = x;
-        this.y = y;
+        this.x = PixelConverter.convertWidth(x, context);
+        this.y = PixelConverter.convertHeight(y, context);
+        this.width = PixelConverter.convertWidth(width, context);
+        this.height = PixelConverter.convertHeight(height, context);
         this.id = id;
         Integer bitmapId = context.getResources().getIdentifier(name,"drawable",context.getPackageName());
 
@@ -32,14 +36,14 @@ public class Mount {
         options.inJustDecodeBounds = true;
 
         BitmapFactory.decodeResource(context.getResources(), bitmapId, options);
-        options.inSampleSize = GameView.calculateInSampleSize(options, width, height);
+        options.inSampleSize = GameView.calculateInSampleSize(options, this.width, this.height);
         options.inJustDecodeBounds = false;
 
         bitmap = BitmapFactory.decodeResource(context.getResources(), bitmapId, options);
-        bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+        bitmap = Bitmap.createScaledBitmap(bitmap, this.width, this.height, false);
         matrix = new Matrix();
         matrix.reset();
-        matrix.postTranslate(x, y);
+        matrix.postTranslate(this.x, this.y);
 
         if(Mount.mounts==null){
             Mount.mounts = new ArrayList<Mount>();

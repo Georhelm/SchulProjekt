@@ -16,6 +16,8 @@ public class Player {
     private int y;
     private boolean isEnemy;
     private Matrix matrix;
+    private int height;
+    private int width;
 
     public int getX() {
         return this.x;
@@ -39,25 +41,28 @@ public class Player {
     public Player(Context context, JSONObject player, boolean isEnemy){
         this.isEnemy = isEnemy;
         if(isEnemy){
-            this.x = 1230;
+            this.x = PixelConverter.convertWidth(1230, context);
         }else{
-            this.x = 330;
+            this.x = PixelConverter.convertWidth(330, context);
 
         }
-        this.y = 490;
+        this.y = PixelConverter.convertHeight(490, context);
+
+        this.height = PixelConverter.convertHeight(450, context);
+        this.width = PixelConverter.convertWidth(300, context);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
         BitmapFactory.decodeResource(context.getResources(), R.drawable.knight, options);
-        options.inSampleSize = GameView.calculateInSampleSize(options, 300, 450);
+        options.inSampleSize = GameView.calculateInSampleSize(options, this.width, this.height);
         options.inJustDecodeBounds = false;
 
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight, options);
-        bitmap = Bitmap.createScaledBitmap(bitmap, 300, 450, false);
+        bitmap = Bitmap.createScaledBitmap(bitmap, this.width, this.height, false);
         matrix = new Matrix();
         matrix.reset();
-        matrix.postTranslate(x, y);
+        matrix.postTranslate(this.x, this.y);
         try{
             this.pos = player.getInt("position");
             this.name = player.getString("username");

@@ -2,9 +2,9 @@
     <Lance>
         <Id value="1"></Id>
         <Name value="weaponlance"/>
-        <X value= "-60"/>
-        <Y value="0"/>
+        <X value= "-80"/>
+        <Y value="-240"/>
         <Width value="450"/>
-        <Height value="450"/>
+        <Height value="800"/>
     </Lance>
 </Resources>
