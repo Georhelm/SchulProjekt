@@ -41,12 +41,12 @@ public class Player {
     public Player(Context context, JSONObject player, boolean isEnemy){
         this.isEnemy = isEnemy;
         if(isEnemy){
-            this.x = PixelConverter.convertWidth(1230, context);
+            this.x = PixelConverter.convertWidth(1150, context);
         }else{
-            this.x = PixelConverter.convertWidth(330, context);
+            this.x = PixelConverter.convertWidth(200, context);
 
         }
-        this.y = PixelConverter.convertHeight(490, context);
+        this.y = PixelConverter.convertHeight(370, context);  //Change height for each Mount individually (from xml)
 
         this.height = PixelConverter.convertHeight(450, context);
         this.width = PixelConverter.convertWidth(300, context);

@@ -10,9 +10,9 @@
     <Mount>
         <Id value="2"></Id>
         <Name value="pterodactyl"/>
-        <X value= "-300"/>
+        <X value= "-150"/>
         <Y value="120"/>
-        <Width value="706"/>
-        <Height value="426"/>
+        <Width value="600"/> <!--706,600-->
+        <Height value="362"/> <!--426,362-->
     </Mount>
 </Resources>

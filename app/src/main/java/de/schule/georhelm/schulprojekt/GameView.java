@@ -154,7 +154,7 @@ public class GameView extends SurfaceView implements Runnable{
         this.timeOfLastUpdate = newTime;
         if (surfaceHolder.getSurface().isValid()) {
             Canvas canvas = surfaceHolder.lockCanvas();
-            canvas.clipRect(0, 0, getWidth(), getHeight(), Region.Op.REPLACE);
+            canvas.clipRect(0, 0, getWidth(), getHeight());
             if(this.isEndgame){
                 player.setPos(player.getPos()+(int)(playerSpeed*timeSinceLastUpdate));
                 if(canvas.getWidth()/2>this.enemyBackgroundOffset){
