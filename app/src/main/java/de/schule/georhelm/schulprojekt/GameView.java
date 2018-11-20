@@ -85,12 +85,12 @@ public class GameView extends SurfaceView implements Runnable{
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
-        BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundmirrored, options);
+        BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundsymmetricfinal, options);
 
         options.inSampleSize = GameView.calculateInSampleSize(options, this.backgroundWidth, this.backgroundHeight);
         options.inJustDecodeBounds = false;
 
-        background = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundmirrored, options);
+        background = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundsymmetricfinal, options);
         background = Bitmap.createScaledBitmap(background,this.backgroundWidth,this.backgroundHeight,true);
 
         backGroundMatrix = new Matrix();
@@ -252,11 +252,6 @@ public class GameView extends SurfaceView implements Runnable{
 
     public void pause(){
         playing = false;
-        try{
-            gameThread.join();
-        }catch(InterruptedException e){
-
-        }
     }
 
     public void resume(){
@@ -287,11 +282,6 @@ public class GameView extends SurfaceView implements Runnable{
     }
 
     private void finishGame() {
-        try {
-            this.gameThread.join();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
         this.background.recycle();
         this.croppedEnemyBackground.recycle();
         Activity activity = (Activity)this.getContext();
