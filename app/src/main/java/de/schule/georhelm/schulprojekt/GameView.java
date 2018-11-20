@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Region;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -153,11 +154,13 @@ public class GameView extends SurfaceView implements Runnable{
         this.timeOfLastUpdate = newTime;
         if (surfaceHolder.getSurface().isValid()) {
             Canvas canvas = surfaceHolder.lockCanvas();
+            canvas.clipRect(0, 0, getWidth(), getHeight(), Region.Op.REPLACE);
             if(this.isEndgame){
                 player.setPos(player.getPos()+(int)(playerSpeed*timeSinceLastUpdate));
                 if(canvas.getWidth()/2>this.enemyBackgroundOffset){
-                    this.enemyOffset+=10;
-                    this.enemyBackgroundOffset+=10;
+                    long offSetUpdate = Math.round(canvas.getWidth() / 7 * timeSinceLastUpdate);
+                    this.enemyOffset+= offSetUpdate;
+                    this.enemyBackgroundOffset+= offSetUpdate;
                     enemy.setPos((int)(enemy.getPos()-enemySpeed*timeSinceLastUpdate));
                 }else{
                     this.enemyOffset-=enemySpeed*timeSinceLastUpdate+playerSpeed*timeSinceLastUpdate;
@@ -240,6 +243,7 @@ public class GameView extends SurfaceView implements Runnable{
                 player.lance.getBitmap(),
                 player.lance.getMatrix(),
                 paint);
+        bitmapEnemy.recycle();
     }
 
     private void control(){
@@ -284,6 +288,7 @@ public class GameView extends SurfaceView implements Runnable{
     private void finishGame() {
         this.background.recycle();
         this.croppedEnemyBackground.recycle();
+        this.bitmapPlayer.recycle();
         Activity activity = (Activity)this.getContext();
         activity.finish();
     }
