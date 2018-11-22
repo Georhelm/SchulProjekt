@@ -26,7 +26,6 @@ public class GameView extends SurfaceView implements Runnable{
     private Bitmap bitmapPlayer;
     private SurfaceHolder surfaceHolder;
     private Bitmap background;
-    private Bitmap croppedEnemyBackground;
     private Matrix enemyBackGroundMatrix;
     private Matrix backGroundMatrix;
     private ConnectionSocket socket;
@@ -161,7 +160,11 @@ public class GameView extends SurfaceView implements Runnable{
                     long offSetUpdate = Math.round(canvas.getWidth() / 7 * timeSinceLastUpdate);
                     this.enemyOffset+= offSetUpdate;
                     this.enemyBackgroundOffset+= offSetUpdate;
-                    enemy.setPos((int)(enemy.getPos()-enemySpeed*timeSinceLastUpdate));
+                    int tempPos = (int)(enemy.getPos()-enemySpeed*timeSinceLastUpdate);
+                    if(tempPos < 0) {
+                        tempPos = background.getWidth() - canvas.getWidth()/2;
+                    }
+                    enemy.setPos(tempPos);
                 }else{
                     this.enemyOffset-=enemySpeed*timeSinceLastUpdate+playerSpeed*timeSinceLastUpdate;
                     if(this.enemyOffset + this.enemy.getX()<=this.player.getX()){
@@ -186,9 +189,7 @@ public class GameView extends SurfaceView implements Runnable{
         enemyBackGroundMatrix.reset();
         enemyBackGroundMatrix.postTranslate(canvas.getWidth() / 2 +this.enemyBackgroundOffset, -canvas.getHeight() / 18);
         int bitmapPos = (enemy.getPos() % (background.getWidth() - canvas.getWidth()/2));
-        if (bitmapPos > 0){
-            croppedEnemyBackground = Bitmap.createBitmap(background, bitmapPos,0, canvas.getWidth()/2,background.getHeight());
-        }
+        Bitmap croppedEnemyBackground = Bitmap.createBitmap(background, bitmapPos,0, canvas.getWidth()/2,background.getHeight());
 
         canvas.drawBitmap(background,backGroundMatrix, paint);
         backGroundMatrix.postTranslate(background.getWidth(), 0);
@@ -287,7 +288,6 @@ public class GameView extends SurfaceView implements Runnable{
 
     private void finishGame() {
         this.background.recycle();
-        this.croppedEnemyBackground.recycle();
         this.bitmapPlayer.recycle();
         Activity activity = (Activity)this.getContext();
         activity.finish();
