@@ -4,3 +4,4 @@ config.json
 test.html
 .vscode
 package-lock.json
+.config.json.swp

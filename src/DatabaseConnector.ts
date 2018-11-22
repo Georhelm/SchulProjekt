@@ -138,6 +138,24 @@ export class DatabaseConnection {
         return new Weapon(result[0].id, result[0].name, result[0].lift_speed, result[0].fall_speed);
     }
 
+    public async getEquippedWeapon(userid: number): Promise<Weapon> {
+        const result = await this.query("Select w.id, w.name, w.lift_speed, w.fall_speed from users u join weapons w on u.weaponid = w.id where u.id = ?", [userid]);
+        if(result.length === 0) {
+            throw new Error("User has not valid weapon");
+        }
+
+        return new Weapon(result[0].id, result[0].name, result[0].lift_speed, result[0].fall_speed);
+    }
+
+    public async getEquippedMount(userid: number): Promise<Mount> {
+        const result = await this.query("Select m.id, m.name, m.maxSpeed, m.acceleration from users u join mounts m on u.mountid = m.id where u.id = ?", [userid]);
+        if(result.length === 0) {
+            throw new Error("User has no valid mount");
+        }
+
+        return new Mount(result[0].id, result[0].name, result[0].maxSpeed, result[0].acceleration);
+    }
+
     public async createGame(player1: User, player2: User | null, type: string): Promise<Game> {
         const result = await this.query("Insert into gamedata (type) Select id from gametype where name=?", [type]);
         await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 0)", [result.insertId, player1.getDatabaseId()]);

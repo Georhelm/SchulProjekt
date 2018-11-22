@@ -1,11 +1,16 @@
 import  {Player} from "./Player";
 import {GameUpdate} from "./Game";
-import {Socket} from "socket.io";
+import {DatabaseConnection} from "./DatabaseConnector";
 
 export class Npc extends Player  {
 
     constructor(position: number, farPlayer: boolean){
-        super("NPC", position, farPlayer);
+        super("NPC", position, farPlayer, -1);
+    }
+
+    public async loadEquipment() {
+        this.mount = await DatabaseConnection.getDatabaseConnection().getMountById(2);
+        this.weapon = await DatabaseConnection.getDatabaseConnection().getWeaponById(1);
     }
 
     public async init() {

@@ -25,7 +25,7 @@ export class User {
     }
 
     public async startGame(position: number, fn: () => void, farPlayer: boolean): Promise<Player> {
-        const player = new Player(this.username, position, farPlayer);
+        const player = new Player(this.username, position, farPlayer, this.databaseId);
         await player.loadEquipment();
         await player.init(fn, this.socket);
         return player;

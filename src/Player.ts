@@ -7,26 +7,28 @@ import {GameUpdate} from "./Game";
 export class Player {
 
     private position: number;
-    private mount: Mount;
-    private weapon: Weapon;
+    protected mount: Mount;
+    protected weapon: Weapon;
     protected ready: boolean;
     protected isLiftingWeapon: boolean;
     private onPlayerReady: () =>  void;
     private socket: Socket;
     private username: string;
     private farPlayer: boolean;
+    private databaseId: number;
 
-    constructor(username: string, position: number, farPlayer: boolean) {
+    constructor(username: string, position: number, farPlayer: boolean, databaseId: number) {
         this.position = position;
         this.ready = false;
         this.isLiftingWeapon = false;
         this.username = username;
         this.farPlayer = farPlayer;
+        this.databaseId = databaseId;
     }
 
     public async loadEquipment() {
-        this.mount = await DatabaseConnection.getDatabaseConnection().getMountById(2);
-        this.weapon = await DatabaseConnection.getDatabaseConnection().getWeaponById(1);
+        this.mount = await DatabaseConnection.getDatabaseConnection().getEquippedMount(this.databaseId);
+        this.weapon = await DatabaseConnection.getDatabaseConnection().getEquippedWeapon(this.databaseId);
     }
 
     public getGameData(): PlayerGameData {
