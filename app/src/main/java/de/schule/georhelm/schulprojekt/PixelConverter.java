@@ -26,4 +26,16 @@ public class PixelConverter {
         display.getSize(size);
         return size;
     }
+
+    public static int convertY(int y, int height, Context context) {
+        Point size = PixelConverter.getScreenSize(context);
+        int screenHeight = size.y;
+        return screenHeight - PixelConverter.convertHeight(y, context) - height;
+    }
+
+/*    public static int convertX(int x, int width, Context context) {
+        Point size = PixelConverter.getScreenSize(context);
+        int screenWidth = size.x;
+        return screenWidth - PixelConverter.convertWidth(x, context) - width;
+    }*/
 }

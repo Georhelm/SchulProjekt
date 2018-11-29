@@ -40,9 +40,14 @@ public class GameView extends SurfaceView implements Runnable{
     int playerHitpoint;
     private int backgroundWidth;
     private int backgroundHeight;
+    private int playerLanceY;
+    private Context context;
 
     public GameView(Context context,JSONObject gameData) {
         super(context);
+
+        this.context = context;
+
         JSONObject player1 = new JSONObject();
         JSONObject player2 = new JSONObject();
 
@@ -102,6 +107,9 @@ public class GameView extends SurfaceView implements Runnable{
         this.socket.playerReady();
 
         this.socket.initGame(this);
+
+        //  --------------- DEBUG -----------------
+        this.playerLanceY = 0;
     }
 
     @Override
@@ -244,7 +252,12 @@ public class GameView extends SurfaceView implements Runnable{
                 player.lance.getBitmap(),
                 player.lance.getMatrix(),
                 paint);
+
         bitmapEnemy.recycle();
+
+        // --------- DEBUG --------------
+        canvas.drawLine(0, this.playerLanceY, PixelConverter.convertWidth(1920, this.context), this.playerLanceY, paint);
+
     }
 
     private void control(){
@@ -297,9 +310,10 @@ public class GameView extends SurfaceView implements Runnable{
         this.countDownCount = count;
     }
 
-    public void setPlayerPositions(int playerPos, int enemyPos){
+    public void setPlayerPositions(int playerPos, int enemyPos, int playerLanceY, int enemyLanceY){
         this.player.setPos(playerPos);
         this.enemy.setPos(enemyPos);
+        this.playerLanceY = playerLanceY;
     }
 
     public void setLanceAngles(int playerLanceAngle, int enemyLanceAngle) {

@@ -18,6 +18,7 @@ public class Player {
     private Matrix matrix;
     private int height;
     private int width;
+    private int handHeight;
 
     public int getX() {
         return this.x;
@@ -40,16 +41,18 @@ public class Player {
 
     public Player(Context context, JSONObject player, boolean isEnemy){
         this.isEnemy = isEnemy;
+
+        this.handHeight = 165; // When we add different characters this needs to come from an xml
+
+        this.height = PixelConverter.convertHeight(450, context);
+        this.width = PixelConverter.convertWidth(300, context);
+
         if(isEnemy){
             this.x = PixelConverter.convertWidth(1150, context);
         }else{
             this.x = PixelConverter.convertWidth(200, context);
-
         }
-        this.y = PixelConverter.convertHeight(370, context);  //Change height for each Mount individually (from xml)
 
-        this.height = PixelConverter.convertHeight(450, context);
-        this.width = PixelConverter.convertWidth(300, context);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -60,14 +63,16 @@ public class Player {
 
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.knight, options);
         bitmap = Bitmap.createScaledBitmap(bitmap, this.width, this.height, false);
-        matrix = new Matrix();
-        matrix.reset();
-        matrix.postTranslate(this.x, this.y);
         try{
             this.pos = player.getInt("position");
             this.name = player.getString("username");
             this.lance = Lance.getLanceByID(player.getInt("weaponId"));
             this.mount = Mount.getMountByID(player.getInt("mountId"));
+            this.y = PixelConverter.convertY(player.getInt("mountHeight"),this.height, context) + PixelConverter.convertHeight(this.handHeight, context);  //Change height for each Mount individually (from xml)
+            System.out.println(this.y);
+            this.matrix = new Matrix();
+            this.matrix.reset();
+            this.matrix.postTranslate(this.x, this.y);
             this.lance.updateMatrix(this.x,this.y);
             this.mount.updateMatrix(this.x,this.y);
         }catch(Exception e){
