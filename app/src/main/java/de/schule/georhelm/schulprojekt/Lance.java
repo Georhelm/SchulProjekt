@@ -19,7 +19,16 @@ public class Lance {
     private String name;
     private int rotation;
     private Matrix matrix;
-    private int lancetipYPos;
+
+    public int getTipYPos() {
+        return tipYPos;
+    }
+
+    public void setTipYPos(int tipYPos) {
+        this.tipYPos = tipYPos;
+    }
+
+    private int tipYPos;
 
 
     public Matrix getMatrix() {
@@ -102,13 +111,6 @@ public class Lance {
         this.matrix.postTranslate(this.x, this.y);
     }
 
-    public int getLancetipYPos(){
-        return this.lancetipYPos;
-    }
-
-    public void setLancetipYPos(int lancetipYPos){
-        this. lancetipYPos = lancetipYPos;
-    }
 
 
 }

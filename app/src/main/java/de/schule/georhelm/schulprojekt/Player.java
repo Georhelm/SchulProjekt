@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.util.JsonReader;
 
 import org.json.JSONObject;
 
@@ -19,6 +18,18 @@ public class Player {
     private int height;
     private int width;
     private int handHeight;
+    private int hitpoints;
+
+    public int getLastHit() {
+        return lastHit;
+    }
+
+    public void setLastHit(int lastHit) {
+        this.lastHit = lastHit;
+    }
+
+    private int lastHit;
+    public int mountHeight;
 
     public int getX() {
         return this.x;
@@ -32,8 +43,28 @@ public class Player {
         this.pos = pos;
     }
 
-    public Lance lance;
-    public Mount mount;
+    public Lance getLance() {
+        return lance;
+    }
+
+    public void setHitpoints(int hitpoints) {
+        this.hitpoints = hitpoints;
+    }
+
+    public void setLance(Lance lance) {
+        this.lance = lance;
+    }
+
+    public Mount getMount() {
+        return mount;
+    }
+
+    public void setMount(Mount mount) {
+        this.mount = mount;
+    }
+
+    private Lance lance;
+    private Mount mount;
 
     public Matrix getMatrix() {
         return matrix;
@@ -68,6 +99,8 @@ public class Player {
             this.name = player.getString("username");
             this.lance = Lance.getLanceByID(player.getInt("weaponId"));
             this.mount = Mount.getMountByID(player.getInt("mountId"));
+            this.hitpoints = player.getInt("hitpoints");
+            this.mountHeight = PixelConverter.convertY(player.getInt("mountHeight"),1,context);
             this.y = PixelConverter.convertY(player.getInt("mountHeight"),this.height, context) + PixelConverter.convertHeight(this.handHeight, context);  //Change height for each Mount individually (from xml)
             this.matrix = new Matrix();
             this.matrix.reset();

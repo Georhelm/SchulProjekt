@@ -2,15 +2,11 @@ package de.schule.georhelm.schulprojekt;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Looper;
-import android.util.JsonReader;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.socket.client.IO;
-import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
@@ -116,22 +112,26 @@ public class ConnectionSocket {
                             int enemyPos = enemy.getInt("position");
                             int playerLanceAngle = player.getInt("weaponAngle");
                             int enemyLanceAngle = enemy.getInt("weaponAngle");
-                            int playerLanceY = player.getInt("weaponHeight");
-                            int enemyLanceY = enemy.getInt("weaponHeight");
-                            gameView.setPlayerPositions(playerPos,enemyPos, playerLanceY, enemyLanceY);
+                            gameView.setPlayerPositions(playerPos,enemyPos);
                             gameView.setLanceAngles(playerLanceAngle, enemyLanceAngle);
                             break;
                         case "gameEnd":
-                            JSONObject endGameValues = jsonObject.getJSONObject("value");
-                            JSONObject endGamePlayer = endGameValues.getJSONObject("player1");
-                            int endGamePlayerSpeed = endGamePlayer.getInt("speed");
-                            int endGamePlayerHitpoint = endGamePlayer.getInt("hitPoint");
-
-                            JSONObject endGameEnemy = endGameValues.getJSONObject("player2");
-                            int endGameEnemySpeed = endGameEnemy.getInt("speed");
-                            int endGameEnemyHitpoint = endGameEnemy.getInt("hitPoint");
-                            gameView.endGame(endGameEnemySpeed,endGameEnemyHitpoint,endGamePlayerSpeed,endGamePlayerHitpoint);
                             break;
+                        case "roundEnd":
+                            JSONObject values = jsonObject.getJSONObject("value");
+                            JSONObject playerJson = values.getJSONObject("player1");
+                            int playerSpeed = playerJson.getInt("speed");
+                            int playerHitpoints = playerJson.getInt("hitpoints");
+                            int playerWeaponHeight = playerJson.getInt("weaponHeight");
+                            int playerPointHit = playerJson.getInt("pointHit");
+
+                            JSONObject enemyJson = values.getJSONObject("player2");
+                            int enemySpeed = enemyJson.getInt("speed");
+                            int enemyHitpoints = enemyJson.getInt("hitpoints");
+                            int enemyWeaponHeight = enemyJson.getInt("weaponHeight");
+                            int enemyPointHit = enemyJson.getInt("pointHit");
+                            gameView.endRound(enemySpeed,enemyHitpoints,enemyWeaponHeight,enemyPointHit,playerSpeed,playerHitpoints,playerWeaponHeight,playerPointHit);
+
                     }
                 }catch(Exception e){
                     e.printStackTrace();
