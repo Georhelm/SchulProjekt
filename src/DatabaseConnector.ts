@@ -121,12 +121,12 @@ export class DatabaseConnection {
     }
 
     public async getMountById(mountId: number): Promise<Mount> {
-        const result = await this.query("Select id, name, maxSpeed, acceleration from mounts where id=?", [mountId]);
+        const result = await this.query("Select id, name, maxSpeed, acceleration, height from mounts where id=?", [mountId]);
         if (result.length === 0) {
             throw new Error("Mount does not exist");
         }
 
-        return new Mount(result[0].id, result[0].name, result[0].maxSpeed, result[0].acceleration);
+        return new Mount(result[0].id, result[0].name, result[0].maxSpeed, result[0].acceleration, result[0].height);
     }
 
     public async getWeaponById(weaponId: number): Promise<Weapon> {
@@ -148,12 +148,21 @@ export class DatabaseConnection {
     }
 
     public async getEquippedMount(userid: number): Promise<Mount> {
-        const result = await this.query("Select m.id, m.name, m.maxSpeed, m.acceleration from users u join mounts m on u.mountid = m.id where u.id = ?", [userid]);
+        const result = await this.query("Select m.id, m.name, m.maxSpeed, m.acceleration, m.height from users u join mounts m on u.mountid = m.id where u.id = ?", [userid]);
         if(result.length === 0) {
             throw new Error("User has no valid mount");
         }
 
-        return new Mount(result[0].id, result[0].name, result[0].maxSpeed, result[0].acceleration);
+        return new Mount(result[0].id, result[0].name, result[0].maxSpeed, result[0].acceleration, result[0].height);
+    }
+
+    public async getRandomMount(): Promise<Mount> {
+        const result = await this.query("Select id, name, maxSpeed, acceleration, height from mounts order by Rand() limit 1", []);
+        if(result.length === 0) {
+            throw new Error("No Mount found");
+        }
+
+        return new Mount(result[0].id, result[0].name, result[0].maxSpeed, result[0].acceleration, result[0].height);
     }
 
     public async createGame(player1: User, player2: User | null, type: string): Promise<Game> {

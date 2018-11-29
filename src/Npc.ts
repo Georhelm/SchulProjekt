@@ -9,7 +9,7 @@ export class Npc extends Player  {
     }
 
     public async loadEquipment() {
-        this.mount = await DatabaseConnection.getDatabaseConnection().getMountById(2);
+        this.mount = await DatabaseConnection.getDatabaseConnection().getRandomMount();
         this.weapon = await DatabaseConnection.getDatabaseConnection().getWeaponById(1);
     }
 

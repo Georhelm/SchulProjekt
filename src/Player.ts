@@ -16,6 +16,7 @@ export class Player {
     private username: string;
     private farPlayer: boolean;
     private databaseId: number;
+    private hitpoints: number;
 
     constructor(username: string, position: number, farPlayer: boolean, databaseId: number) {
         this.position = position;
@@ -24,6 +25,7 @@ export class Player {
         this.username = username;
         this.farPlayer = farPlayer;
         this.databaseId = databaseId;
+        this.hitpoints = 100;
     }
 
     public async loadEquipment() {
@@ -36,7 +38,8 @@ export class Player {
             username: this.username,
             mountId: this.mount.getId(),
             weaponId: this.weapon.getId(),
-            position: Math.round(this.position)
+            position: Math.round(this.position),
+            mountHeight: this.mount.getHeight()
         }
 
         return result;
@@ -115,10 +118,19 @@ export class Player {
     }
 
     public getUpdatedGameState(): PlayerGameUpdate {
-        return {
+        const state = {
             position: Math.round(this.position),
-            weaponAngle: Math.round(this.weapon.getAngle())
+            weaponAngle: Math.round(this.weapon.getAngle()),
+            weaponHeight: this.getWeaponHeight()
+        };
+        if(this.databaseId !== -1) {
+            console.log(state);
         }
+        return state;
+    }
+
+    private getWeaponHeight(): number {
+        return Math.round(Math.cos(this.weapon.getAngle() * Math.PI / 180) * Weapon.LANCELENGTH + this.mount.getHeight());
     }
 
     public async sendGameUpdate(update: GameUpdate) {
@@ -145,12 +157,14 @@ export interface PlayerGameData {
     username: string,
     mountId: number,
     weaponId: number,
-    position: number
+    position: number,
+    mountHeight: number
 }
 
 export interface PlayerGameUpdate {
     position: number,
-    weaponAngle: number
+    weaponAngle: number,
+    weaponHeight: number
 }
 
 interface GameInput {

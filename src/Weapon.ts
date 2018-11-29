@@ -2,6 +2,7 @@
 
 export class Weapon {
 
+    public static LANCELENGTH = 467;//530;
     private id: number;
     private name: string;
     private liftSpeed: number;
