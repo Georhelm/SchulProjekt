@@ -39,7 +39,8 @@ export class Player {
             mountId: this.mount.getId(),
             weaponId: this.weapon.getId(),
             position: Math.round(this.position),
-            mountHeight: this.mount.getHeight()
+            mountHeight: this.mount.getHeight(),
+            hitpoints: this.hitpoints
         }
 
         return result;
@@ -69,8 +70,9 @@ export class Player {
     }
 
     private setPlayerReadyListener(fn: () => void) {
+        this.ready = false;
         this.onPlayerReady = fn;
-        this.socket.once("player_ready", this.playerReady.bind(this));
+        this.socket.on("player_ready", this.playerReady.bind(this));
     }
 
     private playerReady() {
@@ -89,6 +91,32 @@ export class Player {
 
     public isReady(): boolean {
         return this.ready;
+    }
+
+    public endRound(playerHit: HitPoint, enemyHit: HitPoint, enemy: Player) {
+        const endRoundUpdate: GameUpdate = {
+            type: "roundEnd",
+            value: {
+                player1: {
+                    speed: this.getSpeed(),
+                    pointHit: playerHit,
+                    weaponHeight: this.getWeaponHeight(),
+                    hitpoints: this.hitpoints
+                },
+                player2: {
+                    speed: enemy.getSpeed(),
+                    pointHit: enemyHit,
+                    weaponHeight: enemy.getWeaponHeight(),
+                    hitpoints: enemy.getHitpoints()
+                }
+            }
+        }
+        console.log(endRoundUpdate);
+        this.sendGameUpdate(endRoundUpdate);
+    }
+
+    protected initNewRound() {
+        this.ready = false;
     }
 
     public endGame(enemySpeed: number) {
@@ -120,8 +148,7 @@ export class Player {
     public getUpdatedGameState(): PlayerGameUpdate {
         const state = {
             position: Math.round(this.position),
-            weaponAngle: Math.round(this.weapon.getAngle()),
-            weaponHeight: this.getWeaponHeight()
+            weaponAngle: Math.round(this.weapon.getAngle())
         };
         if(this.databaseId !== -1) {
             console.log(state);
@@ -129,7 +156,7 @@ export class Player {
         return state;
     }
 
-    private getWeaponHeight(): number {
+    public getWeaponHeight(): number {
         return Math.round(Math.cos(this.weapon.getAngle() * Math.PI / 180) * Weapon.LANCELENGTH + this.mount.getHeight());
     }
 
@@ -139,6 +166,18 @@ export class Player {
 
     public getSpeed(): number {
         return this.mount.getSpeed();
+    }
+
+    public getMount(): Mount {
+        return this.mount;
+    }
+
+    public getHitpoints(): number {
+        return this.hitpoints;
+    }
+
+    public setHitpoints(hitpoints: number) {
+        this.hitpoints = hitpoints;
     }
 
     //DEBUG 
@@ -158,13 +197,13 @@ export interface PlayerGameData {
     mountId: number,
     weaponId: number,
     position: number,
-    mountHeight: number
+    mountHeight: number,
+    hitpoints: number
 }
 
 export interface PlayerGameUpdate {
     position: number,
-    weaponAngle: number,
-    weaponHeight: number
+    weaponAngle: number
 }
 
 interface GameInput {
@@ -172,7 +211,7 @@ interface GameInput {
     value: boolean;
 }
 
-enum HitPoint {
+export enum HitPoint {
     Head,
     Body,
     Missed

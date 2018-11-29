@@ -1,5 +1,5 @@
 import {User} from "./User";
-import { Player, PlayerGameData, PlayerGameUpdate} from "./Player";
+import { Player, PlayerGameData, PlayerGameUpdate, HitPoint} from "./Player";
 import { Npc } from "./Npc";
 
 export class Game {
@@ -91,7 +91,11 @@ export class Game {
         const timeDelta = (newTime - this.timeOfLastUpdate) / 1000;
         this.timeOfLastUpdate = newTime;
         if (this.player1.getPosition() >= this.player2.getPosition()){
-            this.endGame();
+            if (this.player1.getHitpoints() <= 0 || this.player2.getHitpoints() <= 0){
+                this.endGame();
+            }else {
+                this.endRound();
+            }
             return;
         }
 
@@ -111,6 +115,15 @@ export class Game {
         }, 33);
     }
 
+    private endRound() {
+        const player1Hit = this.getPointHit(this.player1.getWeaponHeight(), this.player2);
+        const player2Hit = this.getPointHit(this.player2.getWeaponHeight(), this.player1);
+
+        this.player1.endRound(player1Hit, player2Hit, this.player2);
+        this.player2.endRound(player2Hit, player1Hit, this.player1);
+        console.log("round ended");
+    }
+
     private endGame() {
         this.player1.endGame(this.player2.getSpeed());
         this.player2.endGame(this.player2.getSpeed());
@@ -125,6 +138,18 @@ export class Game {
             width: this.gameWidth
         };
         return logObj;
+    }
+
+    private getPointHit(weaponHeight: number, enemy: Player): HitPoint {
+        let pointHit = HitPoint.Missed;
+        if(weaponHeight >= enemy.getMount().getHeight() + 75 && weaponHeight < enemy.getMount().getHeight() + 175){
+            pointHit = HitPoint.Head;
+            enemy.setHitpoints(enemy.getHitpoints() - 50);
+        }else if(weaponHeight < enemy.getMount().getHeight() + 75 && weaponHeight > enemy.getMount().getHeight() - 25) {
+            pointHit = HitPoint.Body;
+            enemy.setHitpoints(enemy.getHitpoints() - 25);
+        }
+        return pointHit;
     }
 }
 

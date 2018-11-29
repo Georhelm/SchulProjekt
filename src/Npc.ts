@@ -26,6 +26,10 @@ export class Npc extends Player  {
         this.randomChange();
     }
 
+    protected initNewRound() {
+        this.ready = true;
+    }
+
     private randomChange() {
         this.isLiftingWeapon = !this.isLiftingWeapon;
         const rand = Math.random() * 1000;
