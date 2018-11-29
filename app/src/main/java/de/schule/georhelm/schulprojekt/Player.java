@@ -42,7 +42,7 @@ public class Player {
     public Player(Context context, JSONObject player, boolean isEnemy){
         this.isEnemy = isEnemy;
 
-        this.handHeight = 165; // When we add different characters this needs to come from an xml
+        this.handHeight = PixelConverter.convertHeight(165, context); // When we add different characters this needs to come from an xml
 
         this.height = PixelConverter.convertHeight(450, context);
         this.width = PixelConverter.convertWidth(300, context);
@@ -68,7 +68,7 @@ public class Player {
             this.name = player.getString("username");
             this.lance = Lance.getLanceByID(player.getInt("weaponId"));
             this.mount = Mount.getMountByID(player.getInt("mountId"));
-            this.y = PixelConverter.convertY(player.getInt("mountHeight"),this.height, context) + PixelConverter.convertHeight(this.handHeight, context);  //Change height for each Mount individually (from xml)
+            this.y = PixelConverter.convertY(player.getInt("mountHeight"),this.height, context) + this.handHeight;
             this.matrix = new Matrix();
             this.matrix.reset();
             this.matrix.postTranslate(this.x, this.y);
