@@ -46,7 +46,7 @@ public class Player {
             this.x = PixelConverter.convertWidth(200, context);
 
         }
-        this.y = PixelConverter.convertHeight(370, context);  //Change height for each Mount individually (from xml)
+        this.y = PixelConverter.convertHeight(370, context);  //Change height for each Mount individually (from xml) //370+370-Serverwert
 
         this.height = PixelConverter.convertHeight(450, context);
         this.width = PixelConverter.convertWidth(300, context);

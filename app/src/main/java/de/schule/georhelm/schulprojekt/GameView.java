@@ -243,6 +243,11 @@ public class GameView extends SurfaceView implements Runnable{
                 player.lance.getBitmap(),
                 player.lance.getMatrix(),
                 paint);
+        //Testing draw Lance ange
+        //canvas.drawCircle(canvas.getWidth()/2,7+canvas.getHeight()-player.lance.getLancetipYPos(), 14,new Paint(Color.GREEN));
+        canvas.drawLine(0,canvas.getHeight()-player.lance.getLancetipYPos(),1920,canvas.getHeight()-player.lance.getLancetipYPos(),new Paint(Color.GREEN));
+        //canvas.drawCircle(canvas.getWidth()/2,enemy.lance.getLancetipYPos(), 30,new Paint(Color.RED));
+        //Testing draw Lance angle
         bitmapEnemy.recycle();
     }
 
@@ -297,9 +302,11 @@ public class GameView extends SurfaceView implements Runnable{
         this.countDownCount = count;
     }
 
-    public void setPlayerPositions(int playerPos, int enemyPos){
+    public void setPlayerPositions(int playerPos, int enemyPos, int playerLancetipYPos, int enemyLancetipYPos){
         this.player.setPos(playerPos);
         this.enemy.setPos(enemyPos);
+        this.player.lance.setLancetipYPos(playerLancetipYPos);
+        this.enemy.lance.setLancetipYPos(enemyLancetipYPos);
     }
 
     public void setLanceAngles(int playerLanceAngle, int enemyLanceAngle) {
