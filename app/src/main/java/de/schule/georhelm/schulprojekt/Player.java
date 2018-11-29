@@ -69,7 +69,6 @@ public class Player {
             this.lance = Lance.getLanceByID(player.getInt("weaponId"));
             this.mount = Mount.getMountByID(player.getInt("mountId"));
             this.y = PixelConverter.convertY(player.getInt("mountHeight"),this.height, context) + PixelConverter.convertHeight(this.handHeight, context);  //Change height for each Mount individually (from xml)
-            System.out.println(this.y);
             this.matrix = new Matrix();
             this.matrix.reset();
             this.matrix.postTranslate(this.x, this.y);
