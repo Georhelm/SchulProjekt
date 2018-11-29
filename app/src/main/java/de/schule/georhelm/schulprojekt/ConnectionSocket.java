@@ -116,8 +116,8 @@ public class ConnectionSocket {
                             int enemyPos = enemy.getInt("position");
                             int playerLanceAngle = player.getInt("weaponAngle");
                             int enemyLanceAngle = enemy.getInt("weaponAngle");
-                            int playerLanceY = player.getInt("mountHeight");
-                            int enemyLanceY = enemy.getInt("mountHeight");
+                            int playerLanceY = player.getInt("weaponHeight");
+                            int enemyLanceY = enemy.getInt("weaponHeight");
                             gameView.setPlayerPositions(playerPos,enemyPos, playerLanceY, enemyLanceY);
                             gameView.setLanceAngles(playerLanceAngle, enemyLanceAngle);
                             break;

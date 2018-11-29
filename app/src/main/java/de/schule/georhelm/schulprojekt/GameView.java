@@ -313,7 +313,7 @@ public class GameView extends SurfaceView implements Runnable{
     public void setPlayerPositions(int playerPos, int enemyPos, int playerLanceY, int enemyLanceY){
         this.player.setPos(playerPos);
         this.enemy.setPos(enemyPos);
-        this.playerLanceY = playerLanceY;
+        this.playerLanceY = PixelConverter.convertY(playerLanceY, 1, this.context);
     }
 
     public void setLanceAngles(int playerLanceAngle, int enemyLanceAngle) {
