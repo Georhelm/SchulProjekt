@@ -8,11 +8,13 @@ import {Npc} from "./Npc";
 export class GameSocket {
     private socket: Socket.Server;
     private connection: DatabaseConnection;
+    private gameQueue: User[];
 
     constructor(server: Server, con: DatabaseConnection){
         this.socket = Socket(server);
         this.connection = con;
         this.socket.clients();
+        this.gameQueue = [];
     }
 
     public init(): void {
@@ -54,6 +56,7 @@ export class GameSocket {
             return;
         }
         console.log(player.getLogObj());
+        Game.endGameContainingPlayer(player);
         User.removePlayerBySocketId(client.id);
         console.log("playercount: " + User.getPlayerCount());
     }
@@ -67,9 +70,8 @@ export class GameSocket {
         }
         console.log(player.getLogObj());
         try {
-            const game = await DatabaseConnection.getDatabaseConnection().createGame(player, null, "singleplayer");
+            const game: Game = await DatabaseConnection.getDatabaseConnection().createGame(player, null, "singleplayer");
             console.log(game.getLogObj());
-            client.emit("found_game", game.getFullGameState());
         }catch(error) {
             client.disconnect();
             return;
@@ -83,7 +85,23 @@ export class GameSocket {
             client.disconnect();
             return;
         }
-        console.log(player.getLogObj());
+        if(this.gameQueue.length > 0) {
+            try {
+                const enemy = this.gameQueue.pop();
+                if(enemy === undefined) {
+                    return;
+                }
+                const game: Game = await DatabaseConnection.getDatabaseConnection().createGame(player, enemy, "multiplayer");
+                console.log(game.getLogObj());
+            }catch(error) {
+                client.disconnect();
+                return;
+            }
+        }else {
+            this.gameQueue.push(player);
+            client.emit("searchingForEnemy");
+        }
+        
     }
 
     private async getPlayerEquipment(client: Socket.Socket) {

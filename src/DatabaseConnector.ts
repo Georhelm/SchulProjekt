@@ -169,13 +169,17 @@ export class DatabaseConnection {
         const result = await this.query("Insert into gamedata (type) Select id from gametype where name=?", [type]);
         await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 0)", [result.insertId, player1.getDatabaseId()]);
         if (player2 !== null && player2.getDatabaseId() != -1) {
-            await this.query("Insert into user_game (game_id playerid, side) Values (?, ?, 1)", [result.insertId, player2.getDatabaseId()]);
+            await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 1)", [result.insertId, player2.getDatabaseId()]);
         }
         
         const game = new Game(result.insertId, player1, player2);
         await game.init();
         return game;
         
+    }
+
+    public async setGameWinner(gameId: number, wonSide: number) {
+        await this.query("Update gamedata set wonside = ? where id = ?", [wonSide, gameId]);
     }
 
 }

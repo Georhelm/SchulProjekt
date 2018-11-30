@@ -30,9 +30,10 @@ export class Player {
         this.hitpoints = 100;
     }
 
-    private reset() {
+    public reset() {
         this.mount.setSpeed(0);
         this.weapon.reset();
+        this.ready = false;
         this.position = this.startPosition;
     }
 
@@ -79,7 +80,6 @@ export class Player {
     }
 
     private setPlayerReadyListener(fn: () => void) {
-        this.ready = false;
         this.onPlayerReady = fn;
         this.socket.on("player_ready", this.playerReady.bind(this));
     }
@@ -104,11 +104,18 @@ export class Player {
 
     public endRound(playerHit: HitPoint, enemyHit: HitPoint, enemy: Player) {
         this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "roundEnd");
-        this.reset();
     }
 
     protected initNewRound() {
         this.ready = false;
+    }
+
+    public getUsername(): string {
+        return this.username;
+    }
+
+    public getWeapon(): Weapon {
+        return this.weapon;
     }
 
     public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint) {
@@ -119,6 +126,73 @@ export class Player {
 
         
         //this.socket.removeListener("game_input", this.onGameInput.bind(this));
+    }
+
+    public sendFullGameState(enemy: Player, gameWidth: number) {
+        const update = this.getFullGameState(enemy, gameWidth);
+        this.sendMessage("found_game", update);
+    }
+
+    private getFullGameState(enemy: Player, gameWidth: number): FullGameState {
+
+        let pos = this.position;
+        let enemyPos = enemy.getPosition();
+        if(this.farPlayer) {
+            pos = gameWidth - pos;
+            enemyPos = gameWidth - enemyPos;
+        }
+
+        const result: FullGameState = {
+            player1:   {
+                username: this.username,
+                mountId: this.mount.getId(),
+                weaponId: this.weapon.getId(),
+                position: Math.round(pos),
+                mountHeight: this.mount.getHeight(),
+                hitpoints: this.hitpoints
+            },
+            player2: {
+                username: enemy.getUsername(),
+                mountId: enemy.getMount().getId(),
+                weaponId: enemy.getWeapon().getId(),
+                position: Math.round(enemyPos),
+                mountHeight: enemy.getMount().getHeight(),
+                hitpoints: enemy.getHitpoints()
+            },
+            gameWidth
+        }
+
+        return result;
+    }
+
+    public sendPartialGameUpdate(enemy: Player, gameWidth: number) {
+        const gameUpdate: GameUpdate = {
+            type: "partialUpdate",
+            value: this.getGameUpdate(enemy, gameWidth)
+        }
+        this.sendGameUpdate(gameUpdate);
+    }
+
+    private getGameUpdate(enemy: Player, gameWidth: number): UpdatedGameState {
+
+        let pos = this.position;
+        let enemyPos = enemy.getPosition()
+
+        if(this.farPlayer) {
+            pos = gameWidth - pos;
+            enemyPos = gameWidth - enemyPos;
+        }
+
+        return {
+            player1: {
+                position: Math.round(pos),
+                weaponAngle: Math.round(this.weapon.getAngle())
+            },
+            player2: {
+                position: Math.round(enemyPos),
+                weaponAngle: Math.round(enemy.getWeapon().getAngle())
+            }
+        }
     }
 
     private sendRoundEndUpdate(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, type: string) {
@@ -139,7 +213,7 @@ export class Player {
                 }
             }
         }
-
+        console.log(endRoundUpdate);
         this.sendGameUpdate(endRoundUpdate);
     }
 
@@ -151,23 +225,16 @@ export class Player {
         this.weapon.updateAngle(timeDelta, this.isLiftingWeapon);
     }
 
-    public getUpdatedGameState(): PlayerGameUpdate {
-        const state = {
-            position: Math.round(this.position),
-            weaponAngle: Math.round(this.weapon.getAngle())
-        };
-        if(this.databaseId !== -1) {
-            //console.log(state);
-        }
-        return state;
-    }
-
     public getWeaponHeight(): number {
         return Math.round(Math.cos(this.weapon.getAngle() * Math.PI / 180) * Weapon.LANCELENGTH + this.mount.getHeight());
     }
 
     public async sendGameUpdate(update: GameUpdate) {
         this.socket.emit("game_update", update);
+    }
+
+    public async sendMessage(type: string, payload: any) {
+        this.socket.emit(type , payload);
     }
 
     public getSpeed(): number {
@@ -183,7 +250,7 @@ export class Player {
     }
 
     public setHitpoints(hitpoints: number) {
-        this.hitpoints = hitpoints;
+        this.hitpoints = Math.max(hitpoints, 0);
     }
 
     //DEBUG 
@@ -222,3 +289,15 @@ export enum HitPoint {
     Body,
     Missed
 }
+
+export interface FullGameState {
+    player1: PlayerGameData,
+    player2: PlayerGameData,
+    gameWidth: number
+}
+
+export interface UpdatedGameState {
+    player1: PlayerGameUpdate,
+    player2: PlayerGameUpdate
+}
+

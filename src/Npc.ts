@@ -22,12 +22,16 @@ export class Npc extends Player  {
         //console.log("NPC recieved gameupdate");
     }
 
+    public async sendMessage(type: string) {
+        
+    }
+
     public initGameInputListeners() {
         this.randomChange();
     }
 
     public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint) {
-        
+
     }
 
     protected initNewRound() {

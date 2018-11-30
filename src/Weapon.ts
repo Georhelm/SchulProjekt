@@ -17,7 +17,7 @@ export class Weapon {
         this.liftSpeed = liftSpeed;
         this.fallSpeed = fallSpeed;
         this.minAngle = 0;
-        this.maxAngle = 180;
+        this.maxAngle = 120;
         this.reset();
     }
 
@@ -29,18 +29,10 @@ export class Weapon {
     public updateAngle(timeDelta: number, lifting: boolean){
         if (lifting) {
             const newAngle = this.angle - this.liftSpeed * timeDelta;
-            if (newAngle < this.minAngle) {
-                this.angle = this.minAngle
-            }else {
-                this.angle = newAngle;
-            }
+            this.angle = Math.max(newAngle, this.minAngle);
         }else {
             const newAngel = this.angle + this.fallSpeed * timeDelta;
-            if(newAngel > this.maxAngle) {
-                this.angle = this.maxAngle;
-            }else {
-                this.angle = newAngel;
-            }
+            this.angle = Math.min(newAngel, this.maxAngle);
         }
     }
 
