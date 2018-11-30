@@ -17,3 +17,4 @@ https://www.gamedevmarket.net/asset/platform-game-assets-7990/
 https://opengameart.org/node
 
 Assets-----------------------------------------------------------------------------------------------------
+Image magic
