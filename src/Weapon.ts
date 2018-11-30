@@ -18,8 +18,9 @@ export class Weapon {
         this.fallSpeed = fallSpeed;
         this.minAngle = 0;
         this.maxAngle = 180;
-        this.angle = 90;
+        this.reset();
     }
+
 
     public getId(): number {
         return this.id;

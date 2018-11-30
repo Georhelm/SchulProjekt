@@ -41,4 +41,8 @@ export class Mount {
         return this.height;
     }
 
+    public setSpeed(speed: number ){
+        this.speed = speed;
+    }
+
 }

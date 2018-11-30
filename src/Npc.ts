@@ -1,4 +1,4 @@
-import  {Player} from "./Player";
+import  {Player, HitPoint} from "./Player";
 import {GameUpdate} from "./Game";
 import {DatabaseConnection} from "./DatabaseConnector";
 
@@ -24,6 +24,10 @@ export class Npc extends Player  {
 
     public initGameInputListeners() {
         this.randomChange();
+    }
+
+    public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint) {
+        
     }
 
     protected initNewRound() {

@@ -7,6 +7,7 @@ import {GameUpdate} from "./Game";
 export class Player {
 
     private position: number;
+    private startPosition: number;
     protected mount: Mount;
     protected weapon: Weapon;
     protected ready: boolean;
@@ -20,12 +21,19 @@ export class Player {
 
     constructor(username: string, position: number, farPlayer: boolean, databaseId: number) {
         this.position = position;
+        this.startPosition = position;
         this.ready = false;
         this.isLiftingWeapon = false;
         this.username = username;
         this.farPlayer = farPlayer;
         this.databaseId = databaseId;
         this.hitpoints = 100;
+    }
+
+    private reset() {
+        this.mount.setSpeed(0);
+        this.weapon.reset();
+        this.position = this.startPosition;
     }
 
     public async loadEquipment() {
@@ -65,6 +73,7 @@ export class Player {
     }
 
     public init(fn: () => void, socket: Socket){
+        console.log("socket init");
         this.socket = socket;
         this.setPlayerReadyListener(fn);
     }
@@ -94,8 +103,27 @@ export class Player {
     }
 
     public endRound(playerHit: HitPoint, enemyHit: HitPoint, enemy: Player) {
+        this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "roundEnd");
+        this.reset();
+    }
+
+    protected initNewRound() {
+        this.ready = false;
+    }
+
+    public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint) {
+
+        this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "gameEnd");
+        this.socket.removeAllListeners("player_ready");
+        this.socket.removeAllListeners("game_update");
+
+        
+        //this.socket.removeListener("game_input", this.onGameInput.bind(this));
+    }
+
+    private sendRoundEndUpdate(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, type: string) {
         const endRoundUpdate: GameUpdate = {
-            type: "roundEnd",
+            type,
             value: {
                 player1: {
                     speed: this.getSpeed(),
@@ -111,30 +139,8 @@ export class Player {
                 }
             }
         }
-        console.log(endRoundUpdate);
+
         this.sendGameUpdate(endRoundUpdate);
-    }
-
-    protected initNewRound() {
-        this.ready = false;
-    }
-
-    public endGame(enemySpeed: number) {
-        const endGameUpdate: GameUpdate = {
-            type: "gameEnd",
-            value: {
-                player1: {
-                    speed: this.getSpeed(),
-                    hitPoint: HitPoint.Body  // what that player hits
-                },
-                player2: {
-                    speed: enemySpeed,
-                    hitPoint: HitPoint.Head
-                }
-            }
-        }
-        this.sendGameUpdate(endGameUpdate);
-        //this.socket.removeListener("game_input", this.onGameInput.bind(this));
     }
 
     public initGameInputListeners() {
@@ -151,7 +157,7 @@ export class Player {
             weaponAngle: Math.round(this.weapon.getAngle())
         };
         if(this.databaseId !== -1) {
-            console.log(state);
+            //console.log(state);
         }
         return state;
     }

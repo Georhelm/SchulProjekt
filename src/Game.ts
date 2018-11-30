@@ -91,11 +91,7 @@ export class Game {
         const timeDelta = (newTime - this.timeOfLastUpdate) / 1000;
         this.timeOfLastUpdate = newTime;
         if (this.player1.getPosition() >= this.player2.getPosition()){
-            if (this.player1.getHitpoints() <= 0 || this.player2.getHitpoints() <= 0){
-                this.endGame();
-            }else {
-                this.endRound();
-            }
+            this.endRound();
             return;
         }
 
@@ -119,14 +115,19 @@ export class Game {
         const player1Hit = this.getPointHit(this.player1.getWeaponHeight(), this.player2);
         const player2Hit = this.getPointHit(this.player2.getWeaponHeight(), this.player1);
 
+        if(this.player1.getHitpoints() <= 0 || this.player2.getHitpoints() <= 0){
+            this.endGame(player1Hit, player2Hit);
+            return;
+        }
+
         this.player1.endRound(player1Hit, player2Hit, this.player2);
         this.player2.endRound(player2Hit, player1Hit, this.player1);
         console.log("round ended");
     }
 
-    private endGame() {
-        this.player1.endGame(this.player2.getSpeed());
-        this.player2.endGame(this.player2.getSpeed());
+    private endGame(player1Hit: HitPoint, player2Hit: HitPoint) {
+        this.player1.endGame(this.player2, player1Hit, player2Hit);
+        this.player2.endGame(this.player1, player2Hit, player1Hit);
         console.log("game ended");
     }
 
