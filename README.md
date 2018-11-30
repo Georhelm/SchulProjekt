@@ -20,5 +20,8 @@ https://opengameart.org/node
 itch.io
 !!!!!
 
+https://free-game-assets.itch.io/free-2d-knight-sprite-sheets
+https://swapnilrane24.itch.io/green-background 
+
 Assets-----------------------------------------------------------------------------------------------------
 Image magic
