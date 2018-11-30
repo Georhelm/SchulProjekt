@@ -9,11 +9,10 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.Region;
+import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.Button;
 
 import org.json.JSONObject;
 
@@ -35,26 +34,25 @@ public class GameView extends SurfaceView implements Runnable{
     private long timeOfLastUpdate;
     private int enemyOffset;
     private int enemyBackgroundOffset;
-    private boolean isEndgame;
+    private boolean isEndRound;
     int enemySpeed;
     int playerSpeed;
     private int backgroundWidth;
     private int backgroundHeight;
     private Context context;
     private Bitmap button;
+    private Bitmap dustyCloud;
+    private int frameCounter;
+    private boolean continueButtonEnabled;
+    private boolean isEndGame;
 
     public GameView(Context context,JSONObject gameData) {
         super(context);
 
         this.context = context;
-
         JSONObject player1 = new JSONObject();
         JSONObject player2 = new JSONObject();
 
-        this.isEndgame = false;
-        this.enemyOffset = 0;
-        this.enemyBackgroundOffset = 0;
-        this.playerSpeed = 0;
 
         this.backgroundHeight = PixelConverter.convertHeight(1080, context);
         this.backgroundWidth = PixelConverter.convertWidth(1920, context);
@@ -68,6 +66,7 @@ public class GameView extends SurfaceView implements Runnable{
 
         player = new Player(context,player1,false);
         enemy = new Player(context,player2, true);
+        this.isEndGame = false;
 
         this.bitmapPlayer = Bitmap.createBitmap(PixelConverter.convertWidth(1920, context),PixelConverter.convertHeight(1080, context), Bitmap.Config.ARGB_8888);
         Canvas playerCanvas = new Canvas(bitmapPlayer);
@@ -99,21 +98,42 @@ public class GameView extends SurfaceView implements Runnable{
         background = Bitmap.createScaledBitmap(background,this.backgroundWidth,this.backgroundHeight,true);
 
         BitmapFactory.Options buttonOptions = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
+        buttonOptions.inJustDecodeBounds = true;
 
         BitmapFactory.decodeResource(context.getResources(), R.drawable.button_red_medium, buttonOptions);
-        buttonOptions.inSampleSize = GameView.calculateInSampleSize(buttonOptions, PixelConverter.convertWidth(400,context), PixelConverter.convertHeight(100,context));
+        buttonOptions.inSampleSize = GameView.calculateInSampleSize(buttonOptions, PixelConverter.convertWidth(600,context), PixelConverter.convertHeight(100,context));
         buttonOptions.inJustDecodeBounds = false;
         button = BitmapFactory.decodeResource(context.getResources(), R.drawable.button_red_medium, buttonOptions);
+
+        BitmapFactory.Options dustyCloudOptions = new BitmapFactory.Options();
+        dustyCloudOptions.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeResource(context.getResources(), R.drawable.dustycloud, dustyCloudOptions);
+        dustyCloudOptions.inSampleSize = GameView.calculateInSampleSize(dustyCloudOptions, PixelConverter.convertWidth(1920,context), PixelConverter.convertHeight(800,context));
+        dustyCloudOptions.inJustDecodeBounds = false;
+        dustyCloud = BitmapFactory.decodeResource(context.getResources(), R.drawable.dustycloud, dustyCloudOptions);
 
         backGroundMatrix = new Matrix();
 
         enemyBackGroundMatrix = new Matrix();
 
-
         this.socket = ConnectionSocket.getSocket();
-        this.socket.playerReady();
 
+        initNewRound();
+    }
+
+    public void initNewRound(){
+        this.frameCounter = -50;
+        this.player.resetPos();
+        this.player.setLanceAngle(90);
+        this.enemy.resetPos();
+        this.enemy.setLanceAngle(90);
+        this.continueButtonEnabled = false;
+        this.isEndRound = false;
+        this.enemyOffset = 0;
+        this.enemyBackgroundOffset = 0;
+        this.playerSpeed = 0;
+        this.socket.playerReady();
         this.socket.initGame(this);
     }
 
@@ -160,15 +180,13 @@ public class GameView extends SurfaceView implements Runnable{
     private void draw(){
         long newTime = System.nanoTime();
         double timeSinceLastUpdate = (newTime - this.timeOfLastUpdate) / 1000000000f;
-        /*if(timeSinceLastUpdate > 50) {
-            System.out.println("Time since last Update: " + timeSinceLastUpdate);
-        }*/
         this.timeOfLastUpdate = newTime;
         if (surfaceHolder.getSurface().isValid()) {
             Canvas canvas = surfaceHolder.lockCanvas();
             canvas.clipRect(0, 0, getWidth(), getHeight());
-            Boolean drawButton = false;
-            if(this.isEndgame){
+            continueButtonEnabled = false;
+            Boolean drawCloud = false;
+            if(this.isEndRound){
                 player.setPos(player.getPos()+(int)(playerSpeed*timeSinceLastUpdate));
                 if(canvas.getWidth()/2>this.enemyBackgroundOffset){
                     long offSetUpdate = Math.round(canvas.getWidth() / 7 * timeSinceLastUpdate);
@@ -184,33 +202,58 @@ public class GameView extends SurfaceView implements Runnable{
                     this.enemyOffset-=enemySpeed*timeSinceLastUpdate+playerSpeed*timeSinceLastUpdate;
                     if(this.enemyOffset + this.enemy.getX()<=this.player.getX()){
                         //this.playing = false;
-                        drawButton = true;
+                        continueButtonEnabled = true;
+                    }
+                    if(this.enemyOffset + this.enemy.getX()<=this.player.getX()+this.player.getWidth() && frameCounter<255){
+                        drawCloud= true;
                     }
                 }
             }
             drawGameFlow(canvas,timeSinceLastUpdate);
-            if(isEndgame){
-                canvas.drawLine(0, PixelConverter.convertY(player.getLance().getTipYPos(),1,this.context), PixelConverter.convertWidth(1920, this.context),PixelConverter.convertY(player.getLance().getTipYPos(),1,this.context), paint);
-                drawHitpointMessage(canvas);
-                if(drawButton){
-                    canvas.drawBitmap(button,canvas.getWidth()/2-button.getWidth()/2,canvas.getHeight()/2-button.getHeight()/2, paint);
-                    Paint paint = new Paint();
-                    paint.setColor(Color.BLACK);
-                    paint.setStyle(Paint.Style.FILL);
-                    paint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeSmall));
-                    String text = "Next round";
-                    Rect bounds = new Rect();
-                    paint.getTextBounds(text,0,text.length(),bounds);
-                    canvas.drawText(text,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/2-bounds.exactCenterY(), paint);
+            if(isEndRound){
+                //drawLanceHitHeight(canvas);
+                //drawHitpointMessage(canvas);
+                if(drawCloud){
+                    drawCloud(canvas);
+                    this.enemy.updateHitpoints();
+                    this.player.updateHitpoints();
+                }
+                if(continueButtonEnabled){
+                    drawContinueButton(canvas);
                 }
             }
-            /*long timeForUpdate = (System.nanoTime() - this.timeOfLastUpdate) / 1000000;
-            if (timeForUpdate > 50) {
-                System.out.println("Time for update: " + timeForUpdate);
-            }*/
-
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
+    }
+
+    private void drawCloud(Canvas canvas) {
+        Paint cloudPaint = new Paint();
+        cloudPaint.setAlpha(Math.min(255-frameCounter,255));
+        canvas.drawBitmap(dustyCloud,PixelConverter.convertWidth(-100,context),PixelConverter.convertY(-50, dustyCloud.getHeight(),context), cloudPaint);
+        frameCounter+=5;
+    }
+
+    private void drawContinueButton(Canvas canvas) {
+        canvas.drawBitmap(button,canvas.getWidth()/2-button.getWidth()/2,canvas.getHeight()/2-button.getHeight()/2, paint);
+        Paint buttonTextPaint = new Paint();
+        buttonTextPaint.setColor(Color.BLACK);
+        buttonTextPaint.setStyle(Paint.Style.FILL);
+        buttonTextPaint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeSmall));
+        String text = "Next round";
+        if(isEndGame){
+            text = "Return to menu";
+        }
+
+        Rect bounds = new Rect();
+        buttonTextPaint.getTextBounds(text,0,text.length(),bounds);
+        canvas.drawText(text,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/2-bounds.exactCenterY(), buttonTextPaint);
+    }
+
+    /*
+    Method for debugging purposes
+     */
+    private void drawLanceHitHeight(Canvas canvas) {
+        canvas.drawLine(0, PixelConverter.convertY(player.getLance().getTipYPos(),1,this.context), PixelConverter.convertWidth(1920, this.context),PixelConverter.convertY(player.getLance().getTipYPos(),1,this.context), paint);
     }
 
     private void drawGameFlow(Canvas canvas, double timeSinceLastUpdate) {
@@ -230,6 +273,38 @@ public class GameView extends SurfaceView implements Runnable{
         canvas.drawBitmap(croppedEnemyBackground,enemyBackGroundMatrix, paint);
         drawPlayerObjects(canvas);
         drawText(canvas);
+        drawHealthBars(canvas);
+        //showEnemyHitBoxes(canvas);
+
+        if(!isEndRound){
+            drawDividerLine(canvas);
+        }
+    }
+
+    private void drawDividerLine(Canvas canvas) {
+        Paint dividerLinePaint = new Paint();
+        dividerLinePaint.setStrokeWidth(6);
+        dividerLinePaint.setColor(Color.WHITE);
+        canvas.drawLine(canvas.getWidth()/2,0,canvas.getWidth()/2,canvas.getHeight(),dividerLinePaint);
+        dividerLinePaint.setColor(Color.GRAY);
+        dividerLinePaint.setStrokeWidth(2);
+        canvas.drawLine(canvas.getWidth()/2-4,0,canvas.getWidth()/2-4,canvas.getHeight(),dividerLinePaint);
+        canvas.drawLine(canvas.getWidth()/2+4,0,canvas.getWidth()/2+4,canvas.getHeight(),dividerLinePaint);
+
+    }
+
+    private void drawHealthBars(Canvas canvas) {
+        Paint healthBarPaint = new Paint();
+        healthBarPaint.setColor(Color.RED);
+        healthBarPaint.setStrokeWidth(50);
+        canvas.drawLine(PixelConverter.convertWidth(100,context),PixelConverter.convertHeight(100,context),PixelConverter.convertWidth(100+player.getHitpoints()*5,context),PixelConverter.convertHeight(100,context),healthBarPaint);
+        canvas.drawLine(PixelConverter.convertWidth(canvas.getWidth(),context),PixelConverter.convertHeight(100,context),PixelConverter.convertWidth(canvas.getWidth()-enemy.getHitpoints()*5,context),PixelConverter.convertHeight(100,context),healthBarPaint);
+    }
+
+    /*
+    Method for debugging purposes
+     */
+    private void showEnemyHitBoxes(Canvas canvas) {
         Paint paintDos = new Paint();
         paintDos.setStrokeWidth(20);
         paintDos.setColor(Color.RED);
@@ -247,12 +322,14 @@ public class GameView extends SurfaceView implements Runnable{
             canvas.drawText(Integer.toString(this.countDownCount),canvas.getWidth()/2, canvas.getHeight()/4, paint);
         }
     }
-
+    /*
+    Method for debugging purposes
+     */
     private void drawHitpointMessage(Canvas canvas){
         String hit;
         switch (player.getLastHit()){
             case 0:
-                hit="Headshot";
+                hit="Head";
                 break;
             case 1:
                 hit="Body";
@@ -332,6 +409,21 @@ public class GameView extends SurfaceView implements Runnable{
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        if(continueButtonEnabled){
+            int x = (int)motionEvent.getX();
+            int y = (int)motionEvent.getY();
+            if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
+                int buttonX = PixelConverter.convertWidth(1920,context)/2-button.getWidth()/2;
+                int buttonY = PixelConverter.convertHeight(1080,context)/2-button.getHeight()/2;
+                if(x<=buttonX+button.getWidth() && x>=buttonX && y<=buttonY+button.getHeight() && y>= buttonY){
+                    if(isEndGame){
+                        finishGame();
+                    }else{
+                        this.startRound();
+                    }
+                }
+            }
+        }
         switch(motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 this.player.lanceUp();
@@ -343,20 +435,24 @@ public class GameView extends SurfaceView implements Runnable{
         return true;
     }
 
-    public void endRound(int enemySpeed,int enemyHitpoints,int enemyWeaponHeight,int enemyPointHit,int playerSpeed,int playerHitpoints,int playerWeaponHeight,int playerPointHit) {
-        this.isEndgame = true;
+    private void startRound() {
+        this.initNewRound();
+    }
+
+    public void endRound(int enemySpeed,int enemyHitpoints,int enemyWeaponHeight,int enemyPointHit,int playerSpeed,int playerHitpoints,int playerWeaponHeight,int playerPointHit, boolean endOfGame) {
+        this.isEndRound = true;
         this.enemySpeed = enemySpeed;
-        this.enemy.setHitpoints(enemyHitpoints);
+        this.enemy.setNextHitpoints(enemyHitpoints);
         this.playerSpeed = playerSpeed;
-        this.player.setHitpoints(playerHitpoints);
+        this.player.setNextHitpoints(playerHitpoints);
         this.player.getLance().setTipYPos(playerWeaponHeight);
         this.player.setLastHit(playerPointHit);
-        System.out.println("Spieler trifft gegner bei: " +playerPointHit + "  ; 0 = Head, 1 = Body, 2 = Miss");
+        if(endOfGame){
+            isEndGame = true;
+        }
     }
 
     private void finishGame() {
-        this.background.recycle();
-        this.bitmapPlayer.recycle();
         Activity activity = (Activity)this.getContext();
         activity.finish();
     }

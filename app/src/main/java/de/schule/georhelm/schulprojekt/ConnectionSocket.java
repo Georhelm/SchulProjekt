@@ -35,7 +35,6 @@ public class ConnectionSocket {
             socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    System.out.println("Event_Connect of socket triggered :)");
                 }
 
             }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() { //Disconnect event
@@ -93,6 +92,7 @@ public class ConnectionSocket {
     }
 
     public void initGame(final GameView gameView){
+        socket.off("game_update");
         socket.on("game_update", new Emitter.Listener() {
             @Override
             public void call(Object... args) {
@@ -116,21 +116,10 @@ public class ConnectionSocket {
                             gameView.setLanceAngles(playerLanceAngle, enemyLanceAngle);
                             break;
                         case "gameEnd":
+                            finishRound(jsonObject,gameView,true);
                             break;
                         case "roundEnd":
-                            JSONObject values = jsonObject.getJSONObject("value");
-                            JSONObject playerJson = values.getJSONObject("player1");
-                            int playerSpeed = playerJson.getInt("speed");
-                            int playerHitpoints = playerJson.getInt("hitpoints");
-                            int playerWeaponHeight = playerJson.getInt("weaponHeight");
-                            int playerPointHit = playerJson.getInt("pointHit");
-
-                            JSONObject enemyJson = values.getJSONObject("player2");
-                            int enemySpeed = enemyJson.getInt("speed");
-                            int enemyHitpoints = enemyJson.getInt("hitpoints");
-                            int enemyWeaponHeight = enemyJson.getInt("weaponHeight");
-                            int enemyPointHit = enemyJson.getInt("pointHit");
-                            gameView.endRound(enemySpeed,enemyHitpoints,enemyWeaponHeight,enemyPointHit,playerSpeed,playerHitpoints,playerWeaponHeight,playerPointHit);
+                            finishRound(jsonObject,gameView,false);
 
                     }
                 }catch(Exception e){
@@ -139,5 +128,24 @@ public class ConnectionSocket {
 
             }
         });
+    }
+
+    private void finishRound(JSONObject jsonObject, GameView gameView,boolean isLastRound){
+        try{
+            JSONObject values = jsonObject.getJSONObject("value");
+            JSONObject playerJson = values.getJSONObject("player1");
+            int playerSpeed = playerJson.getInt("speed");
+            int playerHitpoints = playerJson.getInt("hitpoints");
+            int playerWeaponHeight = playerJson.getInt("weaponHeight");
+            int playerPointHit = playerJson.getInt("pointHit");
+
+            JSONObject enemyJson = values.getJSONObject("player2");
+            int enemySpeed = enemyJson.getInt("speed");
+            int enemyHitpoints = enemyJson.getInt("hitpoints");
+            int enemyWeaponHeight = enemyJson.getInt("weaponHeight");
+            int enemyPointHit = enemyJson.getInt("pointHit");
+            gameView.endRound(enemySpeed,enemyHitpoints,enemyWeaponHeight,enemyPointHit,playerSpeed,playerHitpoints,playerWeaponHeight,playerPointHit, isLastRound);
+        }catch(Exception e){
+        }
     }
 }

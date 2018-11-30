@@ -10,14 +10,31 @@ import org.json.JSONObject;
 public class Player {
     private Bitmap bitmap;
     private int pos;
+    private int startPos;
     private String name;
     private int x;
+    private int nextHitpoints;
+
+    public int getY() {
+        return y;
+    }
+
     private int y;
     private boolean isEnemy;
     private Matrix matrix;
     private int height;
+
+    public int getWidth() {
+        return width;
+    }
+
     private int width;
     private int handHeight;
+
+    public int getHitpoints() {
+        return hitpoints;
+    }
+
     private int hitpoints;
 
     public int getLastHit() {
@@ -96,6 +113,7 @@ public class Player {
         bitmap = Bitmap.createScaledBitmap(bitmap, this.width, this.height, false);
         try{
             this.pos = player.getInt("position");
+            this.startPos = this.pos;
             this.name = player.getString("username");
             this.lance = Lance.getLanceByID(player.getInt("weaponId"));
             this.mount = Mount.getMountByID(player.getInt("mountId"));
@@ -112,6 +130,9 @@ public class Player {
         }
     }
 
+    public void resetPos(){
+        this.pos = this.startPos;
+    }
 
     public void lanceUp() {
         ConnectionSocket.getSocket().playerInput(true);
@@ -127,5 +148,13 @@ public class Player {
 
     public Bitmap getBitmap() {
         return bitmap;
+    }
+
+    public void updateHitpoints(){
+        this.hitpoints = nextHitpoints;
+    }
+
+    public void setNextHitpoints(int nextHitpoints){
+        this.nextHitpoints = nextHitpoints;
     }
 }
