@@ -20,14 +20,9 @@ public class MenuActivity extends AppCompatActivity {
         this.socket = ConnectionSocket.getSocket();
     }
 
-    public void startSingleplayer(JSONObject startGameSetting) {
+    public void startGame(JSONObject startGameSetting) {
         Intent intent = new Intent(this, GameActivity.class);
         intent.putExtra("gamedata", startGameSetting.toString());
-        this.startActivity(intent);
-    }
-
-    public void startMultiplayer(View v){
-        Intent intent = new Intent(this, GameActivity.class);
         this.startActivity(intent);
     }
 
@@ -51,5 +46,9 @@ public class MenuActivity extends AppCompatActivity {
 
     public void startSinglePlayerGame(View v){
         socket.startSingleplayerGame(this);
+    }
+
+    public void startMultiPlayerGame(View v){
+        socket.startMultiplayerGame(this);
     }
 }

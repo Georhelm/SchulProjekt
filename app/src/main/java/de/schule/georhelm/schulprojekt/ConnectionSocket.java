@@ -82,13 +82,22 @@ public class ConnectionSocket {
     }
 
     public void startSingleplayerGame(final MenuActivity menuActivity){
+        startGame(menuActivity);
+        socket.emit("start_singleplayer");
+    }
+
+    public void startMultiplayerGame(final MenuActivity menuActivity){
+        startGame(menuActivity);
+        socket.emit("start_multiplayer");
+    }
+
+    private void startGame(final MenuActivity menuActivity) {
         socket.once("found_game", new Emitter.Listener() {
             @Override
             public void call(Object... args) {
-                menuActivity.startSingleplayer((JSONObject)args[0]);
+                menuActivity.startGame((JSONObject)args[0]);
             }
         });
-        socket.emit("start_singleplayer");
     }
 
     public void initGame(final GameView gameView){

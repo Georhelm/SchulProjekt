@@ -25,6 +25,8 @@ public class GameView extends SurfaceView implements Runnable{
     private Player enemy;
     private Paint paint;
     private Bitmap bitmapPlayer;
+    private Bitmap bitmapMinime;
+    private Bitmap bitmapMinimeEnemy;
     private SurfaceHolder surfaceHolder;
     private Bitmap background;
     private Matrix enemyBackGroundMatrix;
@@ -45,6 +47,7 @@ public class GameView extends SurfaceView implements Runnable{
     private int frameCounter;
     private boolean continueButtonEnabled;
     private boolean isEndGame;
+    private int lengthOfBattlefield;
 
     public GameView(Context context,JSONObject gameData) {
         super(context);
@@ -67,6 +70,7 @@ public class GameView extends SurfaceView implements Runnable{
         player = new Player(context,player1,false);
         enemy = new Player(context,player2, true);
         this.isEndGame = false;
+        this.lengthOfBattlefield = enemy.getPos();
 
         this.bitmapPlayer = Bitmap.createBitmap(PixelConverter.convertWidth(1920, context),PixelConverter.convertHeight(1080, context), Bitmap.Config.ARGB_8888);
         Canvas playerCanvas = new Canvas(bitmapPlayer);
@@ -101,17 +105,31 @@ public class GameView extends SurfaceView implements Runnable{
         buttonOptions.inJustDecodeBounds = true;
 
         BitmapFactory.decodeResource(context.getResources(), R.drawable.button_red_medium, buttonOptions);
-        buttonOptions.inSampleSize = GameView.calculateInSampleSize(buttonOptions, PixelConverter.convertWidth(600,context), PixelConverter.convertHeight(100,context));
+        buttonOptions.inSampleSize = GameView.calculateInSampleSize(buttonOptions, PixelConverter.convertWidth(500,context), PixelConverter.convertHeight(100,context));
         buttonOptions.inJustDecodeBounds = false;
         button = BitmapFactory.decodeResource(context.getResources(), R.drawable.button_red_medium, buttonOptions);
+        button = Bitmap.createScaledBitmap(button,PixelConverter.convertWidth(450,context), PixelConverter.convertHeight(150,context),true);
 
         BitmapFactory.Options dustyCloudOptions = new BitmapFactory.Options();
         dustyCloudOptions.inJustDecodeBounds = true;
 
         BitmapFactory.decodeResource(context.getResources(), R.drawable.dustycloud, dustyCloudOptions);
-        dustyCloudOptions.inSampleSize = GameView.calculateInSampleSize(dustyCloudOptions, PixelConverter.convertWidth(1920,context), PixelConverter.convertHeight(800,context));
+        dustyCloudOptions.inSampleSize = GameView.calculateInSampleSize(dustyCloudOptions, PixelConverter.convertWidth(2100,context), PixelConverter.convertHeight(1400,context));
         dustyCloudOptions.inJustDecodeBounds = false;
         dustyCloud = BitmapFactory.decodeResource(context.getResources(), R.drawable.dustycloud, dustyCloudOptions);
+        dustyCloud = Bitmap.createScaledBitmap(dustyCloud,PixelConverter.convertWidth(2100,context), PixelConverter.convertHeight(1400,context),true);
+
+        BitmapFactory.Options minimeOptions = new BitmapFactory.Options();
+        minimeOptions.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeResource(context.getResources(), R.drawable.knightsminime, minimeOptions);
+        minimeOptions.inSampleSize = GameView.calculateInSampleSize(minimeOptions, PixelConverter.convertWidth(50,context), PixelConverter.convertHeight(50,context));
+        minimeOptions.inJustDecodeBounds = false;
+        bitmapMinime = BitmapFactory.decodeResource(context.getResources(), R.drawable.knightsminime, minimeOptions);
+        bitmapMinime = Bitmap.createScaledBitmap(bitmapMinime,PixelConverter.convertWidth(50,context), PixelConverter.convertHeight(50,context),true);
+        Matrix minimeMatrix = new Matrix();
+        minimeMatrix.preScale(-1f,1f);
+        bitmapMinimeEnemy = Bitmap.createBitmap(bitmapMinime,0,0,bitmapMinime.getWidth(),bitmapMinime.getHeight(),minimeMatrix,true);
 
         backGroundMatrix = new Matrix();
 
@@ -229,7 +247,7 @@ public class GameView extends SurfaceView implements Runnable{
     private void drawCloud(Canvas canvas) {
         Paint cloudPaint = new Paint();
         cloudPaint.setAlpha(Math.min(255-frameCounter,255));
-        canvas.drawBitmap(dustyCloud,PixelConverter.convertWidth(-100,context),PixelConverter.convertY(-50, dustyCloud.getHeight(),context), cloudPaint);
+        canvas.drawBitmap(dustyCloud,PixelConverter.convertWidth(-80,context),PixelConverter.convertY(-100, dustyCloud.getHeight(),context), cloudPaint);
         frameCounter+=5;
     }
 
@@ -272,13 +290,26 @@ public class GameView extends SurfaceView implements Runnable{
         canvas.drawBitmap(background, backGroundMatrix, paint);
         canvas.drawBitmap(croppedEnemyBackground,enemyBackGroundMatrix, paint);
         drawPlayerObjects(canvas);
-        drawText(canvas);
         drawHealthBars(canvas);
         //showEnemyHitBoxes(canvas);
-
         if(!isEndRound){
             drawDividerLine(canvas);
+            drawMinimap(canvas);
         }
+        drawText(canvas);
+    }
+
+    private void drawMinimap(Canvas canvas) {
+        Paint minimapLinePaint = new Paint();
+        minimapLinePaint.setStrokeWidth(10);
+        minimapLinePaint.setColor(Color.LTGRAY);
+        canvas.drawLine(PixelConverter.convertWidth(500,context),PixelConverter.convertHeight(200,context),PixelConverter.convertWidth(canvas.getWidth()-400,context),PixelConverter.convertHeight(200,context),minimapLinePaint);
+        Paint minimePaint = new Paint();
+        int lengthOfMinimap = (PixelConverter.convertWidth(canvas.getWidth()-400,context)-PixelConverter.convertWidth(500,context));
+        int minimeOffset = Math.round((player.getPos()/(float)lengthOfBattlefield)*lengthOfMinimap);
+        int minimeEnemyOffset = lengthOfMinimap - Math.round((enemy.getPos()/(float)lengthOfBattlefield)*lengthOfMinimap);
+        canvas.drawBitmap(bitmapMinime,PixelConverter.convertWidth(500+minimeOffset,context),PixelConverter.convertHeight(200-bitmapMinime.getHeight()/2,context),minimePaint);
+        canvas.drawBitmap(bitmapMinimeEnemy,PixelConverter.convertWidth(canvas.getWidth()-400-bitmapMinimeEnemy.getWidth()-minimeEnemyOffset,context),PixelConverter.convertHeight(200-bitmapMinimeEnemy.getHeight()/2,context),minimePaint);
     }
 
     private void drawDividerLine(Canvas canvas) {
@@ -315,11 +346,15 @@ public class GameView extends SurfaceView implements Runnable{
 
     private void drawText(Canvas canvas){
         if(this.countDownCount > 0){
-            Paint paint = new Paint();
-            paint.setColor(Color.RED);
-            paint.setStyle(Paint.Style.FILL);
-            paint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeMedium));
-            canvas.drawText(Integer.toString(this.countDownCount),canvas.getWidth()/2, canvas.getHeight()/4, paint);
+            String countdownText = Integer.toString(this.countDownCount);
+            Paint countDownPaint = new Paint();
+            countDownPaint.setColor(Color.RED);
+            countDownPaint.setStyle(Paint.Style.FILL);
+            countDownPaint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeMedium));
+            Rect bounds = new Rect();
+            countDownPaint.getTextBounds(countdownText,0,countdownText.length(),bounds);
+            canvas.drawText(countdownText,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/4-bounds.exactCenterY(), countDownPaint);
+            //canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/2-bounds.exactCenterY()
         }
     }
     /*
