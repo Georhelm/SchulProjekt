@@ -23,18 +23,7 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        final MediaPlayer themeMusicIntroMP = MediaPlayer.create(this, R.raw.medievalsongintro);
-        final MediaPlayer themeMusicLoopMP = MediaPlayer.create(this, R.raw.medievalsongloop);
-        themeMusicLoopMP.setLooping(true);
-        themeMusicIntroMP.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                themeMusicLoopMP.start();
-                themeMusicIntroMP.stop();
-            }
-        });
-
-        themeMusicIntroMP.start();
+        SoundManager.startThemeMusic(this);
 
         File appInternalDirectory = getFilesDir();
         File tokenSave = new File(appInternalDirectory + "/accessToken.txt");

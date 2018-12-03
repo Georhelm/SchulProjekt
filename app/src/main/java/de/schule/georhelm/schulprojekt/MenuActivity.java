@@ -1,6 +1,7 @@
 package de.schule.georhelm.schulprojekt;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -81,6 +82,26 @@ public class MenuActivity extends AppCompatActivity {
                 final TextView text = findViewById(R.id.menuText);
                 searchHandler = new SearchHandler(activity, text);
 
+            }
+        });
+
+    }
+
+    public void toggleSound(View view){
+        final MenuActivity activity = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                boolean muted = SoundManager.toggleMusic(activity);
+                Button soundButton = findViewById(R.id.buttonToggleSound);
+                Drawable buttonBackground;
+                if(muted){
+                    buttonBackground = activity.getDrawable(R.drawable.button_unmute_red);
+                }else{
+                    buttonBackground = activity.getDrawable(R.drawable.button_mute_red);
+                }
+                soundButton.setBackground(buttonBackground);
             }
         });
 
