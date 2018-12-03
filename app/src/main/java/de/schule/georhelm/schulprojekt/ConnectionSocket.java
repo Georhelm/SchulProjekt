@@ -163,4 +163,19 @@ public class ConnectionSocket {
         }catch(Exception e){
         }
     }
+
+    public void cancelSearch(){
+        socket.emit("cancel_search");
+    }
+
+    public void getAvailableEquipment(final EquipmentActivity equipmentActivity){
+        socket.emit("get_equipment");
+        socket.once("recieve_equipment", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                JSONObject equipment = (JSONObject)args[0];
+                equipmentActivity.fillEquipment(equipment);
+            }
+        });
+    }
 }

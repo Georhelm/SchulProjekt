@@ -2,4 +2,8 @@
 <resources>
     <dimen name="fontSizeMedium">60sp</dimen>
     <dimen name="fontSizeSmall">20sp</dimen>
+    <dimen name ="equipmentHeight">240dp</dimen>
+    <dimen name ="equipmentWidth">240dp</dimen>
+    <dimen name ="equipmentListHeight">240dp</dimen>
+    <dimen name ="equipmentListWidth">240dp</dimen>
 </resources>

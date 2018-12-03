@@ -12,4 +12,5 @@
     <string name="textPasswordCheck">Repeat password</string>
     <string name="textRegister">Register</string>
     <string name="textSearching">Searching for game</string>
+    <string name="textCancel">Cancel</string>
 </resources>

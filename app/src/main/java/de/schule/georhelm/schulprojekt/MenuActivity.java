@@ -16,37 +16,23 @@ public class MenuActivity extends AppCompatActivity {
 
     private ConnectionSocket socket;
     private SearchHandler searchHandler;
+    private boolean isSearching;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_menu);
         this.socket = ConnectionSocket.getSocket();
+        this.isSearching = false;
     }
 
     public void startGame(JSONObject startGameSetting) {
+        this.isSearching = false;
         Intent intent = new Intent(this, GameActivity.class);
         intent.putExtra("gamedata", startGameSetting.toString());
         this.startActivity(intent);
-        if(this.searchHandler != null) {
-            this.searchHandler.end();
-        }
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Button btnEquipment = findViewById(R.id.buttonEquipment);
-                btnEquipment.setEnabled(true);
 
-                Button btnLogout = findViewById(R.id.buttonLogout);
-                btnLogout.setEnabled(true);
-
-                Button btnMultiplayer = findViewById(R.id.buttonMultiplayer);
-                btnMultiplayer.setEnabled(true);
-
-                Button btnSinglePlayer = findViewById(R.id.buttonSingleplayer);
-                btnSinglePlayer.setEnabled(true);
-            }
-        });
+        this.resetView();
     }
 
     public void showEquipment(View v) {
@@ -74,7 +60,9 @@ public class MenuActivity extends AppCompatActivity {
                 btnLogout.setEnabled(false);
 
                 Button btnMultiplayer = findViewById(R.id.buttonMultiplayer);
-                btnMultiplayer.setEnabled(false);
+                //btnMultiplayer.setEnabled(false);
+
+                btnMultiplayer.setText(R.string.textCancel);
 
                 Button btnSinglePlayer = findViewById(R.id.buttonSingleplayer);
                 btnSinglePlayer.setEnabled(false);
@@ -112,6 +100,38 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     public void startMultiPlayerGame(View v){
-        socket.startMultiplayerGame(this);
+        if(this.isSearching){
+            socket.cancelSearch();
+            this.isSearching = false;
+            this.resetView();
+        }else{
+            this.isSearching=true;
+            socket.startMultiplayerGame(this);
+        }
+
+    }
+
+    private void resetView(){
+        final MenuActivity activity = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Button btnEquipment = findViewById(R.id.buttonEquipment);
+                btnEquipment.setEnabled(true);
+
+                Button btnLogout = findViewById(R.id.buttonLogout);
+                btnLogout.setEnabled(true);
+
+                Button btnMultiplayer = findViewById(R.id.buttonMultiplayer);
+                btnMultiplayer.setText(R.string.textMultiplayer);
+
+                Button btnSinglePlayer = findViewById(R.id.buttonSingleplayer);
+                btnSinglePlayer.setEnabled(true);
+
+                if(activity.searchHandler != null) {
+                    activity.searchHandler.end();
+                }
+            }
+        });
     }
 }
