@@ -30,6 +30,10 @@ public class SoundManager {
         if(themeMusicIntroMP != null && themeMusicLoopMP != null){
             themeMusicLoopMP.stop();
             themeMusicIntroMP.stop();
+            themeMusicLoopMP.release();
+            themeMusicIntroMP.release();
+            themeMusicIntroMP = null;
+            themeMusicLoopMP = null;
         }
 
     }
