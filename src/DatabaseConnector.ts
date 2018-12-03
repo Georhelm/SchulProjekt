@@ -165,6 +165,17 @@ export class DatabaseConnection {
         return new Mount(result[0].id, result[0].name, result[0].maxSpeed, result[0].acceleration, result[0].height);
     }
 
+    public async getAllMounts(): Promise<Mount[]> {
+        const results = await this.query("Select id, name, maxSpeed, acceleration, height from mounts", []);
+        const allMounts: Mount[] = [];
+
+        for(const result of results) {
+            allMounts.push(new Mount(result.id, result.name, result.maxSpeed, result.acceleration, result.height));
+        }
+
+        return allMounts;
+    }
+
     public async createGame(player1: User, player2: User | null, type: string): Promise<Game> {
         const result = await this.query("Insert into gamedata (type) Select id from gametype where name=?", [type]);
         await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 0)", [result.insertId, player1.getDatabaseId()]);

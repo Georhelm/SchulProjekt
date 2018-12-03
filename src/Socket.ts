@@ -103,9 +103,23 @@ export class GameSocket {
             }
         }else {
             this.gameQueue.push(player);
-            client.emit("searchingForEnemy");
+            client.emit("searching_multiplayer");
+            client.once("cancel_search", this.cancelSearch.bind(this, client));
         }
         
+    }
+
+    private async cancelSearch(client: Socket.Socket) {
+        const player = User.getPlayerBySocketId(client.id);
+        if(player === null) {
+            client.disconnect();
+            return;
+        }
+        console.log("Multiplayer search canceled");
+        const index = this.gameQueue.indexOf(player);
+        if(index > -1) {
+            this.gameQueue.splice(index, 1);
+        }
     }
 
     private async getPlayerEquipment(client: Socket.Socket) {
@@ -116,6 +130,11 @@ export class GameSocket {
             return;
         }
         console.log(player.getLogObj());
+        const mounts = await DatabaseConnection.getDatabaseConnection().getAllMounts();
+        const message = {
+            mounts
+        }
+        client.emit("recieve_equipment", message);
     }
 
     private registerEvents(socket: Socket.Socket) {
