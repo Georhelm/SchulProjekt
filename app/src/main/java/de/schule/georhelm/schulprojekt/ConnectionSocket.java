@@ -89,6 +89,12 @@ public class ConnectionSocket {
     public void startMultiplayerGame(final MenuActivity menuActivity){
         startGame(menuActivity);
         socket.emit("start_multiplayer");
+        socket.once("searching_multiplayer", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                menuActivity.showSearchingGame();
+            }
+        });
     }
 
     private void startGame(final MenuActivity menuActivity) {
