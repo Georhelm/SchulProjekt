@@ -57,6 +57,10 @@ export class GameSocket {
         }
         console.log(player.getLogObj());
         Game.endGameContainingPlayer(player);
+        const playerIndex = this.gameQueue.indexOf(player);
+        if(playerIndex > -1) {
+            this.gameQueue.splice(playerIndex, 1);
+        }
         User.removePlayerBySocketId(client.id);
         console.log("playercount: " + User.getPlayerCount());
     }

@@ -18,6 +18,11 @@ export class Npc extends Player  {
         this.ready = true;
     }
 
+    public reset() {
+        super.reset();
+        this.ready = true;
+    }
+
     public async sendGameUpdate(update: GameUpdate) {
         //console.log("NPC recieved gameupdate");
     }
@@ -32,10 +37,6 @@ export class Npc extends Player  {
 
     public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint) {
 
-    }
-
-    protected initNewRound() {
-        this.ready = true;
     }
 
     private randomChange() {
