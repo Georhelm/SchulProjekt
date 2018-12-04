@@ -303,13 +303,20 @@ public class GameView extends SurfaceView implements Runnable{
         Paint minimapLinePaint = new Paint();
         minimapLinePaint.setStrokeWidth(10);
         minimapLinePaint.setColor(Color.LTGRAY);
-        canvas.drawLine(PixelConverter.convertWidth(500,context),PixelConverter.convertHeight(200,context),PixelConverter.convertWidth(canvas.getWidth()-400,context),PixelConverter.convertHeight(200,context),minimapLinePaint);
+        int mapStart = PixelConverter.convertWidth(500,context);
+        int mapEnd = canvas.getWidth()- PixelConverter.convertWidth(500,context);
+        int mapHeight = PixelConverter.convertHeight(200,context);
+        canvas.drawLine(mapStart,mapHeight,mapEnd,mapHeight,minimapLinePaint);
         Paint minimePaint = new Paint();
-        int lengthOfMinimap = (PixelConverter.convertWidth(canvas.getWidth()-400,context)-PixelConverter.convertWidth(500,context));
+        int lengthOfMinimap = (mapEnd-mapStart);
         int minimeOffset = Math.round((player.getPos()/(float)lengthOfBattlefield)*lengthOfMinimap);
         int minimeEnemyOffset = lengthOfMinimap - Math.round((enemy.getPos()/(float)lengthOfBattlefield)*lengthOfMinimap);
-        canvas.drawBitmap(bitmapMinime,PixelConverter.convertWidth(500+minimeOffset,context),PixelConverter.convertHeight(200-bitmapMinime.getHeight()/2,context),minimePaint);
-        canvas.drawBitmap(bitmapMinimeEnemy,PixelConverter.convertWidth(canvas.getWidth()-400-bitmapMinimeEnemy.getWidth()-minimeEnemyOffset,context),PixelConverter.convertHeight(200-bitmapMinimeEnemy.getHeight()/2,context),minimePaint);
+
+        int minimeMapPosition = mapStart + minimeOffset-bitmapMinimeEnemy.getWidth();
+        canvas.drawBitmap(bitmapMinime,minimeMapPosition, mapHeight-bitmapMinime.getHeight()/2,minimePaint);
+
+        int minimeEnemyMapPosition = mapEnd - minimeEnemyOffset;
+        canvas.drawBitmap(bitmapMinimeEnemy,minimeEnemyMapPosition,mapHeight-bitmapMinimeEnemy.getHeight()/2,minimePaint);
     }
 
     private void drawDividerLine(Canvas canvas) {
@@ -328,8 +335,12 @@ public class GameView extends SurfaceView implements Runnable{
         Paint healthBarPaint = new Paint();
         healthBarPaint.setColor(Color.RED);
         healthBarPaint.setStrokeWidth(50);
-        canvas.drawLine(PixelConverter.convertWidth(100,context),PixelConverter.convertHeight(100,context),PixelConverter.convertWidth(100+player.getHitpoints()*5,context),PixelConverter.convertHeight(100,context),healthBarPaint);
-        canvas.drawLine(PixelConverter.convertWidth(canvas.getWidth(),context),PixelConverter.convertHeight(100,context),PixelConverter.convertWidth(canvas.getWidth()-enemy.getHitpoints()*5,context),PixelConverter.convertHeight(100,context),healthBarPaint);
+
+        int healthbarOffset = PixelConverter.convertWidth(100,context);
+        int healthbarHeight = PixelConverter.convertHeight(100,context);
+        int healthbarLength = PixelConverter.convertWidth(player.getHitpoints()*7,context);
+        canvas.drawLine(healthbarOffset,healthbarHeight,healthbarLength+healthbarOffset,healthbarHeight,healthBarPaint);
+        canvas.drawLine(canvas.getWidth()-healthbarOffset,healthbarHeight,canvas.getWidth()-healthbarOffset-healthbarLength,healthbarHeight,healthBarPaint);
     }
 
     /*
