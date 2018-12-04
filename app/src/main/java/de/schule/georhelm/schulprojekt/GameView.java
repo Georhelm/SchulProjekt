@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -48,6 +47,8 @@ public class GameView extends SurfaceView implements Runnable{
     private boolean continueButtonEnabled;
     private boolean isEndGame;
     private int lengthOfBattlefield;
+    private boolean gameWon;
+
 
     public GameView(Context context,JSONObject gameData) {
         super(context);
@@ -260,11 +261,30 @@ public class GameView extends SurfaceView implements Runnable{
         String text = "Next round";
         if(isEndGame){
             text = "Return to menu";
+            drawEndgameResult(canvas);
         }
 
         Rect bounds = new Rect();
         buttonTextPaint.getTextBounds(text,0,text.length(),bounds);
         canvas.drawText(text,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/2-bounds.exactCenterY(), buttonTextPaint);
+    }
+
+    private void drawEndgameResult(Canvas canvas) {
+        if(gameWon){
+            this.displayResult("Victory!",canvas);
+        }else{
+            this.displayResult("Loss!", canvas);
+        }
+    }
+
+    private void displayResult(String result, Canvas canvas) {
+        Paint resultMessagePaint = new Paint();
+        resultMessagePaint.setColor(Color.RED);
+        resultMessagePaint.setStyle(Paint.Style.FILL);
+        resultMessagePaint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeMedium));
+        Rect bounds = new Rect();
+        resultMessagePaint.getTextBounds(result,0,result.length(),bounds);
+        canvas.drawText(result,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/4-bounds.exactCenterY(), resultMessagePaint);
     }
 
     /*
@@ -296,7 +316,7 @@ public class GameView extends SurfaceView implements Runnable{
             drawDividerLine(canvas);
             drawMinimap(canvas);
         }
-        drawText(canvas);
+        drawCountdownText(canvas);
     }
 
     private void drawMinimap(Canvas canvas) {
@@ -355,7 +375,7 @@ public class GameView extends SurfaceView implements Runnable{
         canvas.drawLine(this.enemy.getX()+400,this.enemy.mountHeight-75,this.enemy.getX()+400,this.enemy.mountHeight+25, paintDos);
     }
 
-    private void drawText(Canvas canvas){
+    private void drawCountdownText(Canvas canvas){
         if(this.countDownCount > 0){
             String countdownText = Integer.toString(this.countDownCount);
             Paint countDownPaint = new Paint();
@@ -485,7 +505,7 @@ public class GameView extends SurfaceView implements Runnable{
         this.initNewRound();
     }
 
-    public void endRound(int enemySpeed,int enemyHitpoints,int enemyWeaponHeight,int enemyPointHit,int playerSpeed,int playerHitpoints,int playerWeaponHeight,int playerPointHit, boolean endOfGame) {
+    public void endRound(int enemySpeed,int enemyHitpoints,int enemyWeaponHeight,int enemyPointHit,int playerSpeed,int playerHitpoints,int playerWeaponHeight,int playerPointHit, boolean endOfGame, boolean gameWon) {
         this.isEndRound = true;
         this.enemySpeed = enemySpeed;
         this.enemy.setNextHitpoints(enemyHitpoints);
@@ -494,7 +514,8 @@ public class GameView extends SurfaceView implements Runnable{
         this.player.getLance().setTipYPos(playerWeaponHeight);
         this.player.setLastHit(playerPointHit);
         if(endOfGame){
-            isEndGame = true;
+            this.isEndGame = true;
+            this.gameWon=gameWon;
         }
     }
 

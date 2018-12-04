@@ -159,8 +159,13 @@ public class ConnectionSocket {
             int enemyHitpoints = enemyJson.getInt("hitpoints");
             int enemyWeaponHeight = enemyJson.getInt("weaponHeight");
             int enemyPointHit = enemyJson.getInt("pointHit");
-            gameView.endRound(enemySpeed,enemyHitpoints,enemyWeaponHeight,enemyPointHit,playerSpeed,playerHitpoints,playerWeaponHeight,playerPointHit, isLastRound);
+            boolean gameWon = false;
+            if(isLastRound){
+                gameWon = values.getBoolean("victory");
+            }
+            gameView.endRound(enemySpeed,enemyHitpoints,enemyWeaponHeight,enemyPointHit,playerSpeed,playerHitpoints,playerWeaponHeight,playerPointHit, isLastRound, gameWon);
         }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
