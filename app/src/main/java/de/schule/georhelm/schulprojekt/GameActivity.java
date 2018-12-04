@@ -108,5 +108,11 @@ public class GameActivity  extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        ConnectionSocket.getSocket().leaveGame();
+        this.finish();
+    }
+
 
 }

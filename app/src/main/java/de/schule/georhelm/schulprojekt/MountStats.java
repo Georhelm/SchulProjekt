@@ -8,6 +8,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MountStats {
+    public int getId() {
+        return id;
+    }
+
     private int id;
     private String name;
 
@@ -15,9 +19,26 @@ public class MountStats {
         return name;
     }
 
+    public String getMaxSpeed() {
+        return Integer.toString(maxSpeed);
+    }
+
+    public String getAcceleration() {
+        return Integer.toString(acceleration);
+    }
+
+    public String getHeight() {
+        return Integer.toString(height);
+    }
+
     private int maxSpeed;
     private int acceleration;
     private int height;
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
     private Bitmap bitmap;
 
     public MountStats(JSONObject json, Context context){
@@ -45,5 +66,9 @@ public class MountStats {
 
     public String toString(){
         return this.name;
+    }
+
+    public void recycle(){
+        this.bitmap.recycle();
     }
 }

@@ -13,4 +13,6 @@
     <string name="textRegister">Register</string>
     <string name="textSearching">Searching for game</string>
     <string name="textCancel">Cancel</string>
+    <string name="textSelect">Select</string>
+    <string name="textSaved">Saved</string>
 </resources>

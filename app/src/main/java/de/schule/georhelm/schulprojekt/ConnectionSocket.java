@@ -178,4 +178,18 @@ public class ConnectionSocket {
             }
         });
     }
+
+    public void saveEquipment(int mountId){
+        JSONObject equipment = new JSONObject();
+        try {
+            equipment.put("mountId",mountId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        socket.emit("set_equipment",equipment);
+    }
+
+    public void leaveGame() {
+        socket.emit("leave_game");
+    }
 }

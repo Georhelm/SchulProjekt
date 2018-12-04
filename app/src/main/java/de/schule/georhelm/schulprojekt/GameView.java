@@ -516,4 +516,6 @@ public class GameView extends SurfaceView implements Runnable{
         this.player.setLanceAngle(playerLanceAngle);
         this.enemy.setLanceAngle(enemyLanceAngle);
     }
+
+
 }
