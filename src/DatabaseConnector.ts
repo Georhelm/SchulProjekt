@@ -178,9 +178,9 @@ export class DatabaseConnection {
 
     public async createGame(player1: User, player2: User | null, type: string): Promise<Game> {
         const result = await this.query("Insert into gamedata (type) Select id from gametype where name=?", [type]);
-        await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 0)", [result.insertId, player1.getDatabaseId()]);
+        await this.query("Insert into user_game (gameid, playerid) Values (?, ?)", [result.insertId, player1.getDatabaseId()]);
         if (player2 !== null && player2.getDatabaseId() != -1) {
-            await this.query("Insert into user_game (gameid, playerid, side) Values (?, ?, 1)", [result.insertId, player2.getDatabaseId()]);
+            await this.query("Insert into user_game (gameid, playerid) Values (?, ?)", [result.insertId, player2.getDatabaseId()]);
         }
         
         const game = new Game(result.insertId, player1, player2);
@@ -189,8 +189,12 @@ export class DatabaseConnection {
         
     }
 
-    public async setGameWinner(gameId: number, wonSide: number) {
-        await this.query("Update gamedata set wonside = ? where id = ?", [wonSide, gameId]);
+    public async setGameWinner(gameId: number, wonPlayerId: number) {
+        await this.query("Insert into game_winner (game_id, player_id) Values (?,?)", [gameId, wonPlayerId]);
+    }
+
+    public async setMountOfUser(mountId: number, userId: number) {
+        await this.query("Update users set mountid = ? where id = ?", [mountId, userId]);
     }
 
 }

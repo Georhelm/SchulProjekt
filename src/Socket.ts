@@ -131,10 +131,32 @@ export class GameSocket {
         }
         console.log(player.getLogObj());
         const mounts = await DatabaseConnection.getDatabaseConnection().getAllMounts();
+        const selectedMount = await DatabaseConnection.getDatabaseConnection().getEquippedMount(player.getDatabaseId());
         const message = {
-            mounts
+            mounts,
+            selectedMount: selectedMount.getId()
         }
         client.emit("recieve_equipment", message);
+    }
+
+    private async setEquipment(client: Socket.Socket, data: EquipmentData) {
+        const player = User.getPlayerBySocketId(client.id);
+        console.log("Setting equipment"); 
+        if (player === null)  {
+            client.disconnect();
+            return;
+        }
+
+        DatabaseConnection.getDatabaseConnection().setMountOfUser(data.mountId, player.getDatabaseId());
+    }
+
+    private async leaveGame(client: Socket.Socket) {
+        const player = User.getPlayerBySocketId(client.id)
+        if (player === null) {
+            return;
+        }
+        console.log(player.getLogObj());
+        Game.endGameContainingPlayer(player);
     }
 
     private registerEvents(socket: Socket.Socket) {
@@ -142,7 +164,12 @@ export class GameSocket {
         socket.on("start_singleplayer", this.startSinglePlayer.bind(this, socket));
         socket.on("start_multiplayer", this.startMultiplayer.bind(this, socket));
         socket.on("get_equipment", this.getPlayerEquipment.bind(this, socket));
+        socket.on("set_equipment", this.setEquipment.bind(this, socket));
+        socket.on("leave_game", this.leaveGame.bind(this, socket));
     }
 
+}
 
+interface EquipmentData {
+    mountId: number;
 }

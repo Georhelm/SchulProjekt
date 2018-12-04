@@ -18,6 +18,7 @@ export class Player {
     private farPlayer: boolean;
     private databaseId: number;
     private hitpoints: number;
+    private hasLeft: boolean;
 
     constructor(username: string, position: number, farPlayer: boolean, databaseId: number) {
         this.position = position;
@@ -27,6 +28,7 @@ export class Player {
         this.username = username;
         this.farPlayer = farPlayer;
         this.databaseId = databaseId;
+        this.hasLeft = false;
         this.hitpoints = 100;
     }
 
@@ -85,16 +87,20 @@ export class Player {
     }
 
     private playerReady() {
-        this.ready = true;
-        if (this.onPlayerReady !== undefined) {
-            this.onPlayerReady();
+        if(!this.hasLeft) {
+            this.ready = true;
+            if (this.onPlayerReady !== undefined) {
+                this.onPlayerReady();
+            }
         }
     }
 
     private onGameInput(data: string) {
-        const json: GameInput = JSON.parse(data);
-        if (json.type === "lance") {
-            this.isLiftingWeapon = json.value;
+        if(!this.hasLeft) {
+            const json: GameInput = JSON.parse(data);
+            if (json.type === "lance") {
+                this.isLiftingWeapon = json.value;
+            }
         }
     }
 
@@ -102,12 +108,13 @@ export class Player {
         return this.ready;
     }
 
-    public endRound(playerHit: HitPoint, enemyHit: HitPoint, enemy: Player) {
-        this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "roundEnd");
+    public leaveGame() {
+        this.hasLeft = true;
+        this.ready = true;
     }
 
-    protected initNewRound() {
-        this.ready = false;
+    public endRound(playerHit: HitPoint, enemyHit: HitPoint, enemy: Player) {
+        this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "roundEnd");
     }
 
     public getUsername(): string {
@@ -118,9 +125,9 @@ export class Player {
         return this.weapon;
     }
 
-    public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint) {
+    public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, victory: boolean) {
 
-        this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "gameEnd");
+        this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "gameEnd", victory);
         this.socket.removeAllListeners("player_ready");
         this.socket.removeAllListeners("game_update");
 
@@ -195,7 +202,7 @@ export class Player {
         }
     }
 
-    private sendRoundEndUpdate(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, type: string) {
+    private sendRoundEndUpdate(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, type: string, victory?: boolean) {
         const endRoundUpdate: GameUpdate = {
             type,
             value: {
@@ -212,6 +219,10 @@ export class Player {
                     hitpoints: enemy.getHitpoints()
                 }
             }
+        }
+        console.log("VICTORY: " +victory);
+        if(victory !== undefined) {
+            endRoundUpdate.value.victory = victory;
         }
         console.log(endRoundUpdate);
         this.sendGameUpdate(endRoundUpdate);
@@ -230,11 +241,13 @@ export class Player {
     }
 
     public async sendGameUpdate(update: GameUpdate) {
-        this.socket.emit("game_update", update);
+        this.sendMessage("game_update", update);
     }
 
     public async sendMessage(type: string, payload: any) {
-        this.socket.emit(type , payload);
+        if(!this.hasLeft){
+            this.socket.emit(type , payload);
+        }
     }
 
     public getSpeed(): number {

@@ -15,13 +15,15 @@ export class Game {
     private gameStartTime: number;
     private static AllGames: Game[];
     private running: boolean;
-    private winSide: number;
+    private wonPlayerId: number;
+    private draw: boolean;
 
     constructor(id: number, player1: User, player2: User | null) {
         this.id = id;
         this.user1 = player1;
         this.user2 = player2;
         this.gameWidth = 10000;
+        this.draw = false;
 
         if(Game.AllGames === undefined) {
             Game.AllGames = [];
@@ -31,6 +33,8 @@ export class Game {
     }
 
     public async init() {
+        
+        this.running = true;
         this.player1 = await this.user1.startGame(0, this.playerReady.bind(this), false);
         if (this.user2 === null) {
             this.player2 = new Npc(this.gameWidth, true);
@@ -51,7 +55,6 @@ export class Game {
     }
 
     private async startGameCountdown() {
-        this.running = true;
         this.gameStartTime = Date.now();
         console.log("game started");
         this.timeOfLastUpdate = Date.now();
@@ -106,11 +109,15 @@ export class Game {
         const player1Hit = this.getPointHit(this.player1.getWeaponHeight(), this.player2);
         const player2Hit = this.getPointHit(this.player2.getWeaponHeight(), this.player1);
 
-        if(this.player1.getHitpoints() <= 0){
-            this.winSide = 0;
+        if(this.player1.getHitpoints() <= 0 && this.player2.getHitpoints() <= 0){
+            this.draw = true;
+        }else if(this.player1.getHitpoints() <= 0){
+            if(this.user2 !== null) {              
+                this.wonPlayerId = this.user2.getDatabaseId();
+            }
             this.running = false;
         }else if(this.player2.getHitpoints() <= 0){
-            this.winSide = 1;
+            this.wonPlayerId = this.user1.getDatabaseId();
             this.running = false;
         } 
 
@@ -127,11 +134,25 @@ export class Game {
     }
 
     private endGame(player1Hit: HitPoint, player2Hit: HitPoint) {
-        this.player1.endGame(this.player2, player1Hit, player2Hit);
-        this.player2.endGame(this.player1, player2Hit, player1Hit);
-        console.log("game ended");
-        DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.winSide);
-        Game.removeGame(this);
+        if(this.draw) {
+            this.player1.endGame(this.player2, player1Hit, player2Hit, true);
+            this.player2.endGame(this.player1, player2Hit, player1Hit, true);
+            console.log("game ended");
+            DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.user1.getDatabaseId());    
+            if(this.user2 !== null) {        
+                DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.user2.getDatabaseId());
+            }
+        }else {
+            let player2Winner = true;
+            if(this.wonPlayerId === this.user1.getDatabaseId()) {
+                player2Winner = false;
+            }
+            this.player1.endGame(this.player2, player1Hit, player2Hit, !player2Winner);
+            this.player2.endGame(this.player1, player2Hit, player1Hit, player2Winner);
+            console.log("game ended");
+            DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.wonPlayerId);
+            Game.removeGame(this);
+        }
     }
 
     private static removeGame(game: Game) {
@@ -145,11 +166,9 @@ export class Game {
         }
         for(const game of Game.AllGames) {
             if(game.user1 === user){
-                game.running = false;
-                game.winSide = 1;
+                game.setPlayerLeft(user.getDatabaseId()); 
             }else if(game.user2 === user) {
-                game.running = false;
-                game.winSide = 0;
+                game.setPlayerLeft(user.getDatabaseId());
             }
         }
     }
@@ -162,6 +181,20 @@ export class Game {
             width: this.gameWidth
         };
         return logObj;
+    }
+
+    private setPlayerLeft(playerId: number) {
+        this.running = false;
+        if(this.user1.getDatabaseId() === playerId) {
+            this.player1.leaveGame();
+            if(this.user2 !== null) {
+                this.wonPlayerId = this.user2.getDatabaseId();
+            }
+        }
+        if(this.user2 !== null && this.user2.getDatabaseId() === playerId) {
+            this.player2.leaveGame();
+            this.wonPlayerId = this.user1.getDatabaseId();
+        }
     }
 
     private getPointHit(weaponHeight: number, enemy: Player): HitPoint {
