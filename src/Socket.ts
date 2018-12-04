@@ -159,6 +159,16 @@ export class GameSocket {
         Game.endGameContainingPlayer(player);
     }
 
+    private async getWins(client: Socket.Socket, ack: (wins: number) => void) {
+        const player = User.getPlayerBySocketId(client.id);
+        if(player === null) {
+            client.disconnect();
+            return;
+        }
+        const wins = await DatabaseConnection.getDatabaseConnection().getPlayerWins(player.getDatabaseId());
+        ack(wins);
+    }
+
     private registerEvents(socket: Socket.Socket) {
         socket.on("disconnect", this.onDisconnected.bind(this, socket));;
         socket.on("start_singleplayer", this.startSinglePlayer.bind(this, socket));
@@ -166,6 +176,7 @@ export class GameSocket {
         socket.on("get_equipment", this.getPlayerEquipment.bind(this, socket));
         socket.on("set_equipment", this.setEquipment.bind(this, socket));
         socket.on("leave_game", this.leaveGame.bind(this, socket));
+        socket.on("get_wins", this.getWins.bind(this. socket));
     }
 
 }

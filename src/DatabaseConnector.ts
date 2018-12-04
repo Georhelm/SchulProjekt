@@ -197,6 +197,11 @@ export class DatabaseConnection {
         await this.query("Update users set mountid = ? where id = ?", [mountId, userId]);
     }
 
+    public async getPlayerWins(userId: number) {
+        const result = await this.query("Select Count(*) as wins from game_winner where player_id = ?", [userId]);
+        return result[0].wins;
+    }
+
 }
 
 export interface CommunicationData {
