@@ -359,8 +359,9 @@ public class GameView extends SurfaceView implements Runnable{
         int healthbarOffset = PixelConverter.convertWidth(100,context);
         int healthbarHeight = PixelConverter.convertHeight(100,context);
         int healthbarLength = PixelConverter.convertWidth(player.getHitpoints()*7,context);
+        int enemyHealthbarLength = PixelConverter.convertWidth(enemy.getHitpoints() * 7, context);
         canvas.drawLine(healthbarOffset,healthbarHeight,healthbarLength+healthbarOffset,healthbarHeight,healthBarPaint);
-        canvas.drawLine(canvas.getWidth()-healthbarOffset,healthbarHeight,canvas.getWidth()-healthbarOffset-healthbarLength,healthbarHeight,healthBarPaint);
+        canvas.drawLine(canvas.getWidth()-healthbarOffset,healthbarHeight,canvas.getWidth()-healthbarOffset-enemyHealthbarLength,healthbarHeight,healthBarPaint);
     }
 
     /*
