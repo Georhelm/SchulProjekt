@@ -24,7 +24,7 @@ export class Npc extends Player  {
     }
 
     public async sendGameUpdate(update: GameUpdate) {
-        //console.log("NPC recieved gameupdate");
+        
     }
 
     public async sendMessage(type: string) {

@@ -4,6 +4,7 @@ import GameRouter = require("./Router");
 import {Config} from "./Config";
 import {GameSocket} from "./Socket";
 import {DatabaseConnection} from "./DatabaseConnector";
+require('source-map-support').install();
 
 const config: Config = require("../config.json");
 

@@ -150,7 +150,9 @@ export class Game {
             this.player1.endGame(this.player2, player1Hit, player2Hit, !player2Winner);
             this.player2.endGame(this.player1, player2Hit, player1Hit, player2Winner);
             console.log("game ended");
-            DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.wonPlayerId);
+            if(this.wonPlayerId !== null && this.wonPlayerId !== undefined) {
+                DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.wonPlayerId);
+            }
             Game.removeGame(this);
         }
     }

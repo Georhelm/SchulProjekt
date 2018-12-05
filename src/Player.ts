@@ -128,11 +128,8 @@ export class Player {
     public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, victory: boolean) {
 
         this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "gameEnd", victory);
-        this.socket.removeAllListeners("player_ready");
-        this.socket.removeAllListeners("game_update");
-
-        
-        //this.socket.removeListener("game_input", this.onGameInput.bind(this));
+        this.socket.removeListener("player_ready", this.onPlayerReady);
+        this.socket.removeListener("game_input", this.onGameInput.bind(this));
     }
 
     public sendFullGameState(enemy: Player, gameWidth: number) {
@@ -220,7 +217,6 @@ export class Player {
                 }
             }
         }
-        console.log("VICTORY: " +victory);
         if(victory !== undefined) {
             endRoundUpdate.value.victory = victory;
         }

@@ -105,6 +105,7 @@ export class GameSocket {
             this.gameQueue.push(player);
             client.emit("searching_multiplayer");
             client.once("cancel_search", this.cancelSearch.bind(this, client));
+            console.log("Queue length: " + this.gameQueue.length);
         }
         
     }
@@ -122,7 +123,7 @@ export class GameSocket {
         }
     }
 
-    private async getPlayerEquipment(client: Socket.Socket) {
+    private async getPlayerEquipment(client: Socket.Socket, ack: (message: any) => void) {
         const player = User.getPlayerBySocketId(client.id);
         console.log("Getting equipment"); 
         if (player === null)  {
@@ -136,7 +137,7 @@ export class GameSocket {
             mounts,
             selectedMount: selectedMount.getId()
         }
-        client.emit("recieve_equipment", message);
+        ack(message);
     }
 
     private async setEquipment(client: Socket.Socket, data: EquipmentData) {
@@ -165,18 +166,19 @@ export class GameSocket {
             client.disconnect();
             return;
         }
+        console.log("getting wins");
         const wins = await DatabaseConnection.getDatabaseConnection().getPlayerWins(player.getDatabaseId());
         ack(wins);
     }
 
     private registerEvents(socket: Socket.Socket) {
-        socket.on("disconnect", this.onDisconnected.bind(this, socket));;
+        socket.on("disconnect", this.onDisconnected.bind(this, socket));
         socket.on("start_singleplayer", this.startSinglePlayer.bind(this, socket));
         socket.on("start_multiplayer", this.startMultiplayer.bind(this, socket));
         socket.on("get_equipment", this.getPlayerEquipment.bind(this, socket));
         socket.on("set_equipment", this.setEquipment.bind(this, socket));
         socket.on("leave_game", this.leaveGame.bind(this, socket));
-        socket.on("get_wins", this.getWins.bind(this. socket));
+        socket.on("get_wins", this.getWins.bind(this, socket));
     }
 
 }
