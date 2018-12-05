@@ -21,7 +21,7 @@ Prerequisites: nodejs and npm
 * hashkey: key for SHA256 encryption
 * port: port to start listening for connections
 
-##Packages
+## Packages
 
 * express: Manages Routes of Webserver
 * socket-io: Manages communication in game
