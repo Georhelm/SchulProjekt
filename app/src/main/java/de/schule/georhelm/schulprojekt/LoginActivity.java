@@ -18,6 +18,8 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 public class LoginActivity extends AppCompatActivity implements ICommunicationResult {
+
+    //#region protected methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,8 +48,14 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
         }
 
     }
+    //#endregion protected methods
 
-    public void tryLogin(View v){
+    //#region public methods
+    /**
+     * Tries to log in with the username and password inserted inteo the textfields.
+     * @param view The view this method is called from.
+     */
+    public void tryLogin(View view){
         EditText userField = this.findViewById(R.id.inputUser);
         String user = userField.getText().toString();
         EditText passwordField = this.findViewById(R.id.inputPassword);
@@ -57,10 +65,11 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
         communicator.execute("login",user,password);
     }
 
-
-
+    /**
+     * Gets the result of trying to log in and saves a token on success and calls to create a socketconnection.
+     * @param result
+     */
     public void onResult(JSONObject result){
-
         boolean success;
         try{
             success = result.getString("result").equals("success");
@@ -76,6 +85,11 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
         }
     }
 
+    /**
+     *Creates a connection to socket by using the token.
+     * Goes to Menu activity on success.
+     * @param token A String containing the token to log into the socket connection
+     */
     public void createConnection(String token){
         ConnectionSocket socket = new ConnectionSocket(token);
         ConnectionSocket.setSocket(socket);
@@ -85,11 +99,19 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
         }
     }
 
-    public void openRegisterView(View v){
+    /**
+     *Opens the register activity.
+     * @param view The view this method is called from.
+     */
+    public void openRegisterView(View view){
         Intent intent = new Intent(this, RegisterActivity.class);
         this.startActivity(intent);
     }
 
+    /**
+     * Saves the connection token on app-internal storage to remember log-in sessions.
+     * @param token The token that needs to be saved.
+     */
     public void saveToken(String token) {
         File appInternalDirectory = getFilesDir();
         File tokenSave = new File(appInternalDirectory + "/accessToken.txt");
@@ -105,4 +127,6 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
         }
 
     }
+    //#endregion public methods
+
 }

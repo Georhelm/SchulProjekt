@@ -7,13 +7,21 @@ import android.os.Handler;
 
 public class SearchHandler implements Runnable {
 
+    //#region properties
     private int seconds;
     private boolean running;
     private TextView field;
     private Context context;
     private Handler handler;
     private final int delay = 1000;
+    //#endregion properties
 
+    //#region constructor
+    /**
+     * Class for handling the time while waiting for multiplayer game to start.
+     * @param context Context which this class is called from.
+     * @param field Field in which the number of counting seconds is displayed.
+     */
     public SearchHandler(Context context, TextView field) {
         this.seconds = 0;
         this.running = true;
@@ -22,6 +30,13 @@ public class SearchHandler implements Runnable {
         this.handler = new Handler();
         this.handler.postDelayed(this, 0);
     }
+    //#endregion constructor
+
+    //#region public methods
+    /**
+     * Counts seconds from 0 upwards until the method end() is called.
+     * Has a delay to prevent executing too many times.
+     */
     @Override
     public void run() {
         seconds++;
@@ -33,8 +48,11 @@ public class SearchHandler implements Runnable {
             this.field.setText("");
         }
     }
-
+    /**
+     * Sets running property of this Handler to false, so the run() loop stops.
+     */
     public void end() {
         this.running = false;
     }
+    //#endregion public methods
 }

@@ -5,10 +5,18 @@ import android.media.MediaPlayer;
 
 public class SoundManager {
 
+    //#region properties
     static MediaPlayer themeMusicIntroMP;
     static MediaPlayer themeMusicLoopMP;
     static boolean muted = false;
+    //#endregion properties
 
+    //#region public static methods
+    /**
+
+     * Starts the theme music and loops it.
+     * @param context Context from which this method is called.
+     */
     public static void startThemeMusic(Context context){
         muted = false;
         themeMusicIntroMP = MediaPlayer.create(context, R.raw.medievalsongintro);
@@ -24,7 +32,9 @@ public class SoundManager {
         });
         themeMusicIntroMP.start();
     }
-
+    /**
+     * Stops music from playing.
+     */
     public static void stopThemeMusic(){
         muted = true;
         if(themeMusicIntroMP != null && themeMusicLoopMP != null){
@@ -37,7 +47,11 @@ public class SoundManager {
         }
 
     }
-
+    /**
+     * Toggles music on and off and returns wheter it is then muted or not.
+     * @param context Context from which this method is called.
+     * @return Returns the state after toggling.
+     */
     public static boolean toggleMusic(Context context){
         if(muted){
             startThemeMusic(context);
@@ -46,4 +60,5 @@ public class SoundManager {
         }
         return muted;
     }
+    //#endregion public static methods
 }

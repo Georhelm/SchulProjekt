@@ -8,85 +8,35 @@ import android.graphics.Matrix;
 import org.json.JSONObject;
 
 public class Player {
-    private Bitmap bitmap;
-    private int pos;
-    private int startPos;
+
+    //#region properties
     private String name;
-    private int x;
-    private int nextHitpoints;
-
-    public int getY() {
-        return y;
-    }
-
-    private int y;
-    private boolean isEnemy;
-    private Matrix matrix;
-    private int height;
-
-    public int getWidth() {
-        return width;
-    }
-
-    private int width;
-    private int handHeight;
-
-    public int getHitpoints() {
-        return hitpoints;
-    }
-
-    private int hitpoints;
-
-    public int getLastHit() {
-        return lastHit;
-    }
-
-    public void setLastHit(int lastHit) {
-        this.lastHit = lastHit;
-    }
-
-    private int lastHit;
-    public int mountHeight;
-
-    public int getX() {
-        return this.x;
-    }
-
-    public int getPos() {
-        return pos;
-    }
-
-    public void setPos(int pos) {
-        this.pos = pos;
-    }
-
-    public Lance getLance() {
-        return lance;
-    }
-
-    public void setHitpoints(int hitpoints) {
-        this.hitpoints = hitpoints;
-    }
-
-    public void setLance(Lance lance) {
-        this.lance = lance;
-    }
-
-    public Mount getMount() {
-        return mount;
-    }
-
-    public void setMount(Mount mount) {
-        this.mount = mount;
-    }
-
     private Lance lance;
     private Mount mount;
+    private Bitmap bitmap;
+    private Matrix matrix;
+    private int startPos;
+    private int pos;
+    private int x;
+    private int y;
+    private int hitpoints;
+    private int nextHitpoints;
+    private int height;
+    private int width;
+    private int handHeight;
+    private int lastHit;
+    private int mountHeight;
+    private boolean isEnemy;
+    //#endregion properties
 
-    public Matrix getMatrix() {
-        return matrix;
-    }
-
+    //#region constructor
+    /**
+     * Player class from which the player and the enemy is created. It contains all the important information and objects belonging to the player,
+     * like mount, lance and positions.
+     * @param context The context in which the object is created.
+     * @param player The JSONObject player from the server, which contains all the information regarding that specific player.
+     * @param isEnemy A boolean to determine whether the object created is the enemy or not.
+     */
     public Player(Context context, JSONObject player, boolean isEnemy){
         this.isEnemy = isEnemy;
 
@@ -118,8 +68,8 @@ public class Player {
             this.lance = Lance.getLanceByID(player.getInt("weaponId"));
             this.mount = Mount.getMountByID(player.getInt("mountId"));
             this.hitpoints = player.getInt("hitpoints");
-            this.mountHeight = PixelConverter.convertY(player.getInt("mountHeight"),1,context);
-            this.y = PixelConverter.convertY(player.getInt("mountHeight"),this.height, context) + this.handHeight;
+            this.mountHeight = PixelConverter.convertY(player.getInt("mountHeight"),this.height, context);
+            this.y = mountHeight + this.handHeight;
             this.matrix = new Matrix();
             this.matrix.reset();
             this.matrix.postTranslate(this.x, this.y);
@@ -129,32 +79,91 @@ public class Player {
             e.printStackTrace();
         }
     }
+    //#endregion constructor
 
+    //#region getters
+    public int getMountHeight() {
+        return mountHeight;
+    }
+    public int getWidth() {
+        return width;
+    }
+    public int getHitpoints() {
+        return hitpoints;
+    }
+    public int getLastHit() {
+        return lastHit;
+    }
+    public int getX() {
+        return this.x;
+    }
+    public int getPos() {
+        return pos;
+    }
+    public Lance getLance() {
+        return lance;
+    }
+    public Mount getMount() {
+        return mount;
+    }
+    public Matrix getMatrix() {
+        return matrix;
+    }
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+    //#endregion getters
+
+    //#region setters
+    public void setLastHit(int lastHit) {
+        this.lastHit = lastHit;
+    }
+    public void setPos(int pos) {
+        this.pos = pos;
+    }
+    public void setMount(Mount mount) {
+        this.mount = mount;
+    }
+    public void setNextHitpoints(int nextHitpoints){
+        this.nextHitpoints = nextHitpoints;
+    }
+    //#endregion setter
+
+    //#region public methods
+    /**
+     * resets the pos of this object back to startPos
+     */
     public void resetPos(){
         this.pos = this.startPos;
     }
 
+    /**
+     * Sends to the connectionSocket that the player is giving an input.
+     */
     public void lanceUp() {
         ConnectionSocket.getSocket().playerInput(true);
     }
 
+    /**
+     * Sends to the connectionSocket that the player is giving no input.
+     */
     public void lanceDown() {
         ConnectionSocket.getSocket().playerInput(false);
     }
 
+    /**
+     * Sets the angle of the Lance to given angle.
+     * @param angle
+     */
     public void setLanceAngle(int angle) {
         this.lance.setAngle(angle);
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
-    }
-
+    /**
+     * Updates hitpoints to the amount of nextHitpoints.
+     */
     public void updateHitpoints(){
         this.hitpoints = nextHitpoints;
     }
-
-    public void setNextHitpoints(int nextHitpoints){
-        this.nextHitpoints = nextHitpoints;
-    }
+    //#endregion public methods
 }

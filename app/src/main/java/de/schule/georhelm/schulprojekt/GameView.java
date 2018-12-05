@@ -18,7 +18,6 @@ import org.json.JSONObject;
 public class GameView extends SurfaceView implements Runnable{
 
     volatile boolean playing;
-
     private Thread gameThread = null;
     private Player player;
     private Player enemy;
@@ -371,9 +370,9 @@ public class GameView extends SurfaceView implements Runnable{
         Paint paintDos = new Paint();
         paintDos.setStrokeWidth(20);
         paintDos.setColor(Color.RED);
-        canvas.drawLine(this.enemy.getX()+400,this.enemy.mountHeight-75,this.enemy.getX()+400,this.enemy.mountHeight-175, paintDos);
+        canvas.drawLine(this.enemy.getX()+400,this.enemy.getMountHeight()-75,this.enemy.getX()+400,this.enemy.getMountHeight()-175, paintDos);
         paintDos.setColor(Color.YELLOW);
-        canvas.drawLine(this.enemy.getX()+400,this.enemy.mountHeight-75,this.enemy.getX()+400,this.enemy.mountHeight+25, paintDos);
+        canvas.drawLine(this.enemy.getX()+400,this.enemy.getMountHeight()-75,this.enemy.getX()+400,this.enemy.getMountHeight()+25, paintDos);
     }
 
     private void drawCountdownText(Canvas canvas){

@@ -1,26 +1,41 @@
 package de.schule.georhelm.schulprojekt;
 
-import android.arch.core.util.Function;
 import android.os.AsyncTask;
-
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Used for user login and register process.
+ */
 public class ServerCommunicator extends AsyncTask<String,Void,String> {
 
+    //#region private properties
     private String baseURL;
-
     private ICommunicationResult communicationResult;
+    //#endregion private properties
 
+    //#region constructor
+    /**
+     *Servercommunicator to manage Login and Register activity.
+     * @param communicationResult where the communicationResult is sent to.
+     */
     public ServerCommunicator(ICommunicationResult communicationResult){
         this.baseURL = "http://siffers.de:1234"; //Get out of config later
         this.communicationResult = communicationResult;
     }
+    //#endregion constructor
 
+    //#region private methods
+    /**
+     * Send JSON of username and password to url (Might be login or register)
+     * @param URL Url to send to.
+     * @param username Username given.
+     * @param password  Password given.
+     * @return Returns the response from the server.
+     */
     private String postToURL(String URL, String username, String password){
         String requestBody = "{\"user\": \""+username+"\", \"password\":\""+password+"\"}";
         HttpURLConnection con;
@@ -52,7 +67,14 @@ public class ServerCommunicator extends AsyncTask<String,Void,String> {
             return e.getMessage();
         }
     }
+    //#endregion private methods
 
+    //#region protected methods
+    /**
+     * Used to send data to server. Decides whether it´s a login or register activity.
+     * @param data data[0] is either "register" or "login" , data[1] is Username, data[2] is password
+     * @return Returns the URL from the server, which is returned by method postToURL
+     */
     @Override
     protected String doInBackground(String... data) {
         if(data[0].equals("register")){
@@ -63,7 +85,11 @@ public class ServerCommunicator extends AsyncTask<String,Void,String> {
         return null;
 
     }
-
+    /**
+     *Callback after recieving response from server.
+     * Sends results to calling object.
+     * @param result
+     */
     @Override
     protected void onPostExecute(String result) {
         try{
@@ -72,6 +98,14 @@ public class ServerCommunicator extends AsyncTask<String,Void,String> {
         }catch(Exception e){
             e.printStackTrace();
         }
-        }
     }
+    //#endregion protected methods
+}
+
+
+
+
+
+
+
 

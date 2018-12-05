@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Mount {
+
+    //#region properties
     private String name;
     private Bitmap bitmap;
     private int x;
@@ -18,11 +20,19 @@ public class Mount {
     private int id;
     private static List<Mount> mounts;
     private Matrix matrix;
+    //#endregion properties
 
-    public Matrix getMatrix() {
-        return matrix;
-    }
-
+    //#region constructors
+    /**
+     * Creates a mount with given parameters. Ads it to static Mountlist if not existing yet, so every mount exists only once.
+     * @param context The Context from which this method is called.
+     * @param id An integer representing the id of the mount.
+     * @param x An integer representing the x position of the mount in relation to player.
+     * @param y An integer representing the y position of the mount in relation to player.
+     * @param width An integer representing the width of the mount.
+     * @param height An integer representing the height of the mount.
+     * @param name A string representing the name of the mount.
+     */
     public Mount(Context context, int id, int x, int y, int width, int height, String name){
         this.name = name;
         this.x = PixelConverter.convertWidth(x, context);
@@ -52,7 +62,12 @@ public class Mount {
             Mount.mounts.add(this);
         }
     }
-    public Mount (Mount mount){
+
+    /**
+     * Creates a copy of given Mount.
+     * @param mount The mount that is to be copied.
+     */
+    private Mount (Mount mount){
         this.id = mount.id;
         this.x = mount.x;
         this.y = mount.y;
@@ -60,10 +75,37 @@ public class Mount {
         this.bitmap = mount.bitmap.copy(mount.bitmap.getConfig(),true);
         this.matrix = new Matrix(mount.matrix);
     }
+    //#endregion constructors
 
+    //#region getters
+    public Matrix getMatrix() {
+        return matrix;
+    }
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+    //#endregion getters
+
+    //#region public methods
+    /**
+     * Translates the matrix of this mount to the same position of given Values.
+     * @param valueX  An integer representing the x value the matrix has to be translated to.
+     * @param valueY An integer representing the y value the matrix has to be translated to.
+     */
+    public void updateMatrix(int valueX, int valueY){
+        this.matrix.postTranslate(valueX, valueY);
+    }
+    //#endregion public methods
+
+    //#region public static methods
+
+    /**
+     * Returns a mount from the static Mounts list by given id.
+     * @param id An integer which represents the id of the mount to be retrieved.
+     * @return
+     */
     public static Mount getMountByID(int id){
         List<Mount> mounts = Mount.mounts;
-
         for(Mount mount: mounts){
             if(mount.id == id){
                 return new Mount(mount);
@@ -71,12 +113,5 @@ public class Mount {
         }
         return null;
     }
-
-    public Bitmap getBitmap() {
-        return bitmap;
-    }
-
-    public void updateMatrix(int playerX, int playerY){
-        this.matrix.postTranslate(playerX, playerY);
-    }
+    //#endregion public static methods
 }

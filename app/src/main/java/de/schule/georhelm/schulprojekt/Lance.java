@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Lance {
+
+    //#region properties
     private Bitmap bitmap;
     private static List<Lance> lances;
     private int x;
@@ -19,26 +21,25 @@ public class Lance {
     private String name;
     private int rotation;
     private Matrix matrix;
-
+    private int tipYPos;
+    //#endregion properties
+    //#region getters
     public int getTipYPos() {
         return tipYPos;
     }
-
-    public void setTipYPos(int tipYPos) {
-        this.tipYPos = tipYPos;
-    }
-
-    private int tipYPos;
-
-
     public Matrix getMatrix() {
         return matrix;
     }
-
     public Bitmap getBitmap() {
         return bitmap;
     }
-
+    //#endregion getters
+    //#region setters
+    public void setTipYPos(int tipYPos) {
+        this.tipYPos = tipYPos;
+    }
+    //#endregion setters
+    //#region constructors
     public Lance(Context context, int id, int x, int y, int width, int height, String name){
         this.id = id;
         this.x = PixelConverter.convertWidth(x, context);
@@ -75,7 +76,6 @@ public class Lance {
             Lance.lances.add(this);
         }
     }
-
     public Lance(Lance lance){
         this.name = lance.name;
         this.id = lance.id;
@@ -86,8 +86,8 @@ public class Lance {
         this.matrix = new Matrix(lance.matrix);
         this.bitmap = lance.bitmap.copy(lance.bitmap.getConfig(),true);
     }
-
-
+    //#endregion constructors
+    //#region public static methods
     public static Lance getLanceByID(int id){
         List<Lance> lances = Lance.lances;
 
@@ -98,19 +98,27 @@ public class Lance {
         }
         return null;
     }
-
-    public void updateMatrix(int playerX, int playerY){
-        this.x += playerX;
-        this.y += playerY;
-        this.matrix.postTranslate(playerX, playerY);
+    //#endregion public static methods
+    //#region public methods
+    /**
+     * Translates the x and y coordinates of the lance according to given values.
+     * @param valueX An integer representing the x value for transformation.
+     * @param valueY An integer representing the y value for transformation.
+     */
+    public void updateMatrix(int valueX, int valueY){
+        this.x += valueX;
+        this.y += valueY;
+        this.matrix.postTranslate(valueX, valueY);
     }
 
+    /**
+     * Sets the angle of the Lance.
+     * @param angle An integer representing the degrees of the angle.
+     */
     public void setAngle(int angle) {
         this.matrix.reset();
         this.matrix.postRotate(angle, this.width/2, this.height/1.5f);
         this.matrix.postTranslate(this.x, this.y);
     }
-
-
-
+    //#endregion public methods
 }

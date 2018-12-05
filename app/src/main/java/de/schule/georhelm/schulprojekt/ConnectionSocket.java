@@ -12,20 +12,41 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 public class ConnectionSocket {
+
+    //#region static properties
+    private static ConnectionSocket connectionSocket;
+    //#endregion static properties
+
+    //#region properties
     private Socket socket;
     private String token;
-    public static ConnectionSocket getSocket() {
-        return ConnectionSocket.connectionSocket;
-    }
-    public static void setSocket(ConnectionSocket socket) {
-        ConnectionSocket.connectionSocket = socket;
-    }
-    private static ConnectionSocket connectionSocket;
+    //#endregion properties
 
+    //#region constructors
     public ConnectionSocket(String token) {
         this.token = token;
     }
+    //#endregion constructor
 
+    //#region static setters
+    public static void setSocket(ConnectionSocket socket) {
+        ConnectionSocket.connectionSocket = socket;
+    }
+    //#endregion static setters
+
+    //#region static getters
+    public static ConnectionSocket getSocket() {
+        return ConnectionSocket.connectionSocket;
+    }
+    //#endregion static getters
+
+    //#region public methods
+
+    /**
+     * Initializes socket and sets the onEventConnect event.
+     * @param context The Context from which this method is called.
+     * @return
+     */
     public boolean init(final Context context){
         try{
             IO.Options options = new IO.Options();
@@ -38,8 +59,7 @@ public class ConnectionSocket {
                 public void call(Object... args) {
                 }
 
-            }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() { //Disconnect event
-
+            }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
                     Intent intent = new Intent(context, LoginActivity.class);
@@ -56,6 +76,10 @@ public class ConnectionSocket {
         }
     }
 
+    /**
+     * Disconnects the socket.
+     * @return
+     */
     public boolean logOut(){
         try{
             socket.disconnect();
@@ -66,6 +90,11 @@ public class ConnectionSocket {
         }
     }
 
+    /**
+     * Creates a JSONObject containing the information for the server, that the lance should be lifted.
+     * Emits that information.
+     * @param lanceUp
+     */
     public void playerInput(boolean lanceUp) {
         JSONObject data = new JSONObject();
         try {
@@ -78,15 +107,27 @@ public class ConnectionSocket {
 
     }
 
+    /**
+     * Emits event to the server to notify that the player is ready
+     */
     public void playerReady(){
         socket.emit("player_ready");
     }
 
+    /**
+     * Notifies server to start a singleplayergame. Starts the game.
+     * @param menuActivity The menuActivity calling this method.
+     */
     public void startSingleplayerGame(final MenuActivity menuActivity){
         startGame(menuActivity);
         socket.emit("start_singleplayer");
     }
 
+    /**
+     * Starts to search for a multiplayer game.
+     * Listen to Server when game is found
+     * @param menuActivity
+     */
     public void startMultiplayerGame(final MenuActivity menuActivity){
         startGame(menuActivity);
         socket.emit("start_multiplayer");
@@ -98,15 +139,68 @@ public class ConnectionSocket {
         });
     }
 
-    private void startGame(final MenuActivity menuActivity) {
-        socket.once("found_game", new Emitter.Listener() {
+    /**
+     * Notify server that search is cancelled.
+     */
+    public void cancelSearch(){
+        socket.emit("cancel_search");
+    }
+
+    /**
+     * call all available equipment from server.
+     * @param equipmentActivity the equipmentActivity calling this method.
+     */
+    public void getAvailableEquipment(final EquipmentActivity equipmentActivity){
+        socket.emit("get_equipment", null, new Ack() {
             @Override
             public void call(Object... args) {
-                menuActivity.startGame((JSONObject)args[0]);
+                JSONObject equipment = (JSONObject)args[0];
+                equipmentActivity.fillEquipment(equipment);
             }
         });
     }
 
+    /**
+     * Notify server which equipment has to be saved.
+     * @param mountId
+     */
+    public void saveEquipment(int mountId){
+        JSONObject equipment = new JSONObject();
+        try {
+            equipment.put("mountId",mountId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        socket.emit("set_equipment",equipment);
+    }
+
+    /**
+     * Gets wincount of the player from server (By acknowledgement).
+     * @param menu The MenuActivity calling this method.
+     */
+    public void getWinCount(final MenuActivity menu) {
+        socket.emit("get_wins", null, new Ack() {
+            @Override
+            public void call(Object... args) {
+                if(args[0] instanceof Integer) {
+                    menu.setWins((int) args[0]);
+                }
+            }
+        });
+    }
+
+    /**
+     * Notifies the Server that player has left the game.
+     */
+    public void leaveGame() {
+        socket.emit("leave_game");
+    }
+
+    /**
+     * Initializes the main game.
+     * Refreshes and activates listener for gameUpdates which update the game data.
+     * @param gameView
+     */
     public void initGame(final GameView gameView){
         socket.off("game_update");
         socket.on("game_update", new Emitter.Listener() {
@@ -145,7 +239,27 @@ public class ConnectionSocket {
             }
         });
     }
+    //#endregion public methods
 
+    //#region private methods
+    /**
+     * Listens to server if a game is found, then starts the game in the menu activity.
+     * @param menuActivity The menuactivity in which the game should be started.
+     */
+    private void startGame(final MenuActivity menuActivity) {
+        socket.once("found_game", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                menuActivity.startGame((JSONObject)args[0]);
+            }
+        });
+    }
+    /**
+     * Updates player and enemy values at the end of round and starts endround animation of gameview.
+     * @param jsonObject The JSONObject from the server containing the updated data.
+     * @param gameView The gameview in which the current game is being drawn.
+     * @param isLastRound A boolean value representing if its the last round of the game.
+     */
     private void finishRound(JSONObject jsonObject, GameView gameView,boolean isLastRound){
         try{
             JSONObject values = jsonObject.getJSONObject("value");
@@ -169,43 +283,5 @@ public class ConnectionSocket {
             e.printStackTrace();
         }
     }
-
-    public void cancelSearch(){
-        socket.emit("cancel_search");
-    }
-
-    public void getAvailableEquipment(final EquipmentActivity equipmentActivity){
-        socket.emit("get_equipment", null, new Ack() {
-            @Override
-            public void call(Object... args) {
-                JSONObject equipment = (JSONObject)args[0];
-                equipmentActivity.fillEquipment(equipment);
-            }
-        });
-    }
-
-    public void saveEquipment(int mountId){
-        JSONObject equipment = new JSONObject();
-        try {
-            equipment.put("mountId",mountId);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        socket.emit("set_equipment",equipment);
-    }
-
-    public void getWinCount(final MenuActivity menu) {
-        socket.emit("get_wins", null, new Ack() {
-            @Override
-            public void call(Object... args) {
-                if(args[0] instanceof Integer) {
-                    menu.setWins((int) args[0]);
-                }
-            }
-        });
-    }
-
-    public void leaveGame() {
-        socket.emit("leave_game");
-    }
+    //#endregion private methods
 }

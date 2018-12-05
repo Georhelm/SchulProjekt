@@ -17,8 +17,11 @@ import java.io.IOException;
 
 public class GameActivity  extends AppCompatActivity {
 
+    //#region properties
     private GameView gameView;
+    //#endregion properties
 
+    //#region protected methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,16 +57,32 @@ public class GameActivity  extends AppCompatActivity {
         super.onResume();
         gameView.resume();
     }
+    //#endregion protected methods
 
+    //#region private methods
+    /**
+     * Loads all mounts from xml file.
+     * @throws XmlPullParserException Throws because loaded from xml.
+     * @throws IOException Throws because loaded from xml.
+     */
     private void loadMounts() throws XmlPullParserException, IOException {
         loadEquipmentFromXML("Mount", R.xml.mounts);
     }
-
-
+    /**
+     * Loads all weapons from xml file.
+     * @throws XmlPullParserException Throws because loaded from xml.
+     * @throws IOException Throws because loaded from xml.
+     */
     private void loadLances() throws XmlPullParserException, IOException {
         loadEquipmentFromXML("Lance", R.xml.lances);
     }
-
+    /**
+     * Loads equipment from xml depending on given type and resource.
+     * @param type String representing the type of equipment to be loaded. Either "mount" or "lance".
+     * @param xmlResourceId Resource tyoe what should be loaded. E.g. "R.xml.lances".
+     * @throws XmlPullParserException Throws because loaded from xml.
+     * @throws IOException Throws because loaded from xml.
+     */
     private void loadEquipmentFromXML(String type, int xmlResourceId) throws XmlPullParserException, IOException {
         Integer id = -1;
         String name = "";
@@ -107,12 +126,19 @@ public class GameActivity  extends AppCompatActivity {
             eventType = xmlResourceParser.next();
         }
     }
+    //#endregion private methods
 
+    //#region public methods
+    /**
+     * Overrides the press of back button to trigger socket.leaveGame() before finishing the activity.
+     */
     @Override
     public void onBackPressed() {
         ConnectionSocket.getSocket().leaveGame();
         this.finish();
     }
+    //#endregion public methods
+
 
 
 }

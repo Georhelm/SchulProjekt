@@ -14,10 +14,46 @@ import java.io.File;
 
 public class MenuActivity extends AppCompatActivity {
 
+    //#region properties
     private ConnectionSocket socket;
     private SearchHandler searchHandler;
     private boolean isSearching;
+    //#endregion properties
 
+    //#region private methods
+    /**
+     * Resets the View back to inital state.
+     */
+    private void resetView(){
+        final MenuActivity activity = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Button btnEquipment = findViewById(R.id.buttonEquipment);
+                btnEquipment.setEnabled(true);
+
+                Button btnLogout = findViewById(R.id.buttonLogout);
+                btnLogout.setEnabled(true);
+
+                Button btnMultiplayer = findViewById(R.id.buttonMultiplayer);
+                btnMultiplayer.setText(R.string.textMultiplayer);
+
+                Button btnSinglePlayer = findViewById(R.id.buttonSingleplayer);
+                btnSinglePlayer.setEnabled(true);
+
+                if(activity.searchHandler != null) {
+                    activity.searchHandler.end();
+                }
+            }
+        });
+    }
+    //#endregion private methods
+
+    //#region protected methods
+    /**
+     * Initializes the socket additionally to the standard onCreate.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,29 +62,51 @@ public class MenuActivity extends AppCompatActivity {
         this.isSearching = false;
         this.socket.getWinCount(this);
     }
+    /**
+     * Resumes and retrieves the wincount.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        this.socket.getWinCount(this);
+    }
+    //#endregion protected methods
 
+    //#region public methods
+    /**
+     * Starts the GameActivity and resets this view.
+     * @param startGameSetting A JSONObject with information about the game to be started. This is retrieved by the server.
+     */
     public void startGame(JSONObject startGameSetting) {
         this.isSearching = false;
         Intent intent = new Intent(this, GameActivity.class);
         intent.putExtra("gamedata", startGameSetting.toString());
         this.startActivity(intent);
-
         this.resetView();
     }
-
-    public void showEquipment(View v) {
+    /**
+     *Starts the equipment activity to choose equipment
+     * @param view The view from which this method is called
+     */
+    public void showEquipment(View view) {
         Intent intent = new Intent(this, EquipmentActivity.class);
         this.startActivity(intent);
     }
-
-    public void logOut(View v){
+    /**
+     * Logs out and deletes the AccessToken. Returns to Login activity.
+     * @param view The view this method is called from.
+     */
+    public void logOut(View view){
         socket.logOut();
         File appInternalDirectory = getFilesDir();
         File tokenSave = new File(appInternalDirectory + "/accessToken.txt");
         tokenSave.delete();
         this.finish();
     }
-
+    /**
+     * Sets the wins of player on the Textview.
+     * @param wins An integer representing the amount of wins of the player.
+     */
     public void setWins(final int wins) {
         final TextView winView = this.findViewById(R.id.menuWins);
         final String winString = this.getResources().getString(R.string.textWins);
@@ -59,7 +117,9 @@ public class MenuActivity extends AppCompatActivity {
             }
         });
     }
-
+    /**
+     * Disables all buttons but mute button and shows a searchtime count.
+     */
     public void showSearchingGame() {
         final MenuActivity activity = this;
         runOnUiThread(new Runnable() {
@@ -86,7 +146,10 @@ public class MenuActivity extends AppCompatActivity {
         });
 
     }
-
+    /**
+     * Toggles the sound between not muted and muted.
+     * @param view The view this method is called from.
+     */
     public void toggleSound(View view){
         final MenuActivity activity = this;
         runOnUiThread(new Runnable() {
@@ -106,12 +169,18 @@ public class MenuActivity extends AppCompatActivity {
         });
 
     }
-
-    public void startSinglePlayerGame(View v){
+    /**
+     *Calls the Socket to start a singlePlayergame.
+     * @param view The view this method is called from.
+     */
+    public void startSinglePlayerGame(View view){
         socket.startSingleplayerGame(this);
     }
-
-    public void startMultiPlayerGame(View v){
+    /**
+     * Calls the Socket to start a multiPlayergame
+     * @param view The view this method is called from.
+     */
+    public void startMultiPlayerGame(View view){
         if(this.isSearching){
             socket.cancelSearch();
             this.isSearching = false;
@@ -122,34 +191,5 @@ public class MenuActivity extends AppCompatActivity {
         }
 
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        this.socket.getWinCount(this);
-    }
-
-    private void resetView(){
-        final MenuActivity activity = this;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Button btnEquipment = findViewById(R.id.buttonEquipment);
-                btnEquipment.setEnabled(true);
-
-                Button btnLogout = findViewById(R.id.buttonLogout);
-                btnLogout.setEnabled(true);
-
-                Button btnMultiplayer = findViewById(R.id.buttonMultiplayer);
-                btnMultiplayer.setText(R.string.textMultiplayer);
-
-                Button btnSinglePlayer = findViewById(R.id.buttonSingleplayer);
-                btnSinglePlayer.setEnabled(true);
-
-                if(activity.searchHandler != null) {
-                    activity.searchHandler.end();
-                }
-            }
-        });
-    }
+    //#endregion public methods
 }
