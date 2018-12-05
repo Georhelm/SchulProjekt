@@ -24,6 +24,7 @@ public class MenuActivity extends AppCompatActivity {
         this.setContentView(R.layout.activity_menu);
         this.socket = ConnectionSocket.getSocket();
         this.isSearching = false;
+        this.socket.getWinCount(this);
     }
 
     public void startGame(JSONObject startGameSetting) {
@@ -46,6 +47,17 @@ public class MenuActivity extends AppCompatActivity {
         File tokenSave = new File(appInternalDirectory + "/accessToken.txt");
         tokenSave.delete();
         this.finish();
+    }
+
+    public void setWins(final int wins) {
+        final TextView winView = this.findViewById(R.id.menuWins);
+        final String winString = this.getResources().getString(R.string.textWins);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                winView.setText(winString + Integer.toString(wins));
+            }
+        });
     }
 
     public void showSearchingGame() {
@@ -109,6 +121,12 @@ public class MenuActivity extends AppCompatActivity {
             socket.startMultiplayerGame(this);
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        this.socket.getWinCount(this);
     }
 
     private void resetView(){

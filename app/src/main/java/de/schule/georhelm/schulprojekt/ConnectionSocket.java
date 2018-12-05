@@ -6,6 +6,7 @@ import android.content.Intent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -174,8 +175,7 @@ public class ConnectionSocket {
     }
 
     public void getAvailableEquipment(final EquipmentActivity equipmentActivity){
-        socket.emit("get_equipment");
-        socket.once("recieve_equipment", new Emitter.Listener() {
+        socket.emit("get_equipment", null, new Ack() {
             @Override
             public void call(Object... args) {
                 JSONObject equipment = (JSONObject)args[0];
@@ -192,6 +192,17 @@ public class ConnectionSocket {
             e.printStackTrace();
         }
         socket.emit("set_equipment",equipment);
+    }
+
+    public void getWinCount(final MenuActivity menu) {
+        socket.emit("get_wins", null, new Ack() {
+            @Override
+            public void call(Object... args) {
+                if(args[0] instanceof Integer) {
+                    menu.setWins((int) args[0]);
+                }
+            }
+        });
     }
 
     public void leaveGame() {

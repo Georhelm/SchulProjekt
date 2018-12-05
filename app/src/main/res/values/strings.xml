@@ -15,4 +15,5 @@
     <string name="textCancel">Cancel</string>
     <string name="textSelect">Select</string>
     <string name="textSaved">Saved</string>
+    <string name="textWins">Wins:\u0020</string>
 </resources>
