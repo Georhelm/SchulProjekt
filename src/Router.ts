@@ -1,13 +1,20 @@
 import {Router, Request, Response} from "express";
-import {Config} from "./Config";
 import {DatabaseConnection} from "./DatabaseConnector";
 
-const config: Config = require("../config.json");
-
+/**
+ * creates a router for authenticating to the server
+ * @returns the router
+ */
 export function createGameRouter(): Router {
 
     const GameRouter: Router = Router();
 
+    /**
+     * route that matches all post requests to '/register'
+     * registers a new user if none with that name exist
+     * @param route route to listen to
+     * @param handler handler for that route
+     */
     GameRouter.post("/register", async (req: Request, resp: Response) => {
         if (req.body.user && req.body.password) {
 
@@ -24,6 +31,12 @@ export function createGameRouter(): Router {
         
     });
 
+    /**
+     * route thaz matches all post requests to '/login'
+     * creates an authentication token for the user if login data is correct
+     * @param route route to listen to
+     * @param handler handler for that route
+     */
     GameRouter.post("/login", async (req: Request, resp: Response) => {
         if (req.body.user && req.body.password) {
             try {

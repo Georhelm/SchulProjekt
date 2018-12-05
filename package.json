@@ -19,10 +19,12 @@
   },
   "homepage": "https://github.com/Georhelm/SchulProjekt#readme",
   "dependencies": {
+    "@types/basic-auth": "^1.1.2",
     "@types/express": "^4.16.0",
     "@types/mysql": "^2.15.5",
     "@types/node": "^10.12.10",
     "@types/socket.io": "^1.4.39",
+    "basic-auth": "^2.0.1",
     "express": "^4.16.4",
     "mysql": "^2.16.0",
     "socket.io": "^2.2.0",

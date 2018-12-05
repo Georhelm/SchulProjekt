@@ -2,8 +2,17 @@ import {User} from "./User";
 import { Player, PlayerGameData, PlayerGameUpdate, HitPoint} from "./Player";
 import { Npc } from "./Npc";
 import { DatabaseConnection } from "./DatabaseConnector";
+import { Constants } from "./Constants";
 
 export class Game {
+
+//#region static properties
+
+private static AllGames: Game[];
+
+//#endregion static properties
+
+//#region properties
 
     private id: number;
     private user1: User;
@@ -12,17 +21,25 @@ export class Game {
     private player2: Player;
     private gameWidth: number;
     private timeOfLastUpdate: number;
-    private gameStartTime: number;
-    private static AllGames: Game[];
     private running: boolean;
     private wonPlayerId: number;
     private draw: boolean;
 
+//#endregion properties
+
+//#region constructor
+
+    /**
+     * creates a new game and saves it to the list of running games
+     * @param id the database id of the game
+     * @param player1 the first user
+     * @param player2 the second user of null if its an npc
+     */
     constructor(id: number, player1: User, player2: User | null) {
         this.id = id;
         this.user1 = player1;
         this.user2 = player2;
-        this.gameWidth = 10000;
+        this.gameWidth = Math.round(Math.random() * (Constants.MAXGAMEWIDTH - Constants.MINGAMEWIDTH) + Constants.MINGAMEWIDTH);
         this.draw = false;
 
         if(Game.AllGames === undefined) {
@@ -32,8 +49,15 @@ export class Game {
         Game.AllGames.push(this);
     }
 
+//#endregion constructor
+
+//#region public async methods
+
+    /**
+     * initializes the game and creates the player/npc objects
+     * sends the players a full gameupdate
+     */
     public async init() {
-        
         this.running = true;
         this.player1 = await this.user1.startGame(0, this.playerReady.bind(this), false);
         if (this.user2 === null) {
@@ -46,45 +70,26 @@ export class Game {
         this.player1.sendFullGameState(this.player2, this.gameWidth);
         this.player2.sendFullGameState(this.player1, this.gameWidth);
     }
-    
+
+//#endregion public async methods
+
+//#region private methods
+
+    /**
+     * checks if both players are ready
+     * if they are starts the game countdown
+     */
     private playerReady() {
-        console.log("player ready");
         if (this.player1.isReady() && this.player2.isReady()) {
             this.startGameCountdown();
         }
     }
 
-    private async startGameCountdown() {
-        this.gameStartTime = Date.now();
-        console.log("game started");
-        this.timeOfLastUpdate = Date.now();
-        this.player1.initGameInputListeners();
-        this.player2.initGameInputListeners();
-        this.doCountdown(3);    
-    }
-
-    private async doCountdown(time: number) {
-        const newTime = Date.now();
-        this.timeOfLastUpdate = newTime;
-        const update: GameUpdate = {
-            "type": "countdown",
-            "value": time
-        }
-        this.player1.sendGameUpdate(update);
-        this.player2.sendGameUpdate(update);
-        if (time > 0) {
-            setTimeout(() => {
-                this.doCountdown(--time);
-            }, 1000);
-        }else {
-            this.startGame();
-        }
-    }
-
-    private async startGame() {
-        this.updateGame();
-    }
-
+    /**
+     * main gameloop
+     * updates players and sends those to them
+     * checks for the overlapping postion and ends the round if they are
+     */
     private updateGame() {
         const newTime = Date.now();
         const timeDelta = (newTime - this.timeOfLastUpdate) / 1000;
@@ -102,12 +107,18 @@ export class Game {
 
         setTimeout(() => {
             this.updateGame();
-        }, 33);
+        }, Math.round(1000 / Constants.TICKRATE));
     }
 
+    /**
+     * ends the round
+     * calculates damgage dealt by each player
+     * sends endRound updates to them
+     * checks if one (or both) reach 0 hitpoints then ends game
+     */
     private endRound() {
-        const player1Hit = this.getPointHit(this.player1.getWeaponHeight(), this.player2);
-        const player2Hit = this.getPointHit(this.player2.getWeaponHeight(), this.player1);
+        const player1Hit = this.player1.getPointHit(this.player2);
+        const player2Hit = this.player2.getPointHit(this.player1);
 
         if(this.player1.getHitpoints() <= 0 && this.player2.getHitpoints() <= 0){
             this.draw = true;
@@ -130,9 +141,16 @@ export class Game {
         this.player2.endRound(player2Hit, player1Hit, this.player1);
         this.player1.reset();
         this.player2.reset();
-        console.log("round ended");
     }
 
+    /**
+     * ends the game
+     * checks which player won (or both)
+     * sends endGame updates and pushes the result to the database
+     * then rempves the game from the list of running games
+     * @param player1Hit the point the first player hit his enemy at
+     * @param player2Hit the point the second player hit his enemy at
+     */
     private endGame(player1Hit: HitPoint, player2Hit: HitPoint) {
         if(this.draw) {
             this.player1.endGame(this.player2, player1Hit, player2Hit, true);
@@ -156,35 +174,11 @@ export class Game {
             Game.removeGame(this);
         }
     }
-
-    private static removeGame(game: Game) {
-        const index = Game.AllGames.indexOf(game);
-        Game.AllGames.splice(index, 1);
-    }
-
-    public static endGameContainingPlayer(user: User) {
-        if(Game.AllGames === undefined) {
-            return;
-        }
-        for(const game of Game.AllGames) {
-            if(game.user1 === user){
-                game.setPlayerLeft(user.getDatabaseId()); 
-            }else if(game.user2 === user) {
-                game.setPlayerLeft(user.getDatabaseId());
-            }
-        }
-    }
-
-    public getLogObj(): any {
-        const logObj = {
-            id: this.id,
-            player1: this.player1.getLogObj(),
-            player2: this.player2.getLogObj(),
-            width: this.gameWidth
-        };
-        return logObj;
-    }
-
+    
+    /**
+     * forces the game to end and the player to loose
+     * @param playerId the id of the player that left
+     */
     private setPlayerLeft(playerId: number) {
         this.running = false;
         if(this.user1.getDatabaseId() === playerId) {
@@ -199,20 +193,139 @@ export class Game {
         }
     }
 
-    private getPointHit(weaponHeight: number, enemy: Player): HitPoint {
-        let pointHit = HitPoint.Missed;
-        if(weaponHeight >= enemy.getMount().getHeight() + 75 && weaponHeight < enemy.getMount().getHeight() + 175){
-            pointHit = HitPoint.Head;
-            enemy.setHitpoints(enemy.getHitpoints() - 50);
-        }else if(weaponHeight < enemy.getMount().getHeight() + 75 && weaponHeight > enemy.getMount().getHeight() - 25) {
-            pointHit = HitPoint.Body;
-            enemy.setHitpoints(enemy.getHitpoints() - 25);
-        }
-        return pointHit;
+//#endregion private methods
+
+//#region private async methods
+
+    /**
+     * initialzes the players input listeners
+     * then starts ther gamecountdown
+     */
+    private async startGameCountdown() {
+        this.timeOfLastUpdate = Date.now();
+        this.player1.initGameInputListeners();
+        this.player2.initGameInputListeners();
+        this.doCountdown(3);    
     }
+
+    /**
+     * sends the players an countdown update
+     * starts the game if the countdown reaches 0
+     * @param time remaining time of countdown
+     */
+    private async doCountdown(time: number) {
+        const newTime = Date.now();
+        this.timeOfLastUpdate = newTime;
+        const update: GameUpdate = {
+            "type": "countdown",
+            "value": time
+        }
+        this.player1.sendGameUpdate(update);
+        this.player2.sendGameUpdate(update);
+        if (time > 0) {
+            setTimeout(() => {
+                this.doCountdown(--time);
+            }, 1000);
+        }else {
+            this.startGame();
+        }
+    }
+
+    /**
+     * starts the gameloop
+     */
+    private async startGame() {
+        this.updateGame();
+    }
+
+//#endregion private async methods
+
+//#region private static methods
+
+    /**
+     * removes a game from the list of running games
+     * @param game the game to remove
+     */
+    private static removeGame(game: Game) {
+        const index = Game.AllGames.indexOf(game);
+        if(index >= 0){           
+            Game.AllGames.splice(index, 1);
+        }
+    }
+
+    /**
+     * ends all games containg a specific user
+     * @param user the user to search for
+     */
+    public static endGamesContainingUser(user: User) {
+        if(Game.AllGames === undefined) {
+            return;
+        }
+        for(const game of Game.AllGames) {
+            if(game.user1 === user){
+                game.setPlayerLeft(user.getDatabaseId()); 
+            }else if(game.user2 === user) {
+                game.setPlayerLeft(user.getDatabaseId());
+            }
+        }
+    }
+
+    /**
+     * checks if a user is in a game
+     * @param user the user to search for
+     * @returns if the user is in a game
+     */
+    public static isUserInGame(user: User): boolean {
+        if(Game.AllGames !== undefined) {
+            for(const game of Game.AllGames) {
+                if(game.user1 === user || game.user2 === user) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * gets the amount of running games
+     * @returns the amount of running games
+     */
+    public static getGameCount(): number {
+        if(Game.AllGames === undefined) {
+            return 0
+        }
+        return Game.AllGames.length;
+    }
+
+//#endregion private static methods
+    
+//#region debug
+
+    /**
+     * gets data about the game in a readable format
+     */
+    public getLogObj(): any {
+        const logObj = {
+            id: this.id,
+            player1: this.player1.getLogObj(),
+            player2: this.player2.getLogObj(),
+            width: this.gameWidth
+        };
+        return logObj;
+    }
+
+//#endregion debug
+    
 }
 
+//#region interfaces
+
+/**
+ * interface for a gameupdate
+ */
 export interface GameUpdate {
     type: string,
     value: any
 }
+
+//#endregion interfaces
