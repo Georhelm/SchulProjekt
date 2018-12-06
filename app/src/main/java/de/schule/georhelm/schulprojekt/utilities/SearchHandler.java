@@ -1,8 +1,10 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.utilities;
 
 import android.content.Context;
 import android.widget.TextView;
 import android.os.Handler;
+
+import de.schule.georhelm.schulprojekt.R;
 
 
 public class SearchHandler implements Runnable {
@@ -40,8 +42,8 @@ public class SearchHandler implements Runnable {
     @Override
     public void run() {
         seconds++;
-        String searching = this.context.getString(R.string.textSearching);
-        this.field.setText( searching + " " + seconds + "s");
+        String searching = String.format(this.context.getString(R.string.textSearching),seconds);
+        this.field.setText(searching);
         if(this.running) {
             handler.postDelayed(this, delay);
         }else {

@@ -1,7 +1,9 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.managers;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+
+import de.schule.georhelm.schulprojekt.R;
 
 public class SoundManager {
 

@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.interfaces;
 
 import org.json.JSONObject;
 

@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.playerobjects;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -6,6 +6,9 @@ import android.graphics.BitmapFactory;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import de.schule.georhelm.schulprojekt.R;
+import de.schule.georhelm.schulprojekt.views.GameView;
 
 public class MountStats {
     //#region properties

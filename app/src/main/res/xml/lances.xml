@@ -1,6 +1,6 @@
 <Resources>
     <Lance>
-        <Id value="1"></Id>
+        <Id value="1"/>
         <Name value="weaponlance"/>
         <X value= "-80"/> <!---80-->
         <Y value="-170"/> <!---170-->

@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.playerobjects;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -7,9 +7,15 @@ import android.graphics.Matrix;
 
 import org.json.JSONObject;
 
+import de.schule.georhelm.schulprojekt.utilities.ConnectionSocket;
+import de.schule.georhelm.schulprojekt.views.GameView;
+import de.schule.georhelm.schulprojekt.utilities.PixelConverter;
+import de.schule.georhelm.schulprojekt.R;
+
 public class Player {
 
     //#region properties
+    private int endSpeed;
     private String name;
     private Lance lance;
     private Mount mount;
@@ -82,6 +88,9 @@ public class Player {
     //#endregion constructor
 
     //#region getters
+    public int getEndSpeed() {
+        return endSpeed;
+    }
     public int getMountHeight() {
         return mountHeight;
     }
@@ -115,6 +124,9 @@ public class Player {
     //#endregion getters
 
     //#region setters
+    public void setEndSpeed(int endSpeed) {
+        this.endSpeed = endSpeed;
+    }
     public void setLastHit(int lastHit) {
         this.lastHit = lastHit;
     }

@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.utilities;
 
 import android.content.Context;
 import android.graphics.Point;

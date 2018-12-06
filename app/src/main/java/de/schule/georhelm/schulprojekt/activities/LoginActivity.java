@@ -1,8 +1,6 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +14,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+
+import de.schule.georhelm.schulprojekt.utilities.ConnectionSocket;
+import de.schule.georhelm.schulprojekt.interfaces.ICommunicationResult;
+import de.schule.georhelm.schulprojekt.managers.SoundManager;
+import de.schule.georhelm.schulprojekt.R;
+import de.schule.georhelm.schulprojekt.utilities.ServerCommunicator;
 
 public class LoginActivity extends AppCompatActivity implements ICommunicationResult {
 

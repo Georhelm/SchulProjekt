@@ -1,19 +1,21 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.activities;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Xml;
-import android.view.Display;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+
+import de.schule.georhelm.schulprojekt.utilities.ConnectionSocket;
+import de.schule.georhelm.schulprojekt.views.GameView;
+import de.schule.georhelm.schulprojekt.playerobjects.Lance;
+import de.schule.georhelm.schulprojekt.playerobjects.Mount;
+import de.schule.georhelm.schulprojekt.R;
 
 public class GameActivity  extends AppCompatActivity {
 

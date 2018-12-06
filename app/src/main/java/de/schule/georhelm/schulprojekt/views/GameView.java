@@ -1,5 +1,6 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.views;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,6 +16,13 @@ import android.view.SurfaceView;
 
 import org.json.JSONObject;
 
+import de.schule.georhelm.schulprojekt.utilities.ConnectionSocket;
+import de.schule.georhelm.schulprojekt.managers.BitmapManager;
+import de.schule.georhelm.schulprojekt.managers.PaintManager;
+import de.schule.georhelm.schulprojekt.utilities.PixelConverter;
+import de.schule.georhelm.schulprojekt.playerobjects.Player;
+import de.schule.georhelm.schulprojekt.R;
+
 public class GameView extends SurfaceView implements Runnable{
 
     //#region properties
@@ -23,10 +31,7 @@ public class GameView extends SurfaceView implements Runnable{
     private BitmapManager bitmapManager;
     private Player player;
     private Player enemy;
-
     private Context context;
-
-
     private Matrix enemyBackGroundMatrix;
     private Matrix backGroundMatrix;
     private ConnectionSocket socket;
@@ -38,8 +43,6 @@ public class GameView extends SurfaceView implements Runnable{
     private int frameCounter;
     private int lengthOfBattlefield;
     private int countDownCount;
-    private int enemySpeed;
-    private int playerSpeed;
     private int enemyOffset;
     private int enemyBackgroundOffset;
     //#endregion properties
@@ -66,7 +69,6 @@ public class GameView extends SurfaceView implements Runnable{
         this.isEndGame = false;
         this.lengthOfBattlefield = enemy.getPos();
 
-
         backGroundMatrix = new Matrix();
         enemyBackGroundMatrix = new Matrix();
 
@@ -90,7 +92,8 @@ public class GameView extends SurfaceView implements Runnable{
         this.isEndRound = false;
         this.enemyOffset = 0;
         this.enemyBackgroundOffset = 0;
-        this.playerSpeed = 0;
+        this.player.setEndSpeed(0);
+        this.enemy.setEndSpeed(0);
         this.socket.playerReady();
         this.socket.initGame(this);
     }
@@ -134,9 +137,11 @@ public class GameView extends SurfaceView implements Runnable{
     }
     /**
      * Lifts the lance on touch when the game is running. If it´s the end of the round, it controls if the button to continue is pressed.
+     * Supressing Lintwarning - Operating this app through voice commands is not applicable.
      * @param motionEvent
      * @return returns true if its not the end of the round.
      */
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
         if(continueButtonEnabled){
@@ -165,6 +170,7 @@ public class GameView extends SurfaceView implements Runnable{
         }
         return true;
     }
+
     /**
      * Sets property "playing" to false
      */
@@ -223,19 +229,19 @@ public class GameView extends SurfaceView implements Runnable{
             continueButtonEnabled = false;
             Boolean drawCloud = false;
             if(this.isEndRound){
-                player.setPos(player.getPos()+(int)(playerSpeed*timeSinceLastUpdate));
+                player.setPos(player.getPos()+(int)(player.getEndSpeed()*timeSinceLastUpdate));
                 if(canvas.getWidth()/2>this.enemyBackgroundOffset){
                     long offSetUpdate = Math.round(canvas.getWidth() / 7 * timeSinceLastUpdate);
                     this.enemyOffset+= offSetUpdate;
                     this.enemyBackgroundOffset+= offSetUpdate;
-                    int tempPos = (int)(enemy.getPos()-enemySpeed*timeSinceLastUpdate);
+                    int tempPos = (int)(this.enemy.getPos()-this.enemy.getEndSpeed()*timeSinceLastUpdate);
                     if(tempPos < 0) {
                         tempPos = this.bitmapManager.getBackground().getWidth() - canvas.getWidth()/2;
                     }
                     enemy.setPos(tempPos);
 
                 }else{
-                    this.enemyOffset-=enemySpeed*timeSinceLastUpdate+playerSpeed*timeSinceLastUpdate;
+                    this.enemyOffset-=this.enemy.getEndSpeed()*timeSinceLastUpdate+this.player.getEndSpeed()*timeSinceLastUpdate;
                     if(this.enemyOffset + this.enemy.getX()<=this.player.getX()){
                         //this.playing = false;
                         continueButtonEnabled = true;
@@ -326,7 +332,6 @@ public class GameView extends SurfaceView implements Runnable{
         enemyBackGroundMatrix.postTranslate(canvas.getWidth() / 2 +this.enemyBackgroundOffset, -canvas.getHeight() / 18);
         int bitmapPos = (enemy.getPos() % (background.getWidth() - canvas.getWidth()/2));
         Bitmap croppedEnemyBackground = Bitmap.createBitmap(background, bitmapPos,0, canvas.getWidth()/2,background.getHeight());
-
         Paint paint = paintManager.getMainPaint();
         canvas.drawBitmap(background,backGroundMatrix, paint);
         backGroundMatrix.postTranslate(background.getWidth(), 0);
@@ -475,9 +480,9 @@ public class GameView extends SurfaceView implements Runnable{
      */
     public void endRound(int enemySpeed,int enemyHitpoints,int enemyWeaponHeight,int enemyPointHit,int playerSpeed,int playerHitpoints,int playerWeaponHeight,int playerPointHit, boolean endOfGame, boolean gameWon) {
         this.isEndRound = true;
-        this.enemySpeed = enemySpeed;
+        this.enemy.setEndSpeed(enemySpeed);
         this.enemy.setNextHitpoints(enemyHitpoints);
-        this.playerSpeed = playerSpeed;
+        this.player.setEndSpeed(playerSpeed);
         this.player.setNextHitpoints(playerHitpoints);
         this.player.getLance().setTipYPos(playerWeaponHeight);
         this.player.setLastHit(playerPointHit);

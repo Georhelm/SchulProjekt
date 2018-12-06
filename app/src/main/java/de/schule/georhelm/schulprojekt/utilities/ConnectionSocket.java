@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.utilities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,6 +6,10 @@ import android.content.Intent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import de.schule.georhelm.schulprojekt.activities.EquipmentActivity;
+import de.schule.georhelm.schulprojekt.activities.LoginActivity;
+import de.schule.georhelm.schulprojekt.activities.MenuActivity;
+import de.schule.georhelm.schulprojekt.views.GameView;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;

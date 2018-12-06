@@ -11,9 +11,9 @@
     <string name="logOutButtonText">Logout</string>
     <string name="textPasswordCheck">Repeat password</string>
     <string name="textRegister">Register</string>
-    <string name="textSearching">Searching for game</string>
+    <string name="textSearching">Searching game for %1$d s</string>
     <string name="textCancel">Cancel</string>
     <string name="textSelect">Select</string>
     <string name="textSaved">Saved</string>
-    <string name="textWins">Wins:\u0020</string>
+    <string name="textWins">Wins: %1$d</string>
 </resources>

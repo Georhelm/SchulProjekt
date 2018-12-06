@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.playerobjects;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -7,6 +7,9 @@ import android.graphics.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import de.schule.georhelm.schulprojekt.views.GameView;
+import de.schule.georhelm.schulprojekt.utilities.PixelConverter;
 
 public class Lance {
 

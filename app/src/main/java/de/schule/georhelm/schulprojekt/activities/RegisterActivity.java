@@ -1,13 +1,16 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.activities;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import org.json.JSONObject;
+
+import de.schule.georhelm.schulprojekt.interfaces.ICommunicationResult;
+import de.schule.georhelm.schulprojekt.R;
+import de.schule.georhelm.schulprojekt.utilities.ServerCommunicator;
 
 public class RegisterActivity extends AppCompatActivity implements ICommunicationResult {
 

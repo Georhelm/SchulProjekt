@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:textSize="50sp"
-    tools:context=".RegisterActivity"
+    tools:context=".activities.RegisterActivity"
     android:background="@drawable/background">
 
     <EditText
@@ -52,7 +52,7 @@
         android:id="@+id/labelUserInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:labelFor="@id/inputUser"
+        android:labelFor="@id/inputRegisterUser"
         android:text="@string/textUserName"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.08"
@@ -65,7 +65,7 @@
         android:id="@+id/labelPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:labelFor="@+id/inputPassword"
+        android:labelFor="@+id/inputRegisterPassword"
         android:text="@string/textPasswordCheck"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.08"
@@ -78,7 +78,7 @@
         android:id="@+id/labelPasswordCheck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:labelFor="@+id/inputPassword"
+        android:labelFor="@+id/inputRegisterPasswordCheck"
         android:text="@string/textPassword"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.08"

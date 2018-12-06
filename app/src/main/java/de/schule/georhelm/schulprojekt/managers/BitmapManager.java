@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.managers;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -6,6 +6,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+
+import de.schule.georhelm.schulprojekt.views.GameView;
+import de.schule.georhelm.schulprojekt.utilities.PixelConverter;
+import de.schule.georhelm.schulprojekt.playerobjects.Player;
+import de.schule.georhelm.schulprojekt.R;
 
 public class BitmapManager {
 

@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.utilities;
 
 import android.os.AsyncTask;
 import org.json.JSONObject;
@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import de.schule.georhelm.schulprojekt.interfaces.ICommunicationResult;
 
 /**
  * Used for user login and register process.

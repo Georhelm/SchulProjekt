@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.activities;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -11,6 +11,11 @@ import android.widget.TextView;
 import org.json.JSONObject;
 
 import java.io.File;
+
+import de.schule.georhelm.schulprojekt.utilities.ConnectionSocket;
+import de.schule.georhelm.schulprojekt.managers.SoundManager;
+import de.schule.georhelm.schulprojekt.R;
+import de.schule.georhelm.schulprojekt.utilities.SearchHandler;
 
 public class MenuActivity extends AppCompatActivity {
 
@@ -109,11 +114,11 @@ public class MenuActivity extends AppCompatActivity {
      */
     public void setWins(final int wins) {
         final TextView winView = this.findViewById(R.id.menuWins);
-        final String winString = this.getResources().getString(R.string.textWins);
+        final String winString = String.format(this.getResources().getString(R.string.textWins),wins);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                winView.setText(winString + Integer.toString(wins));
+                winView.setText(winString);
             }
         });
     }

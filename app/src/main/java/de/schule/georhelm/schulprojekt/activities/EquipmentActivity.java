@@ -1,4 +1,4 @@
-package de.schule.georhelm.schulprojekt;
+package de.schule.georhelm.schulprojekt.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +16,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import de.schule.georhelm.schulprojekt.utilities.ConnectionSocket;
+import de.schule.georhelm.schulprojekt.playerobjects.MountStats;
+import de.schule.georhelm.schulprojekt.R;
 
 public class EquipmentActivity extends AppCompatActivity {
 
