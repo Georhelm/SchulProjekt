@@ -17,48 +17,39 @@ import org.json.JSONObject;
 
 public class GameView extends SurfaceView implements Runnable{
 
-    volatile boolean playing;
-    private Thread gameThread = null;
+    //#region properties
+    private volatile boolean playing;
+    private PaintManager paintManager;
+    private BitmapManager bitmapManager;
     private Player player;
     private Player enemy;
-    private Paint paint;
-    private Bitmap bitmapPlayer;
-    private Bitmap bitmapMinime;
-    private Bitmap bitmapMinimeEnemy;
-    private SurfaceHolder surfaceHolder;
-    private Bitmap background;
+
+    private Context context;
+
+
     private Matrix enemyBackGroundMatrix;
     private Matrix backGroundMatrix;
     private ConnectionSocket socket;
-    private int countDownCount;
-    private long timeOfLastUpdate;
-    private int enemyOffset;
-    private int enemyBackgroundOffset;
     private boolean isEndRound;
-    int enemySpeed;
-    int playerSpeed;
-    private int backgroundWidth;
-    private int backgroundHeight;
-    private Context context;
-    private Bitmap button;
-    private Bitmap dustyCloud;
-    private int frameCounter;
     private boolean continueButtonEnabled;
     private boolean isEndGame;
-    private int lengthOfBattlefield;
     private boolean gameWon;
+    private long timeOfLastUpdate;
+    private int frameCounter;
+    private int lengthOfBattlefield;
+    private int countDownCount;
+    private int enemySpeed;
+    private int playerSpeed;
+    private int enemyOffset;
+    private int enemyBackgroundOffset;
+    //#endregion properties
 
-
+    //#region constructor
     public GameView(Context context,JSONObject gameData) {
         super(context);
-
         this.context = context;
         JSONObject player1 = new JSONObject();
         JSONObject player2 = new JSONObject();
-
-
-        this.backgroundHeight = PixelConverter.convertHeight(1080, context);
-        this.backgroundWidth = PixelConverter.convertWidth(1920, context);
 
         try{
             player1 = gameData.getJSONObject("player1");
@@ -67,79 +58,28 @@ public class GameView extends SurfaceView implements Runnable{
             e.printStackTrace();
         }
 
-        player = new Player(context,player1,false);
-        enemy = new Player(context,player2, true);
+        this.player = new Player(context,player1,false);
+        this.enemy = new Player(context,player2, true);
+
+        this.paintManager = new PaintManager(context);
+        this.bitmapManager = new BitmapManager(this.context,this.player);
         this.isEndGame = false;
         this.lengthOfBattlefield = enemy.getPos();
 
-        this.bitmapPlayer = Bitmap.createBitmap(PixelConverter.convertWidth(1920, context),PixelConverter.convertHeight(1080, context), Bitmap.Config.ARGB_8888);
-        Canvas playerCanvas = new Canvas(bitmapPlayer);
-
-        //Player Mount
-        playerCanvas.drawBitmap(
-                player.getMount().getBitmap(),
-                player.getMount().getMatrix(),
-                paint);
-        //Player
-        playerCanvas.drawBitmap(
-                player.getBitmap(),
-                player.getMatrix(),
-                paint);
-
-        surfaceHolder = getHolder();
-        paint = new Paint();
-
-        // reduces size of loaded bitmap by ~5MB
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-
-        BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundsymmetricfinal, options);
-
-        options.inSampleSize = GameView.calculateInSampleSize(options, this.backgroundWidth, this.backgroundHeight);
-        options.inJustDecodeBounds = false;
-
-        background = BitmapFactory.decodeResource(context.getResources(), R.drawable.backgroundsymmetricfinal, options);
-        background = Bitmap.createScaledBitmap(background,this.backgroundWidth,this.backgroundHeight,true);
-
-        BitmapFactory.Options buttonOptions = new BitmapFactory.Options();
-        buttonOptions.inJustDecodeBounds = true;
-
-        BitmapFactory.decodeResource(context.getResources(), R.drawable.button_red_medium, buttonOptions);
-        buttonOptions.inSampleSize = GameView.calculateInSampleSize(buttonOptions, PixelConverter.convertWidth(500,context), PixelConverter.convertHeight(100,context));
-        buttonOptions.inJustDecodeBounds = false;
-        button = BitmapFactory.decodeResource(context.getResources(), R.drawable.button_red_medium, buttonOptions);
-        button = Bitmap.createScaledBitmap(button,PixelConverter.convertWidth(450,context), PixelConverter.convertHeight(150,context),true);
-
-        BitmapFactory.Options dustyCloudOptions = new BitmapFactory.Options();
-        dustyCloudOptions.inJustDecodeBounds = true;
-
-        BitmapFactory.decodeResource(context.getResources(), R.drawable.dustycloud, dustyCloudOptions);
-        dustyCloudOptions.inSampleSize = GameView.calculateInSampleSize(dustyCloudOptions, PixelConverter.convertWidth(2100,context), PixelConverter.convertHeight(1400,context));
-        dustyCloudOptions.inJustDecodeBounds = false;
-        dustyCloud = BitmapFactory.decodeResource(context.getResources(), R.drawable.dustycloud, dustyCloudOptions);
-        dustyCloud = Bitmap.createScaledBitmap(dustyCloud,PixelConverter.convertWidth(2100,context), PixelConverter.convertHeight(1400,context),true);
-
-        BitmapFactory.Options minimeOptions = new BitmapFactory.Options();
-        minimeOptions.inJustDecodeBounds = true;
-
-        BitmapFactory.decodeResource(context.getResources(), R.drawable.knightsminime, minimeOptions);
-        minimeOptions.inSampleSize = GameView.calculateInSampleSize(minimeOptions, PixelConverter.convertWidth(50,context), PixelConverter.convertHeight(50,context));
-        minimeOptions.inJustDecodeBounds = false;
-        bitmapMinime = BitmapFactory.decodeResource(context.getResources(), R.drawable.knightsminime, minimeOptions);
-        bitmapMinime = Bitmap.createScaledBitmap(bitmapMinime,PixelConverter.convertWidth(50,context), PixelConverter.convertHeight(50,context),true);
-        Matrix minimeMatrix = new Matrix();
-        minimeMatrix.preScale(-1f,1f);
-        bitmapMinimeEnemy = Bitmap.createBitmap(bitmapMinime,0,0,bitmapMinime.getWidth(),bitmapMinime.getHeight(),minimeMatrix,true);
 
         backGroundMatrix = new Matrix();
-
         enemyBackGroundMatrix = new Matrix();
 
         this.socket = ConnectionSocket.getSocket();
 
         initNewRound();
     }
+    //#endregion constructor
 
+    //#region public methods
+    /**
+     * Resets properties of this class to start a new Round
+     */
     public void initNewRound(){
         this.frameCounter = -50;
         this.player.resetPos();
@@ -154,7 +94,9 @@ public class GameView extends SurfaceView implements Runnable{
         this.socket.playerReady();
         this.socket.initGame(this);
     }
-
+    /**
+     * Fires the three main phases: update, draw and control.
+     */
     @Override
     public void run(){
         this.timeOfLastUpdate = System.nanoTime();
@@ -167,7 +109,6 @@ public class GameView extends SurfaceView implements Runnable{
         }
         //this.finishGame();
     }
-
     // copied from https://developer.android.com/topic/performance/graphics/load-bitmap#java
     public static int calculateInSampleSize(
             BitmapFactory.Options options, int reqWidth, int reqHeight) {
@@ -191,11 +132,88 @@ public class GameView extends SurfaceView implements Runnable{
 
         return inSampleSize;
     }
+    /**
+     * Lifts the lance on touch when the game is running. If it´s the end of the round, it controls if the button to continue is pressed.
+     * @param motionEvent
+     * @return returns true if its not the end of the round.
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent motionEvent) {
+        if(continueButtonEnabled){
+            int x = (int)motionEvent.getX();
+            int y = (int)motionEvent.getY();
+            if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
+                Bitmap button = this.bitmapManager.getButton();
+                int buttonX = PixelConverter.convertWidth(1920,context)/2-button.getWidth()/2;
+                int buttonY = PixelConverter.convertHeight(1080,context)/2-button.getHeight()/2;
+                if(x<=buttonX+button.getWidth() && x>=buttonX && y<=buttonY+button.getHeight() && y>= buttonY){
+                    if(isEndGame){
+                        finishGame();
+                    }else{
+                        this.startRound();
+                    }
+                }
+            }
+        }
+        switch(motionEvent.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                this.player.lanceUp();
+                break;
+            case MotionEvent.ACTION_UP:
+                this.player.lanceDown();
+                break;
+        }
+        return true;
+    }
+    /**
+     * Sets property "playing" to false
+     */
+    public void pause(){
+        playing = false;
+    }
+    /**
+     * Sets property "playing" to true, starts the gameThread
+     */
+    public void resume(){
+        playing = true;
+        Thread gameThread = new Thread(this);
+        gameThread.start();
+    }
+    /**
+     * Sets the "countDownCount" property to the given integer.
+     * @param count An integer to which value property "countDownCount" will be set.
+     */
+    public void countDown(int count){
+        this.countDownCount = count;
+    }
+    /**
+     * Sets the player and enemy positions to given values.
+     * @param playerPos An integer representing the position the player will be set to.
+     * @param enemyPos An integer representing the position the enemy will be set to.
+     */
+    public void setPlayerPositions(int playerPos, int enemyPos){
+        this.player.setPos(playerPos);
+        this.enemy.setPos(enemyPos);
+    }
+    /**
+     * Sets the player and enemy lance angles to given values.
+     * @param playerLanceAngle An integer representing the degree the players lance angle will have.
+     * @param enemyLanceAngle An integer representing the degree the enemies lance angle will have.
+     */
+    public void setLanceAngles(int playerLanceAngle, int enemyLanceAngle) {
+        this.player.setLanceAngle(playerLanceAngle);
+        this.enemy.setLanceAngle(enemyLanceAngle);
+    }
+    //#endregion public methods
+
+    //#region private methods
+
+
 
     private void update(){
     }
-
     private void draw(){
+        SurfaceHolder surfaceHolder = getHolder();
         long newTime = System.nanoTime();
         double timeSinceLastUpdate = (newTime - this.timeOfLastUpdate) / 1000000000f;
         this.timeOfLastUpdate = newTime;
@@ -212,7 +230,7 @@ public class GameView extends SurfaceView implements Runnable{
                     this.enemyBackgroundOffset+= offSetUpdate;
                     int tempPos = (int)(enemy.getPos()-enemySpeed*timeSinceLastUpdate);
                     if(tempPos < 0) {
-                        tempPos = background.getWidth() - canvas.getWidth()/2;
+                        tempPos = this.bitmapManager.getBackground().getWidth() - canvas.getWidth()/2;
                     }
                     enemy.setPos(tempPos);
 
@@ -227,7 +245,7 @@ public class GameView extends SurfaceView implements Runnable{
                     }
                 }
             }
-            drawGameFlow(canvas,timeSinceLastUpdate);
+            drawGameFlow(canvas);
             if(isEndRound){
                 //drawLanceHitHeight(canvas);
                 //drawHitpointMessage(canvas);
@@ -243,20 +261,24 @@ public class GameView extends SurfaceView implements Runnable{
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
     }
-
+    /**
+     * Draws the dusty cloud at the point where both players hit each other.
+     * @param canvas The canvas on which the cloud will be drawn.
+     */
     private void drawCloud(Canvas canvas) {
-        Paint cloudPaint = new Paint();
-        cloudPaint.setAlpha(Math.min(255-frameCounter,255));
-        canvas.drawBitmap(dustyCloud,PixelConverter.convertWidth(-80,context),PixelConverter.convertY(-100, dustyCloud.getHeight(),context), cloudPaint);
+        Bitmap dustyCloud = bitmapManager.getDustyCloud();
+        paintManager.updateCloudPaintAlpha(frameCounter);
+        canvas.drawBitmap(dustyCloud,PixelConverter.convertWidth(-80,context),PixelConverter.convertY(-100, dustyCloud.getHeight(),context), paintManager.getCloudPaint());
         frameCounter+=5;
     }
-
+    /**
+     * Draws the button to continue (or return to menu) at the end of the round.
+     * @param canvas The canvas on which the button will be drawn.
+     */
     private void drawContinueButton(Canvas canvas) {
-        canvas.drawBitmap(button,canvas.getWidth()/2-button.getWidth()/2,canvas.getHeight()/2-button.getHeight()/2, paint);
-        Paint buttonTextPaint = new Paint();
-        buttonTextPaint.setColor(Color.BLACK);
-        buttonTextPaint.setStyle(Paint.Style.FILL);
-        buttonTextPaint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeSmall));
+        Bitmap button = bitmapManager.getButton();
+        canvas.drawBitmap(button,canvas.getWidth()/2-button.getWidth()/2,canvas.getHeight()/2-button.getHeight()/2, paintManager.getMainPaint());
+
         String text = "Next round";
         if(isEndGame){
             text = "Return to menu";
@@ -264,10 +286,14 @@ public class GameView extends SurfaceView implements Runnable{
         }
 
         Rect bounds = new Rect();
+        Paint buttonTextPaint = paintManager.getButtonTextPaint();
         buttonTextPaint.getTextBounds(text,0,text.length(),bounds);
         canvas.drawText(text,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/2-bounds.exactCenterY(), buttonTextPaint);
     }
-
+    /**
+     * Calls the displayResult method with either "Victory!" or "Loss!" message.
+     * @param canvas The canvas the message will be drawn on.
+     */
     private void drawEndgameResult(Canvas canvas) {
         if(gameWon){
             this.displayResult("Victory!",canvas);
@@ -275,26 +301,23 @@ public class GameView extends SurfaceView implements Runnable{
             this.displayResult("Loss!", canvas);
         }
     }
-
+    /**
+     * Draws the Victory / Loss message on the canvas at the end of the game.
+     * @param result A string containing the result message. Either "Victory!" or "Loss!".
+     * @param canvas The canvas the result will be drawn onto.
+     */
     private void displayResult(String result, Canvas canvas) {
-        Paint resultMessagePaint = new Paint();
-        resultMessagePaint.setColor(Color.RED);
-        resultMessagePaint.setStyle(Paint.Style.FILL);
-        resultMessagePaint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeMedium));
         Rect bounds = new Rect();
+        Paint resultMessagePaint = paintManager.getMessagePaint();
         resultMessagePaint.getTextBounds(result,0,result.length(),bounds);
         canvas.drawText(result,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/4-bounds.exactCenterY(), resultMessagePaint);
     }
-
-    /*
-    Method for debugging purposes
+    /**
+     * Calls all the draw methods while the round is running.
+     * @param canvas The canvas all the objects will be drawn onto.
      */
-    private void drawLanceHitHeight(Canvas canvas) {
-        canvas.drawLine(0, PixelConverter.convertY(player.getLance().getTipYPos(),1,this.context), PixelConverter.convertWidth(1920, this.context),PixelConverter.convertY(player.getLance().getTipYPos(),1,this.context), paint);
-    }
-
-    private void drawGameFlow(Canvas canvas, double timeSinceLastUpdate) {
-
+    private void drawGameFlow(Canvas canvas) {
+        Bitmap background = bitmapManager.getBackground();
         backGroundMatrix.reset();
 
         backGroundMatrix.postTranslate(-(player.getPos() % canvas.getWidth()),-canvas.getHeight() / 18);
@@ -304,6 +327,7 @@ public class GameView extends SurfaceView implements Runnable{
         int bitmapPos = (enemy.getPos() % (background.getWidth() - canvas.getWidth()/2));
         Bitmap croppedEnemyBackground = Bitmap.createBitmap(background, bitmapPos,0, canvas.getWidth()/2,background.getHeight());
 
+        Paint paint = paintManager.getMainPaint();
         canvas.drawBitmap(background,backGroundMatrix, paint);
         backGroundMatrix.postTranslate(background.getWidth(), 0);
         canvas.drawBitmap(background, backGroundMatrix, paint);
@@ -317,54 +341,173 @@ public class GameView extends SurfaceView implements Runnable{
         }
         drawCountdownText(canvas);
     }
-
+    /**
+     * Draws the mini-map showing the distance of both players.
+     * @param canvas The canvas the mini-map will be drawn onto.
+     */
     private void drawMinimap(Canvas canvas) {
-        Paint minimapLinePaint = new Paint();
-        minimapLinePaint.setStrokeWidth(10);
-        minimapLinePaint.setColor(Color.LTGRAY);
+        Bitmap bitmapMinime = bitmapManager.getMinime();
+        Bitmap bitmapMinimeEnemy = bitmapManager.getMinimeEnemy();
+
         int mapStart = PixelConverter.convertWidth(500,context);
         int mapEnd = canvas.getWidth()- PixelConverter.convertWidth(500,context);
         int mapHeight = PixelConverter.convertHeight(200,context);
-        canvas.drawLine(mapStart,mapHeight,mapEnd,mapHeight,minimapLinePaint);
-        Paint minimePaint = new Paint();
+        canvas.drawLine(mapStart,mapHeight,mapEnd,mapHeight,paintManager.getMinimapLinePaint());
         int lengthOfMinimap = (mapEnd-mapStart);
         int minimeOffset = Math.round((player.getPos()/(float)lengthOfBattlefield)*lengthOfMinimap);
         int minimeEnemyOffset = lengthOfMinimap - Math.round((enemy.getPos()/(float)lengthOfBattlefield)*lengthOfMinimap);
 
+        Paint paint = paintManager.getMainPaint();
         int minimeMapPosition = mapStart + minimeOffset-bitmapMinimeEnemy.getWidth();
-        canvas.drawBitmap(bitmapMinime,minimeMapPosition, mapHeight-bitmapMinime.getHeight()/2,minimePaint);
+        canvas.drawBitmap(bitmapMinime,minimeMapPosition, mapHeight-bitmapMinime.getHeight()/2,paint);
 
         int minimeEnemyMapPosition = mapEnd - minimeEnemyOffset;
-        canvas.drawBitmap(bitmapMinimeEnemy,minimeEnemyMapPosition,mapHeight-bitmapMinimeEnemy.getHeight()/2,minimePaint);
+        canvas.drawBitmap(bitmapMinimeEnemy,minimeEnemyMapPosition,mapHeight-bitmapMinimeEnemy.getHeight()/2,paint);
     }
-
+    /**
+     * Draws the line between the player and the enemy screen.
+     * @param canvas The canvas the line will be drawn onto.
+     */
     private void drawDividerLine(Canvas canvas) {
-        Paint dividerLinePaint = new Paint();
-        dividerLinePaint.setStrokeWidth(6);
-        dividerLinePaint.setColor(Color.WHITE);
-        canvas.drawLine(canvas.getWidth()/2,0,canvas.getWidth()/2,canvas.getHeight(),dividerLinePaint);
-        dividerLinePaint.setColor(Color.GRAY);
-        dividerLinePaint.setStrokeWidth(2);
-        canvas.drawLine(canvas.getWidth()/2-4,0,canvas.getWidth()/2-4,canvas.getHeight(),dividerLinePaint);
-        canvas.drawLine(canvas.getWidth()/2+4,0,canvas.getWidth()/2+4,canvas.getHeight(),dividerLinePaint);
+        Paint dividerLinePaintOne = paintManager.getDividerLinePaintOne();
+        Paint dividerLinePaintTwo = paintManager.getDividerLinePaintTwo();
+        canvas.drawLine(canvas.getWidth()/2,0,canvas.getWidth()/2,canvas.getHeight(),dividerLinePaintOne);
+        canvas.drawLine(canvas.getWidth()/2-4,0,canvas.getWidth()/2-4,canvas.getHeight(),dividerLinePaintTwo);
+        canvas.drawLine(canvas.getWidth()/2+4,0,canvas.getWidth()/2+4,canvas.getHeight(),dividerLinePaintTwo);
 
     }
-
+    /**
+     * Draws the healthbars of the player and enemy.
+     * @param canvas The canvas the health bars will be drawn onto.
+     */
     private void drawHealthBars(Canvas canvas) {
-        Paint healthBarPaint = new Paint();
-        healthBarPaint.setColor(Color.RED);
-        healthBarPaint.setStrokeWidth(50);
-
         int healthbarOffset = PixelConverter.convertWidth(100,context);
         int healthbarHeight = PixelConverter.convertHeight(100,context);
         int healthbarLength = PixelConverter.convertWidth(player.getHitpoints()*7,context);
         int enemyHealthbarLength = PixelConverter.convertWidth(enemy.getHitpoints() * 7, context);
+
+        Paint healthBarPaint = paintManager.getHealthBarPaint();
         canvas.drawLine(healthbarOffset,healthbarHeight,healthbarLength+healthbarOffset,healthbarHeight,healthBarPaint);
         canvas.drawLine(canvas.getWidth()-healthbarOffset,healthbarHeight,canvas.getWidth()-healthbarOffset-enemyHealthbarLength,healthbarHeight,healthBarPaint);
     }
+    /**
+     * Draws the countdown at the beginning of the round.
+     * @param canvas The canvas the countdown will be drawn onto.
+     */
+    private void drawCountdownText(Canvas canvas){
+        if(this.countDownCount > 0){
+            String countdownText = Integer.toString(this.countDownCount);
+            Paint countDownPaint = paintManager.getMessagePaint();
+            Rect bounds = new Rect();
+            countDownPaint.getTextBounds(countdownText,0,countdownText.length(),bounds);
+            canvas.drawText(countdownText,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/4-bounds.exactCenterY(), countDownPaint);
+            //canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/2-bounds.exactCenterY()
+        }
+    }
+    /**
+     * Draws all the objects
+     * @param canvas
+     */
+    private void drawPlayerObjects(Canvas canvas) {
 
-    /*
-    Method for debugging purposes
+        Bitmap bitmapEnemy = Bitmap.createBitmap(canvas.getWidth(),canvas.getHeight(),Bitmap.Config.ARGB_8888);
+        Canvas enemyCanvas = new Canvas(bitmapEnemy);
+        Paint paint = paintManager.getMainPaint();
+        //Enemy Mount
+        enemyCanvas.drawBitmap(
+                enemy.getMount().getBitmap(),
+                enemy.getMount().getMatrix(),
+                paint);
+        //Enemy
+        enemyCanvas.drawBitmap(
+                enemy.getBitmap(),
+                enemy.getMatrix(),
+                paint);
+        //Enemy Lance
+        enemyCanvas.drawBitmap(
+                enemy.getLance().getBitmap(),
+                enemy.getLance().getMatrix(),
+                paint);
+        Matrix enemyCanvasMatrix = new Matrix();
+        enemyCanvasMatrix.preScale(-1,1,bitmapEnemy.getWidth()/2,bitmapEnemy.getHeight()/2);
+        enemyCanvasMatrix.postTranslate(bitmapEnemy.getWidth()/2+this.enemyOffset,0);
+        //enemyCanvasMatrix.postScale(0.9f,0.9f);
+
+        canvas.drawBitmap(bitmapEnemy,enemyCanvasMatrix,paint);
+        canvas.drawBitmap(this.bitmapManager.getPlayer(), 0, 0,paint);
+        //Player Lance
+        canvas.drawBitmap(
+                player.getLance().getBitmap(),
+                player.getLance().getMatrix(),
+                paint);
+
+        bitmapEnemy.recycle();
+
+        // --------- DEBUG --------------
+
+
+    }
+    private void control(){
+        //try{
+        //    gameThread.sleep(17);
+        //}catch(InterruptedException e){
+        //   e.printStackTrace();
+        //}
+    }
+    /**
+     * Initializes new Round.
+     */
+    private void startRound() {
+        this.initNewRound();
+    }
+    /**
+     * Saves the properties of the game to the values at the time of the clash, so that the animation can start. Determines if the game is over and if the player has won.
+     * @param enemySpeed An integer representing the speed of the enemy.
+     * @param enemyHitpoints An integer representing the hitpoints of the enemy.
+     * @param enemyWeaponHeight An integer representing the height of the lancetip of the enemy.
+     * @param enemyPointHit An integer representing the point of the player that the enemy hit.
+     * @param playerSpeed An integer representing the speed of the player.
+     * @param playerHitpoints An integer representing the hitpoints of the player.
+     * @param playerWeaponHeight An integer representing the height of the lancetip of the player.
+     * @param playerPointHit An integer representing the point of the enemy that the player hit.
+     * @param endOfGame A boolean value representing whether the game is over or not.
+     * @param gameWon A boolean value representing whether the player has won or not.
+     */
+    public void endRound(int enemySpeed,int enemyHitpoints,int enemyWeaponHeight,int enemyPointHit,int playerSpeed,int playerHitpoints,int playerWeaponHeight,int playerPointHit, boolean endOfGame, boolean gameWon) {
+        this.isEndRound = true;
+        this.enemySpeed = enemySpeed;
+        this.enemy.setNextHitpoints(enemyHitpoints);
+        this.playerSpeed = playerSpeed;
+        this.player.setNextHitpoints(playerHitpoints);
+        this.player.getLance().setTipYPos(playerWeaponHeight);
+        this.player.setLastHit(playerPointHit);
+        if(endOfGame){
+            this.isEndGame = true;
+            this.gameWon=gameWon;
+        }
+    }
+    /**
+     * Ends this activity and therefor returns to the menu.
+     */
+    private void finishGame() {
+        Activity activity = (Activity)this.getContext();
+        activity.finish();
+    }
+    //#endregion private methods
+
+    //#region debugging methods
+    /**
+     * Draws a horizontal line at the height of the tip of the player lance.
+     * @param canvas The canvas the line will be drawn onto.
+     */
+    private void drawLanceHitHeight(Canvas canvas) {
+        canvas.drawLine(0, PixelConverter.convertY(player.getLance().getTipYPos(),1,this.context),
+                PixelConverter.convertWidth(1920, this.context),
+                PixelConverter.convertY(player.getLance().getTipYPos(),1,this.context), paintManager.getMainPaint());
+    }
+    /**
+     * Draws the Hit-Boxes of the enemy.
+     * @param canvas The canvas the hit-boxes will be drawn onto.
      */
     private void showEnemyHitBoxes(Canvas canvas) {
         Paint paintDos = new Paint();
@@ -374,22 +517,9 @@ public class GameView extends SurfaceView implements Runnable{
         paintDos.setColor(Color.YELLOW);
         canvas.drawLine(this.enemy.getX()+400,this.enemy.getMountHeight()-75,this.enemy.getX()+400,this.enemy.getMountHeight()+25, paintDos);
     }
-
-    private void drawCountdownText(Canvas canvas){
-        if(this.countDownCount > 0){
-            String countdownText = Integer.toString(this.countDownCount);
-            Paint countDownPaint = new Paint();
-            countDownPaint.setColor(Color.RED);
-            countDownPaint.setStyle(Paint.Style.FILL);
-            countDownPaint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeMedium));
-            Rect bounds = new Rect();
-            countDownPaint.getTextBounds(countdownText,0,countdownText.length(),bounds);
-            canvas.drawText(countdownText,canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/4-bounds.exactCenterY(), countDownPaint);
-            //canvas.getWidth()/2-bounds.exactCenterX(), canvas.getHeight()/2-bounds.exactCenterY()
-        }
-    }
-    /*
-    Method for debugging purposes
+    /**
+     * Draws a message on the screen where the player lance has hit the enemy.
+     * @param canvas The canvas the message will be drawn onto.
      */
     private void drawHitpointMessage(Canvas canvas){
         String hit;
@@ -412,131 +542,15 @@ public class GameView extends SurfaceView implements Runnable{
         paint.setTextSize(this.getResources().getDimensionPixelSize(R.dimen.fontSizeMedium));
         canvas.drawText(hit,canvas.getWidth()/2, canvas.getHeight()/4, paint);
     }
-
-    private void drawPlayerObjects(Canvas canvas) {
-
+    //#endregion debugging methods
 
 
-        Bitmap bitmapEnemy = Bitmap.createBitmap(canvas.getWidth(),canvas.getHeight(),Bitmap.Config.ARGB_8888);
-        Canvas enemyCanvas = new Canvas(bitmapEnemy);
-
-        //Enemy Mount
-        enemyCanvas.drawBitmap(
-                enemy.getMount().getBitmap(),
-                enemy.getMount().getMatrix(),
-                paint);
-        //Enemy
-        enemyCanvas.drawBitmap(
-                enemy.getBitmap(),
-                enemy.getMatrix(),
-                paint);
-        //Enemy Lance
-        enemyCanvas.drawBitmap(
-                enemy.getLance().getBitmap(),
-                enemy.getLance().getMatrix(),
-                paint);
-        Matrix enemyCanvasMatrix = new Matrix();
-        enemyCanvasMatrix.preScale(-1,1,bitmapEnemy.getWidth()/2,bitmapEnemy.getHeight()/2);
-        enemyCanvasMatrix.postTranslate(bitmapEnemy.getWidth()/2+this.enemyOffset,0);
-        //enemyCanvasMatrix.postScale(0.9f,0.9f);
-
-        canvas.drawBitmap(bitmapEnemy,enemyCanvasMatrix,paint);
-        canvas.drawBitmap(bitmapPlayer, 0, 0,paint);
-        //Player Lance
-        canvas.drawBitmap(
-                player.getLance().getBitmap(),
-                player.getLance().getMatrix(),
-                paint);
-
-        bitmapEnemy.recycle();
-
-        // --------- DEBUG --------------
 
 
-    }
 
-    private void control(){
-        //try{
-        //    gameThread.sleep(17);
-        //}catch(InterruptedException e){
-        //   e.printStackTrace();
-        //}
-    }
 
-    public void pause(){
-        playing = false;
-    }
 
-    public void resume(){
-        playing = true;
-        gameThread = new Thread(this);
-        gameThread.start();
-    }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent motionEvent) {
-        if(continueButtonEnabled){
-            int x = (int)motionEvent.getX();
-            int y = (int)motionEvent.getY();
-            if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
-                int buttonX = PixelConverter.convertWidth(1920,context)/2-button.getWidth()/2;
-                int buttonY = PixelConverter.convertHeight(1080,context)/2-button.getHeight()/2;
-                if(x<=buttonX+button.getWidth() && x>=buttonX && y<=buttonY+button.getHeight() && y>= buttonY){
-                    if(isEndGame){
-                        finishGame();
-                    }else{
-                        this.startRound();
-                    }
-                }
-            }
-        }
-        switch(motionEvent.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                this.player.lanceUp();
-                break;
-            case MotionEvent.ACTION_UP:
-                this.player.lanceDown();
-                break;
-        }
-        return true;
-    }
-
-    private void startRound() {
-        this.initNewRound();
-    }
-
-    public void endRound(int enemySpeed,int enemyHitpoints,int enemyWeaponHeight,int enemyPointHit,int playerSpeed,int playerHitpoints,int playerWeaponHeight,int playerPointHit, boolean endOfGame, boolean gameWon) {
-        this.isEndRound = true;
-        this.enemySpeed = enemySpeed;
-        this.enemy.setNextHitpoints(enemyHitpoints);
-        this.playerSpeed = playerSpeed;
-        this.player.setNextHitpoints(playerHitpoints);
-        this.player.getLance().setTipYPos(playerWeaponHeight);
-        this.player.setLastHit(playerPointHit);
-        if(endOfGame){
-            this.isEndGame = true;
-            this.gameWon=gameWon;
-        }
-    }
-
-    private void finishGame() {
-        Activity activity = (Activity)this.getContext();
-        activity.finish();
-    }
-
-    public void countDown(int count){
-        this.countDownCount = count;
-    }
-
-    public void setPlayerPositions(int playerPos, int enemyPos){
-        this.player.setPos(playerPos);
-        this.enemy.setPos(enemyPos);
-    }
-
-    public void setLanceAngles(int playerLanceAngle, int enemyLanceAngle) {
-        this.player.setLanceAngle(playerLanceAngle);
-        this.enemy.setLanceAngle(enemyLanceAngle);
-    }
 
 
 }
