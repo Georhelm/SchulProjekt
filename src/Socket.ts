@@ -17,6 +17,10 @@ export class GameSocket {
         return GameSocket.gameQueue.length;
     }
 
+    public static getQueue(): User[] {
+        return GameSocket.gameQueue;
+    }
+
 //#endregion public static methods
 
 //#region static properties

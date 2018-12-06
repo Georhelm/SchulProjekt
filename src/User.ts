@@ -70,6 +70,13 @@ export class User {
         }
     }
 
+    public static getUsers(): User[] {
+        if (User.userList === undefined) {
+            return [];
+        }
+        return User.userList;
+    }
+
 //#endregion public static methods
 
 //#region static properties
@@ -117,6 +124,10 @@ export class User {
      */
     public getDatabaseId(): number {
         return this.databaseId;
+    }
+
+    public getUsername(): string {
+        return this.username;
     }
 
 //#endregion getter

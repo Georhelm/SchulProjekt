@@ -51,7 +51,7 @@ export class Mount {
 
 //#region setters
 
-    public setSpeed(speed: number ) {
+    public setSpeed(speed: number) {
         this.speed = speed;
     }
 

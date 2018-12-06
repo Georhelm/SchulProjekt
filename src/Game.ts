@@ -52,6 +52,13 @@ export class Game {
         return Game.AllGames.length;
     }
 
+    public static getGames(): Game[] {
+        if (Game.AllGames === undefined) {
+            return [];
+        }
+        return Game.AllGames;
+    }
+
 //#endregion public static methods
 
 //#region static properties
@@ -113,6 +120,22 @@ export class Game {
     }
 
 //#endregion constructor
+
+//#region getters
+
+    public getPlayer1(): Player {
+        return this.player1;
+    }
+
+    public getPlayer2(): Player {
+        return this.player2;
+    }
+
+    public getId(): number {
+        return this.id;
+    }
+
+//#endregion getters
 
 //#region public async methods
 
@@ -202,6 +225,7 @@ export class Game {
 
         if (this.player1.getHitpoints() <= 0 && this.player2.getHitpoints() <= 0) {
             this.draw = true;
+            this.running = false;
         } else if (this.player1.getHitpoints() <= 0) {
             if (this.user2 !== null) {
                 this.wonPlayerId = this.user2.getDatabaseId();
@@ -249,8 +273,8 @@ export class Game {
             if (this.wonPlayerId !== null && this.wonPlayerId !== undefined) {
                 DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.wonPlayerId);
             }
-            Game.removeGame(this);
         }
+        Game.removeGame(this);
     }
 
     /**
