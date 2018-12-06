@@ -84,6 +84,10 @@ export class Player {
         return this.hitpoints;
     }
 
+    public getLeftState(): boolean {
+        return this.hasLeft;
+    }
+
 //#endregion getters
 
 //#region setters
@@ -157,6 +161,7 @@ export class Player {
     public leaveGame() {
         this.hasLeft = true;
         this.ready = true;
+        this.onPlayerReady();
     }
 
     /**

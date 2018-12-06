@@ -33,7 +33,7 @@ export class Game {
     public static isUserInGame(user: User): boolean {
         if (Game.AllGames !== undefined) {
             for (const game of Game.AllGames) {
-                if (game.user1 === user || game.user2 === user) {
+                if ((game.user1 === user && !game.player1.getLeftState()) || (game.user2 === user && !game.player2.getLeftState())) {
                     return true;
                 }
             }
@@ -56,7 +56,7 @@ export class Game {
 
 //#region static properties
 
-private static AllGames: Game[];
+    private static AllGames: Game[];
 
 //#endregion static properties
 
