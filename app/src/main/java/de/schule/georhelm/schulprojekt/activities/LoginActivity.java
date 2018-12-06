@@ -94,7 +94,7 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
      * Goes to Menu activity on success.
      * @param token A String containing the token to log into the socket connection
      */
-    public void createConnection(String token){
+    private void createConnection(String token){
         ConnectionSocket socket = new ConnectionSocket(token);
         ConnectionSocket.setSocket(socket);
         if (socket.init(this)){
@@ -116,7 +116,7 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
      * Saves the connection token on app-internal storage to remember log-in sessions.
      * @param token The token that needs to be saved.
      */
-    public void saveToken(String token) {
+    private void saveToken(String token) {
         File appInternalDirectory = getFilesDir();
         File tokenSave = new File(appInternalDirectory + "/accessToken.txt");
         try{

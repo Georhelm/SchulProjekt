@@ -52,8 +52,8 @@ public class Mount {
         options.inSampleSize = GameView.calculateInSampleSize(options, this.width, this.height);
         options.inJustDecodeBounds = false;
 
-        bitmap = BitmapFactory.decodeResource(context.getResources(), bitmapId, options);
-        bitmap = Bitmap.createScaledBitmap(bitmap, this.width, this.height, false);
+        this.bitmap = BitmapFactory.decodeResource(context.getResources(), bitmapId, options);
+        this.bitmap = Bitmap.createScaledBitmap(this.bitmap, this.width, this.height, false);
         matrix = new Matrix();
         matrix.reset();
         matrix.postTranslate(this.x, this.y);

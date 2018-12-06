@@ -8,7 +8,7 @@ import de.schule.georhelm.schulprojekt.R;
 public class SoundManager {
 
     //#region properties
-    static MediaPlayer themeMusicIntroMP;
+    private static MediaPlayer themeMusicIntroMP;
     static MediaPlayer themeMusicLoopMP;
     static boolean muted = false;
     //#endregion properties

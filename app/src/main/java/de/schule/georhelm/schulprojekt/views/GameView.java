@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -23,6 +24,7 @@ import de.schule.georhelm.schulprojekt.utilities.PixelConverter;
 import de.schule.georhelm.schulprojekt.playerobjects.Player;
 import de.schule.georhelm.schulprojekt.R;
 
+@SuppressLint("ViewConstructor")
 public class GameView extends SurfaceView implements Runnable{
 
     //#region properties
@@ -53,7 +55,6 @@ public class GameView extends SurfaceView implements Runnable{
         this.context = context;
         JSONObject player1 = new JSONObject();
         JSONObject player2 = new JSONObject();
-
         try{
             player1 = gameData.getJSONObject("player1");
             player2 = gameData.getJSONObject("player2");
@@ -79,24 +80,7 @@ public class GameView extends SurfaceView implements Runnable{
     //#endregion constructor
 
     //#region public methods
-    /**
-     * Resets properties of this class to start a new Round
-     */
-    public void initNewRound(){
-        this.frameCounter = -50;
-        this.player.resetPos();
-        this.player.setLanceAngle(90);
-        this.enemy.resetPos();
-        this.enemy.setLanceAngle(90);
-        this.continueButtonEnabled = false;
-        this.isEndRound = false;
-        this.enemyOffset = 0;
-        this.enemyBackgroundOffset = 0;
-        this.player.setEndSpeed(0);
-        this.enemy.setEndSpeed(0);
-        this.socket.playerReady();
-        this.socket.initGame(this);
-    }
+
     /**
      * Fires the three main phases: update, draw and control.
      */
@@ -213,9 +197,6 @@ public class GameView extends SurfaceView implements Runnable{
     //#endregion public methods
 
     //#region private methods
-
-
-
     private void update(){
     }
     private void draw(){
@@ -266,6 +247,24 @@ public class GameView extends SurfaceView implements Runnable{
             }
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
+    }
+    /**
+     * Resets properties of this class to start a new Round
+     */
+    private void initNewRound(){
+        this.frameCounter = -50;
+        this.player.resetPos();
+        this.player.setLanceAngle(90);
+        this.enemy.resetPos();
+        this.enemy.setLanceAngle(90);
+        this.continueButtonEnabled = false;
+        this.isEndRound = false;
+        this.enemyOffset = 0;
+        this.enemyBackgroundOffset = 0;
+        this.player.setEndSpeed(0);
+        this.enemy.setEndSpeed(0);
+        this.socket.playerReady();
+        this.socket.initGame(this);
     }
     /**
      * Draws the dusty cloud at the point where both players hit each other.

@@ -2,9 +2,11 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background">
+    tools:ignore="Overdraw">
 
     <android.support.v7.widget.AppCompatImageView
         android:id="@+id/equipmentPreview"
@@ -39,8 +41,7 @@
 
     <Button
     android:background="@drawable/button_red_medium"
-    android:id="@+id/buttonBack"
-    android:layout_width="wrap_content"
+        android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="@string/textBack"
     app:layout_constraintTop_toTopOf="parent"
@@ -53,7 +54,6 @@
 
     <Button
         android:background="@drawable/button_red_medium"
-        android:id="@+id/buttonSelectEquipment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/textSelect"
