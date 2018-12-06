@@ -35,7 +35,7 @@ export class Mount {
 
 //#region getters
 
-    public getSpeed(){
+    public getSpeed() {
         return this.speed;
     }
 
@@ -51,7 +51,7 @@ export class Mount {
 
 //#region setters
 
-    public setSpeed(speed: number ){
+    public setSpeed(speed: number ) {
         this.speed = speed;
     }
 
@@ -61,7 +61,7 @@ export class Mount {
 
     /**
      * accelerates the mount by his acceleration to a maximum of its maxSpeed
-     * @param timeDelta time since the last update 
+     * @param timeDelta time since the last update
      */
     public accelerate(timeDelta: number) {
         this.speed = this.speed + this.acceleration * timeDelta;
