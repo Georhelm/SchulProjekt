@@ -94,7 +94,7 @@ export class User {
      * @param databaseId id of the user
      * @param socket socket the user uses to communicate
      */
-    constructor( username: string, databaseId: number, socket: Socket) {
+    constructor(username: string, databaseId: number, socket: Socket) {
         this.username = username;
         this.databaseId = databaseId;
         this.socket = socket;
