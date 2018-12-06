@@ -1,18 +1,17 @@
 import express = require("express");
-import {Server} from 'socket.io';
+import sourceMap = require("source-map-support");
+import * as config from "../config.json";
 import AdminRouter = require("./admin/Router");
-import GameRouter = require("./Router");
-import {Config} from "./Config";
-import {GameSocket} from "./Socket";
 import {DatabaseConnection} from "./DatabaseConnector";
-require('source-map-support').install();
+import GameRouter = require("./Router");
+import {GameSocket} from "./Socket";
 
-const config: Config = require("../config.json");
+sourceMap.install();
 
 const app: express.Application = express();
 
 // creates the database connection
-new DatabaseConnection(config.serverName, config.username, config.password, config.database);
+const database = new DatabaseConnection(config.serverName, config.username, config.password, config.database);
 
 // defines the routers to use for the webserver
 app.use(express.json());
@@ -22,9 +21,7 @@ app.use("/", GameRouter.createGameRouter());
 app.use("/admin", AdminRouter.createAdminRouter());
 
 // starts the webserver
-const server = app.listen(config.port, () => {
-	console.log("server started at port " + config.port);
-});
+const server = app.listen(config.port);
 
 // creates the gamesocket
 const socket = new GameSocket(server);

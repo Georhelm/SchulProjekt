@@ -1,17 +1,23 @@
-import Socket = require("socket.io");
 import {NextFunction} from "express";
+import {Server} from "http";
+import Socket = require("socket.io");
 import {DatabaseConnection} from "./DatabaseConnector";
-import { Server } from "http";
-import {User} from "./User";
 import {Game} from "./Game";
+import {User} from "./User";
 
 export class GameSocket {
 
-//#region properties
+//#region public static methods
 
-    private socket: Socket.Server;
+    /**
+     * get the amount of people queuing
+     * @returns amount of people in queue
+     */
+    public static getQueueLength(): number {
+        return GameSocket.gameQueue.length;
+    }
 
-//#endregion properties
+//#endregion public static methods
 
 //#region static properties
 
@@ -19,15 +25,21 @@ export class GameSocket {
 
 //#endregion static properties
 
+//#region properties
+
+    private socket: Socket.Server;
+
+//#endregion properties
+
 //#region constructor
 
     /**
      * creates a new gamesocket
      * @param server the http server to listen on
      */
-    constructor(server: Server){
+    constructor(server: Server) {
         this.socket = Socket(server);
-        if(GameSocket.gameQueue === undefined) {
+        if (GameSocket.gameQueue === undefined) {
             GameSocket.gameQueue = [];
         }
     }
@@ -60,17 +72,16 @@ export class GameSocket {
         if (!socket.handshake.query.token) {
             return next(new Error("authentication error"));
         }
-    
+
         try {
             const result = await DatabaseConnection.getDatabaseConnection().checkAuthToken(socket.handshake.query.token);
-            new User(result.name, result.id, socket);
+            const user = new User(result.name, result.id, socket);
             return next();
-        }catch(error) {
+        } catch (error) {
             socket.disconnect();
             return next(new Error("unauthorized"));
         }
     }
-
 
     /**
      * checks if the user is authenticated
@@ -78,7 +89,7 @@ export class GameSocket {
      * @param client the connecting socket
      */
     private async onConnected(client: Socket.Socket) {
-        const player = User.getUserBySocketId(client.id)
+        const player = User.getUserBySocketId(client.id);
         if (player === null) {
             client.disconnect();
             return;
@@ -88,18 +99,18 @@ export class GameSocket {
 
     /**
      * checks if the user authenticated
-     * ends all games containing that user 
+     * ends all games containing that user
      * removes the user from the list of online users
      * @param client the connecting client
      */
     private async onDisconnected(client: Socket.Socket) {
-        const player = User.getUserBySocketId(client.id)
+        const player = User.getUserBySocketId(client.id);
         if (player === null) {
             return;
         }
         Game.endGamesContainingUser(player);
         const playerIndex = GameSocket.gameQueue.indexOf(player);
-        if(playerIndex > -1) {
+        if (playerIndex > -1) {
             GameSocket.gameQueue.splice(playerIndex, 1);
         }
         User.removeUserBySocketId(client.id);
@@ -111,17 +122,17 @@ export class GameSocket {
      * @param client the connecting client
      */
     private async startSinglePlayer(client: Socket.Socket)  {
-        const player = User.getUserBySocketId(client.id)
+        const player = User.getUserBySocketId(client.id);
         if (player === null)  {
             client.disconnect();
             return;
         }
-        if(Game.isUserInGame(player)){
+        if (Game.isUserInGame(player)) {
             return;
         }
         try {
             await DatabaseConnection.getDatabaseConnection().createGame(player, null, "singleplayer");
-        }catch(error) {
+        } catch (error) {
             client.disconnect();
             return;
         }
@@ -132,27 +143,27 @@ export class GameSocket {
      * then adds the user to the gamequeue or starts a game with another user from the gamequeue
      * @param client the connecting client
      */
-    private async startMultiplayer(client: Socket.Socket) {     
-        const player = User.getUserBySocketId(client.id);    
+    private async startMultiplayer(client: Socket.Socket) {
+        const player = User.getUserBySocketId(client.id);
         if (player === null)  {
             client.disconnect();
             return;
         }
-        if(Game.isUserInGame(player)){
+        if (Game.isUserInGame(player)) {
             return;
         }
-        if(GameSocket.gameQueue.length > 0) {
+        if (GameSocket.gameQueue.length > 0) {
             try {
                 const enemy = GameSocket.gameQueue.pop();
-                if(enemy === undefined) {
+                if (enemy === undefined) {
                     return;
                 }
                 await DatabaseConnection.getDatabaseConnection().createGame(player, enemy, "multiplayer");
-            }catch(error) {
+            } catch (error) {
                 client.disconnect();
                 return;
             }
-        }else {
+        } else {
             GameSocket.gameQueue.push(player);
             client.emit("searching_multiplayer");
             client.once("cancel_search", this.cancelSearch.bind(this, client));
@@ -166,12 +177,12 @@ export class GameSocket {
      */
     private async cancelSearch(client: Socket.Socket) {
         const player = User.getUserBySocketId(client.id);
-        if(player === null) {
+        if (player === null) {
             client.disconnect();
             return;
         }
         const index = GameSocket.gameQueue.indexOf(player);
-        if(index > -1) {
+        if (index > -1) {
             GameSocket.gameQueue.splice(index, 1);
         }
     }
@@ -193,8 +204,8 @@ export class GameSocket {
         const selectedMount = await DatabaseConnection.getDatabaseConnection().getEquippedMount(player.getDatabaseId());
         const message = {
             mounts,
-            selectedMount: selectedMount.getId()
-        }
+            selectedMount: selectedMount.getId(),
+        };
         ack(message);
     }
 
@@ -204,16 +215,16 @@ export class GameSocket {
      * @param client the connecting client
      * @param data the equipment for the player
      */
-    private async setEquipment(client: Socket.Socket, data: EquipmentData) {
+    private async setEquipment(client: Socket.Socket, data: IEquipmentData) {
         const player = User.getUserBySocketId(client.id);
         if (player === null)  {
             client.disconnect();
             return;
         }
-        try{
+        try {
             DatabaseConnection.getDatabaseConnection().setMountOfUser(data.mountId, player.getDatabaseId());
-        }catch {
-            console.error("Could not set equipment");
+        } catch {
+            throw new Error("Could not set equipment");
         }
     }
 
@@ -223,7 +234,7 @@ export class GameSocket {
      * @param client the connecting client
      */
     private async leaveGame(client: Socket.Socket) {
-        const player = User.getUserBySocketId(client.id)
+        const player = User.getUserBySocketId(client.id);
         if (player === null) {
             return;
         }
@@ -238,7 +249,7 @@ export class GameSocket {
      */
     private async getWins(client: Socket.Socket, ack: (wins: number) => void) {
         const player = User.getUserBySocketId(client.id);
-        if(player === null) {
+        if (player === null) {
             client.disconnect();
             return;
         }
@@ -262,19 +273,6 @@ export class GameSocket {
 
 //#endregion private async methods
 
-    
-//#region public static methods
-
-    /**
-     * get the amount of people queuing
-     * @returns amount of people in queue
-     */
-    public static getQueueLength(): number {
-        return GameSocket.gameQueue.length;
-    }
-
-//#endregion public static methods
-
 }
 
 //#region interfaces
@@ -282,7 +280,7 @@ export class GameSocket {
 /**
  * interface for equipmentdata
  */
-interface EquipmentData {
+interface IEquipmentData {
     mountId: number;
 }
 

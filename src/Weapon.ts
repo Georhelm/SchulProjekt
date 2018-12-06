@@ -1,6 +1,5 @@
 import { Constants } from "./Constants";
 
-
 export class Weapon {
 
 //#region properties
@@ -54,7 +53,7 @@ export class Weapon {
 
     /**
      * gets the current angle of the weapon
-     * @returns the angle 
+     * @returns the angle
      */
     public getAngle(): number {
         return this.angle;
@@ -69,11 +68,11 @@ export class Weapon {
      * @param timeDelta the time since the last update
      * @param lifting if the player is currently lifting the weapon
      */
-    public updateAngle(timeDelta: number, lifting: boolean){
+    public updateAngle(timeDelta: number, lifting: boolean) {
         if (lifting) {
             const newAngle = this.angle - this.liftSpeed * timeDelta;
             this.angle = Math.max(newAngle, this.minAngle);
-        }else {
+        } else {
             const newAngel = this.angle + this.fallSpeed * timeDelta;
             this.angle = Math.min(newAngel, this.maxAngle);
         }
@@ -85,6 +84,7 @@ export class Weapon {
     public reset() {
         this.angle = 90;
     }
-    
+
 //#endregion public methods
+
 }

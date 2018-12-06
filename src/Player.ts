@@ -1,11 +1,21 @@
+
+import {Socket} from "socket.io";
+import { Constants } from "./Constants";
+import {DatabaseConnection} from "./DatabaseConnector";
+import {IGameUpdate} from "./Game";
 import {Mount} from "./Mount";
 import {Weapon} from "./Weapon";
-import {DatabaseConnection} from "./DatabaseConnector";
-import {Socket} from "socket.io";
-import {GameUpdate} from "./Game";
-import { Constants } from "./Constants";
 
 export class Player {
+
+//#region protected properties
+
+    protected mount: Mount;
+    protected weapon: Weapon;
+    protected ready: boolean;
+    protected isLiftingWeapon: boolean;
+
+//#endregion protected properties
 
 //#region private properties
 
@@ -20,15 +30,6 @@ export class Player {
     private hasLeft: boolean;
 
 //#endregion private properties
-
-//#region protected properties
-    
-    protected mount: Mount;
-    protected weapon: Weapon;
-    protected ready: boolean;
-    protected isLiftingWeapon: boolean;
-
-//#endregion protected properties
 
 //#region contructor
 
@@ -91,7 +92,7 @@ export class Player {
      * sets the players hitpoints to a minimum of 0
      * @param hitpoints the hitpoints to set the player to
      */
-    private setHitpoints(hitpoints: number) {
+    public setHitpoints(hitpoints: number) {
         this.hitpoints = Math.max(hitpoints, 0);
     }
 
@@ -113,15 +114,15 @@ export class Player {
      * gets all relevant gamedata about the player
      * @returns the players gamedata
      */
-    public getGameData(): PlayerGameData {
-        const result: PlayerGameData = {
-            username: this.username,
-            mountId: this.mount.getId(),
-            weaponId: this.weapon.getId(),
-            position: Math.round(this.position),
+    public getGameData(): IPlayerGameData {
+        const result: IPlayerGameData = {
+            hitpoints: this.hitpoints,
             mountHeight: this.mount.getHeight(),
-            hitpoints: this.hitpoints
-        }
+            mountId: this.mount.getId(),
+            position: Math.round(this.position),
+            username: this.username,
+            weaponId: this.weapon.getId(),
+        };
 
         return result;
     }
@@ -134,7 +135,7 @@ export class Player {
         this.mount.accelerate(timeDelta);
         if (this.farPlayer) {
             this.updatePosition(- timeDelta);
-        }else {
+        } else {
             this.updatePosition(timeDelta);
         }
         this.updateWeaponAngle(timeDelta);
@@ -145,7 +146,7 @@ export class Player {
      * @param playerReadyListener listener for the player_ready event
      * @param socket the socket the player connected on
      */
-    public init(playerReadyListener: () => void, socket: Socket){
+    public init(playerReadyListener: () => void, socket: Socket) {
         this.socket = socket;
         this.setPlayerReadyListener(playerReadyListener);
     }
@@ -199,10 +200,10 @@ export class Player {
      * @param gameWidth the width of the gameworld
      */
     public sendPartialGameUpdate(enemy: Player, gameWidth: number) {
-        const gameUpdate: GameUpdate = {
+        const gameUpdate: IGameUpdate = {
             type: "partialUpdate",
-            value: this.getGameUpdate(enemy, gameWidth)
-        }
+            value: this.getGameUpdate(enemy, gameWidth),
+        };
         this.sendGameUpdate(gameUpdate);
     }
 
@@ -220,10 +221,14 @@ export class Player {
      */
     public getPointHit(enemy: Player): HitPoint {
         let pointHit = HitPoint.Missed;
-        if(this.getWeaponHeight() >= enemy.getMount().getHeight() + 75 && this.getWeaponHeight() < enemy.getMount().getHeight() + 175){
+        if (this.getWeaponHeight() >= enemy.getMount().getHeight() + 75 && this.getWeaponHeight() < enemy.getMount().getHeight() + 175) {
+
             pointHit = HitPoint.Head;
             enemy.setHitpoints(enemy.getHitpoints() - Constants.HEADHITDAMAGE);
-        }else if(this.getWeaponHeight() < enemy.getMount().getHeight() + 75 && this.getWeaponHeight() > enemy.getMount().getHeight() - 25) {
+
+        } else if (this.getWeaponHeight() < enemy.getMount().getHeight() + 75 &&
+        this.getWeaponHeight() > enemy.getMount().getHeight() - 25) {
+
             pointHit = HitPoint.Body;
             enemy.setHitpoints(enemy.getHitpoints() - Constants.BODYHITDAMAGE);
         }
@@ -231,6 +236,53 @@ export class Player {
     }
 
 //#endregion public methods
+
+//#region public async methods
+
+    /**
+     * loads the equiped equipment for the player
+     */
+    public async loadEquipment() {
+        this.mount = await DatabaseConnection.getDatabaseConnection().getEquippedMount(this.databaseId);
+        this.weapon = await DatabaseConnection.getDatabaseConnection().getEquippedWeapon(this.databaseId);
+    }
+
+    /**
+     * sends a gameupdate to the client
+     */
+    public async sendGameUpdate(update: IGameUpdate) {
+        this.sendMessage("game_update", update);
+    }
+
+    /**
+     * sends a message to the player if he has not left
+     * @param type the type of the message
+     * @param payload the message to send
+     */
+    public async sendMessage(type: string, payload: any) {
+        if (!this.hasLeft) {
+            this.socket.emit(type , payload);
+        }
+    }
+
+//#endregion public async methods
+
+//#region debug methods
+
+    /**
+     * gets data about the player in a readable format
+     * @returns the relevant player data
+     */
+    public getLogObj() {
+        return {
+            lifting: this.isLiftingWeapon,
+            position: this.position,
+            username: this.username,
+            weaponAngle: this.weapon.getAngle(),
+        };
+    }
+
+//#endregion debug methods
 
 //#region private methods
 
@@ -255,7 +307,7 @@ export class Player {
      * executes the listener for the player_ready event if the player has not left
      */
     private playerReady() {
-        if(!this.hasLeft) {
+        if (!this.hasLeft) {
             this.ready = true;
             if (this.onPlayerReady !== undefined) {
                 this.onPlayerReady();
@@ -268,8 +320,8 @@ export class Player {
      * @param data the json sent by the player
      */
     private onGameInput(data: string) {
-        if(!this.hasLeft) {
-            const json: GameInput = JSON.parse(data);
+        if (!this.hasLeft) {
+            const json: IGameInput = JSON.parse(data);
             if (json.type === "lance") {
                 this.isLiftingWeapon = json.value;
             }
@@ -282,34 +334,34 @@ export class Player {
      * @param gameWidth the width of the gameworld
      * @returns the full gamestate
      */
-    private getFullGameState(enemy: Player, gameWidth: number): FullGameState {
+    private getFullGameState(enemy: Player, gameWidth: number): IFullGameState {
 
         let pos = this.position;
         let enemyPos = enemy.getPosition();
-        if(this.farPlayer) {
+        if (this.farPlayer) {
             pos = gameWidth - pos;
             enemyPos = gameWidth - enemyPos;
         }
 
-        const result: FullGameState = {
+        const result: IFullGameState = {
+            gameWidth,
             player1:   {
-                username: this.username,
-                mountId: this.mount.getId(),
-                weaponId: this.weapon.getId(),
-                position: Math.round(pos),
+                hitpoints: this.hitpoints,
                 mountHeight: this.mount.getHeight(),
-                hitpoints: this.hitpoints
+                mountId: this.mount.getId(),
+                position: Math.round(pos),
+                username: this.username,
+                weaponId: this.weapon.getId(),
             },
             player2: {
-                username: enemy.getUsername(),
-                mountId: enemy.getMount().getId(),
-                weaponId: enemy.getWeapon().getId(),
-                position: Math.round(enemyPos),
+                hitpoints: enemy.getHitpoints(),
                 mountHeight: enemy.getMount().getHeight(),
-                hitpoints: enemy.getHitpoints()
+                mountId: enemy.getMount().getId(),
+                position: Math.round(enemyPos),
+                username: enemy.getUsername(),
+                weaponId: enemy.getWeapon().getId(),
             },
-            gameWidth
-        }
+        };
 
         return result;
     }
@@ -320,12 +372,12 @@ export class Player {
      * @param gameWidth the width of the gameWorld
      * @returns an updated gamestate
      */
-    private getGameUpdate(enemy: Player, gameWidth: number): UpdatedGameState {
+    private getGameUpdate(enemy: Player, gameWidth: number): IUpdatedGameState {
 
         let pos = this.position;
-        let enemyPos = enemy.getPosition()
+        let enemyPos = enemy.getPosition();
 
-        if(this.farPlayer) {
+        if (this.farPlayer) {
             pos = gameWidth - pos;
             enemyPos = gameWidth - enemyPos;
         }
@@ -333,13 +385,13 @@ export class Player {
         return {
             player1: {
                 position: Math.round(pos),
-                weaponAngle: Math.round(this.weapon.getAngle())
+                weaponAngle: Math.round(this.weapon.getAngle()),
             },
             player2: {
                 position: Math.round(enemyPos),
-                weaponAngle: Math.round(enemy.getWeapon().getAngle())
-            }
-        }
+                weaponAngle: Math.round(enemy.getWeapon().getAngle()),
+            },
+        };
     }
 
     /**
@@ -351,24 +403,24 @@ export class Player {
      * @param victory if the player has won (set only on the last round)
      */
     private sendRoundEndUpdate(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, type: string, victory?: boolean) {
-        const endRoundUpdate: GameUpdate = {
+        const endRoundUpdate: IGameUpdate = {
             type,
             value: {
                 player1: {
-                    speed: this.getSpeed(),
+                    hitpoints: this.hitpoints,
                     pointHit: playerHit,
+                    speed: this.getSpeed(),
                     weaponHeight: this.getWeaponHeight(),
-                    hitpoints: this.hitpoints
                 },
                 player2: {
-                    speed: enemy.getSpeed(),
+                    hitpoints: enemy.getHitpoints(),
                     pointHit: enemyHit,
+                    speed: enemy.getSpeed(),
                     weaponHeight: enemy.getWeaponHeight(),
-                    hitpoints: enemy.getHitpoints()
-                }
-            }
-        }
-        if(victory !== undefined) {
+                },
+            },
+        };
+        if (victory !== undefined) {
             endRoundUpdate.value.victory = victory;
         }
         this.sendGameUpdate(endRoundUpdate);
@@ -392,54 +444,6 @@ export class Player {
 
 //#endregion private methods
 
-//#region public async methods
-
-    /**
-     * loads the equiped equipment for the player
-     */
-    public async loadEquipment() {
-        this.mount = await DatabaseConnection.getDatabaseConnection().getEquippedMount(this.databaseId);
-        this.weapon = await DatabaseConnection.getDatabaseConnection().getEquippedWeapon(this.databaseId);
-    }
-
-    /**
-     * sends a gameupdate to the client
-     */
-    public async sendGameUpdate(update: GameUpdate) {
-        this.sendMessage("game_update", update);
-    }
-
-    /**
-     * sends a message to the player if he has not left
-     * @param type the type of the message
-     * @param payload the message to send
-     */
-    public async sendMessage(type: string, payload: any) {
-        if(!this.hasLeft){
-            this.socket.emit(type , payload);
-        }
-    }
-
-
-//#endregion public async methods
-
-//#region debug methods
-
-    /**
-     * gets data about the player in a readable format
-     * @returns the relevant player data
-     */
-    public getLogObj() {
-        return {
-            username: this.username,
-            position: this.position,
-            weaponAngle: this.weapon.getAngle(),
-            lifting: this.isLiftingWeapon
-        }
-    }
-
-//#endregion debug methods
-
 }
 
 //#region interfaces
@@ -447,27 +451,27 @@ export class Player {
 /**
  * interface for one players gamedata
  */
-export interface PlayerGameData {
-    username: string,
-    mountId: number,
-    weaponId: number,
-    position: number,
-    mountHeight: number,
-    hitpoints: number
+export interface IPlayerGameData {
+    username: string;
+    mountId: number;
+    weaponId: number;
+    position: number;
+    mountHeight: number;
+    hitpoints: number;
 }
 
 /**
  * interface for one player gameupdate
  */
-export interface PlayerGameUpdate {
-    position: number,
-    weaponAngle: number
+export interface IPlayerGameUpdate {
+    position: number;
+    weaponAngle: number;
 }
 
 /**
  * interface for one player input
  */
-interface GameInput {
+interface IGameInput {
     type: string;
     value: boolean;
 }
@@ -478,25 +482,24 @@ interface GameInput {
 export enum HitPoint {
     Head,
     Body,
-    Missed
+    Missed,
 }
 
 /**
  * interface for a full gamestate
  */
-export interface FullGameState {
-    player1: PlayerGameData,
-    player2: PlayerGameData,
-    gameWidth: number
+export interface IFullGameState {
+    player1: IPlayerGameData;
+    player2: IPlayerGameData;
+    gameWidth: number;
 }
 
 /**
  * interface for an updated gamestate
  */
-export interface UpdatedGameState {
-    player1: PlayerGameUpdate,
-    player2: PlayerGameUpdate
+export interface IUpdatedGameState {
+    player1: IPlayerGameUpdate;
+    player2: IPlayerGameUpdate;
 }
 
 //#endregion interfaces
-

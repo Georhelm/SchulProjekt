@@ -1,6 +1,6 @@
-import  {Player, HitPoint} from "./Player";
-import {GameUpdate} from "./Game";
 import {DatabaseConnection} from "./DatabaseConnector";
+import {IGameUpdate} from "./Game";
+import {HitPoint, Player} from "./Player";
 
 export class Npc extends Player  {
 
@@ -15,27 +15,12 @@ export class Npc extends Player  {
     /**
      * creates a player object with npc data
      */
-    constructor(position: number, farPlayer: boolean){
+    constructor(position: number, farPlayer: boolean) {
         super("NPC", position, farPlayer, -1);
         this.isRunning = true;
     }
 
 //#endregion constructor
-
-//#region private methods
-
-    /**
-     * changes the lifting of the weapon at a random interval
-     */
-    private randomChange() {
-        this.isLiftingWeapon = !this.isLiftingWeapon;
-        const rand = Math.random() * 1000;
-        if(this.isRunning){
-            setTimeout(this.randomChange.bind(this), rand);
-        }
-    }
-
-//#endregion private methods
 
 //#region public async methods
 
@@ -57,21 +42,19 @@ export class Npc extends Player  {
         this.ready = true;
     }
 
-    
     /**
      * overrides the players sendGameUpdate method to not do anything
      */
-    public async sendGameUpdate(update: GameUpdate) {
-        
+    public async sendGameUpdate(update: IGameUpdate) {
+        return;
     }
 
     /**
      * overrides the players sendMessage method to not do anything
      */
     public async sendMessage(type: string) {
-        
+        return;
     }
-
 
 //#endregion public async methods
 
@@ -103,5 +86,20 @@ export class Npc extends Player  {
     }
 
 //#endregion public methods
+
+//#region private methods
+
+    /**
+     * changes the lifting of the weapon at a random interval
+     */
+    private randomChange() {
+        this.isLiftingWeapon = !this.isLiftingWeapon;
+        const rand = Math.random() * 1000;
+        if (this.isRunning) {
+            setTimeout(this.randomChange.bind(this), rand);
+        }
+    }
+
+//#endregion private methods
 
 }

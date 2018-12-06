@@ -1,4 +1,4 @@
-import {Router, Request, Response} from "express";
+import {Request, Response, Router} from "express";
 import {DatabaseConnection} from "./DatabaseConnector";
 
 /**
@@ -21,14 +21,13 @@ export function createGameRouter(): Router {
             try {
                 const result = await DatabaseConnection.getDatabaseConnection().registerUser(req.body.user, req.body.password);
                 resp.send(result);
-            }catch(error) {
+            } catch (error) {
                 resp.status(500).send();
             }
 
         } else {
             resp.status(400).send();
         }
-        
     });
 
     /**
@@ -42,7 +41,7 @@ export function createGameRouter(): Router {
             try {
                 const result = await DatabaseConnection.getDatabaseConnection().loginUser(req.body.user, req.body.password);
                 resp.send(result);
-            }catch(error){
+            } catch (error) {
                 resp.status(500).send();
             }
         } else {
@@ -51,5 +50,3 @@ export function createGameRouter(): Router {
     });
     return GameRouter;
 }
-
-

@@ -1,11 +1,79 @@
 import {Socket} from "socket.io";
 import {Player} from "./Player";
 
-
 export class User {
 
+//#region public static methods
+
+    /**
+     * gets current usercount
+     * @returns number of online users
+     */
+    public static getUserCount(): number {
+        if (User.userList === undefined) {
+            return 0;
+        }
+        return User.userList.length;
+    }
+
+    /**
+     * adds a user to the list of online users
+     * @param user user to add
+     */
+    public static addUser(user: User) {
+        const oldPlayer = User.getUserByDatabaseId(user.databaseId);
+        if (oldPlayer !== null) {
+            User.removeUserBySocketId(oldPlayer.socket.id);
+        }
+        User.userList.push(user);
+    }
+
+    /**
+     * gets a online player by their id
+     * @param id id of the player
+     * @returns the user or null of none was found
+     */
+    public static getUserByDatabaseId(id: number): User | null {
+        for (const player of User.userList) {
+            if (player.databaseId === id) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * gets a online user by their socketid
+     * @param socketId socketId of the user
+     * @returns the user or null of none was found
+     */
+    public static getUserBySocketId(socketId: string): User | null {
+        for (const player of User.userList) {
+            if (player.socket.id === socketId) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * removes a user from the list of online users
+     * @param socketId the users socketId
+     */
+    public static removeUserBySocketId(socketId: string) {
+        const players = User.userList;
+        for (let i = 0; i < players.length; i++) {
+            if (players[i].socket.id === socketId) {
+                players.splice(i, 1);
+                return;
+            }
+        }
+    }
+
+//#endregion public static methods
+
 //#region static properties
-    
+
     private static userList: User[];
 
 //#endregion static properties
@@ -71,75 +139,6 @@ export class User {
 
 //#endregion public async methods
 
-//#region public static methods
-
-    /**
-     * gets current usercount
-     * @returns number of online users
-     */
-    public static getUserCount(): number {
-        if(User.userList === undefined) {
-            return 0;
-        }
-        return User.userList.length;
-    }
-
-    /**
-     * adds a user to the list of online users
-     * @param user user to add
-     */
-    public static addUser(user: User) {
-        const oldPlayer = User.getUserByDatabaseId(user.databaseId);
-        if(oldPlayer !== null) {
-            User.removeUserBySocketId(oldPlayer.socket.id);
-        }
-        User.userList.push(user);
-    }
-
-    /**
-     * gets a online player by their id
-     * @param id id of the player
-     * @returns the user or null of none was found
-     */
-    public static getUserByDatabaseId(id: number): User | null {
-        for (const player of User.userList) {
-            if (player.databaseId == id) {
-                return player;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * gets a online user by their socketid
-     * @param socketId socketId of the user
-     * @returns the user or null of none was found
-     */
-    public static getUserBySocketId(socketId: string): User | null {
-        for (const player of User.userList) {
-            if (player.socket.id === socketId) {
-                return player;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * removes a user from the list of online users
-     * @param socketId the users socketId
-     */
-    public static removeUserBySocketId(socketId: string) {
-        const players = User.userList;
-        for (let i = 0; i < players.length; i++) {
-            if (players[i].socket.id === socketId) {
-                players.splice(i, 1);
-                return;
-            }
-        }
-    }
-
-//#endregion public static methods
-
 //#region debug methods
 
     /**
@@ -148,7 +147,7 @@ export class User {
      */
     public getLogObj(): any {
         const logObj = {
-            name: this.username
+            name: this.username,
         };
         return logObj;
     }

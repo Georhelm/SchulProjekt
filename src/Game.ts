@@ -1,16 +1,79 @@
-import {User} from "./User";
-import { Player, PlayerGameData, PlayerGameUpdate, HitPoint} from "./Player";
-import { Npc } from "./Npc";
-import { DatabaseConnection } from "./DatabaseConnector";
 import { Constants } from "./Constants";
+import { DatabaseConnection } from "./DatabaseConnector";
+import { Npc } from "./Npc";
+import { HitPoint, Player} from "./Player";
+import {User} from "./User";
 
 export class Game {
+
+//#region public static methods
+
+    /**
+     * ends all games containg a specific user
+     * @param user the user to search for
+     */
+    public static endGamesContainingUser(user: User) {
+        if (Game.AllGames === undefined) {
+            return;
+        }
+        for (const game of Game.AllGames) {
+            if (game.user1 === user) {
+                game.setPlayerLeft(user.getDatabaseId());
+            } else if (game.user2 === user) {
+                game.setPlayerLeft(user.getDatabaseId());
+            }
+        }
+    }
+
+    /**
+     * checks if a user is in a game
+     * @param user the user to search for
+     * @returns if the user is in a game
+     */
+    public static isUserInGame(user: User): boolean {
+        if (Game.AllGames !== undefined) {
+            for (const game of Game.AllGames) {
+                if (game.user1 === user || game.user2 === user) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * gets the amount of running games
+     * @returns the amount of running games
+     */
+    public static getGameCount(): number {
+        if (Game.AllGames === undefined) {
+            return 0;
+        }
+        return Game.AllGames.length;
+    }
+
+//#endregion public static methods
 
 //#region static properties
 
 private static AllGames: Game[];
 
 //#endregion static properties
+
+//#region private static methods
+
+    /**
+     * removes a game from the list of running games
+     * @param game the game to remove
+     */
+    private static removeGame(game: Game) {
+        const index = Game.AllGames.indexOf(game);
+        if (index >= 0) {
+            Game.AllGames.splice(index, 1);
+        }
+    }
+
+//#endregion private static methods
 
 //#region properties
 
@@ -42,7 +105,7 @@ private static AllGames: Game[];
         this.gameWidth = Math.round(Math.random() * (Constants.MAXGAMEWIDTH - Constants.MINGAMEWIDTH) + Constants.MINGAMEWIDTH);
         this.draw = false;
 
-        if(Game.AllGames === undefined) {
+        if (Game.AllGames === undefined) {
             Game.AllGames = [];
         }
 
@@ -62,16 +125,33 @@ private static AllGames: Game[];
         this.player1 = await this.user1.startGame(0, this.playerReady.bind(this), false);
         if (this.user2 === null) {
             this.player2 = new Npc(this.gameWidth, true);
-            await (<Npc>this.player2).init();
-        }else {
+            await (this.player2 as Npc).init();
+        } else {
             this.player2 = await this.user2.startGame(this.gameWidth, this.playerReady.bind(this), true);
         }
-        
+
         this.player1.sendFullGameState(this.player2, this.gameWidth);
         this.player2.sendFullGameState(this.player1, this.gameWidth);
     }
 
 //#endregion public async methods
+
+//#region debug
+
+    /**
+     * gets data about the game in a readable format
+     */
+    public getLogObj(): any {
+        const logObj = {
+            id: this.id,
+            player1: this.player1.getLogObj(),
+            player2: this.player2.getLogObj(),
+            width: this.gameWidth,
+        };
+        return logObj;
+    }
+
+//#endregion debug
 
 //#region private methods
 
@@ -94,7 +174,7 @@ private static AllGames: Game[];
         const newTime = Date.now();
         const timeDelta = (newTime - this.timeOfLastUpdate) / 1000;
         this.timeOfLastUpdate = newTime;
-        if (this.player1.getPosition() >= this.player2.getPosition()){
+        if (this.player1.getPosition() >= this.player2.getPosition()) {
             this.endRound();
             return;
         }
@@ -120,19 +200,19 @@ private static AllGames: Game[];
         const player1Hit = this.player1.getPointHit(this.player2);
         const player2Hit = this.player2.getPointHit(this.player1);
 
-        if(this.player1.getHitpoints() <= 0 && this.player2.getHitpoints() <= 0){
+        if (this.player1.getHitpoints() <= 0 && this.player2.getHitpoints() <= 0) {
             this.draw = true;
-        }else if(this.player1.getHitpoints() <= 0){
-            if(this.user2 !== null) {              
+        } else if (this.player1.getHitpoints() <= 0) {
+            if (this.user2 !== null) {
                 this.wonPlayerId = this.user2.getDatabaseId();
             }
             this.running = false;
-        }else if(this.player2.getHitpoints() <= 0){
+        } else if (this.player2.getHitpoints() <= 0) {
             this.wonPlayerId = this.user1.getDatabaseId();
             this.running = false;
-        } 
+        }
 
-        if(!this.running) {
+        if (!this.running) {
             this.endGame(player1Hit, player2Hit);
             return;
         }
@@ -152,42 +232,40 @@ private static AllGames: Game[];
      * @param player2Hit the point the second player hit his enemy at
      */
     private endGame(player1Hit: HitPoint, player2Hit: HitPoint) {
-        if(this.draw) {
+        if (this.draw) {
             this.player1.endGame(this.player2, player1Hit, player2Hit, true);
             this.player2.endGame(this.player1, player2Hit, player1Hit, true);
-            console.log("game ended");
-            DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.user1.getDatabaseId());    
-            if(this.user2 !== null) {        
+            DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.user1.getDatabaseId());
+            if (this.user2 !== null) {
                 DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.user2.getDatabaseId());
             }
-        }else {
+        } else {
             let player2Winner = true;
-            if(this.wonPlayerId === this.user1.getDatabaseId()) {
+            if (this.wonPlayerId === this.user1.getDatabaseId()) {
                 player2Winner = false;
             }
             this.player1.endGame(this.player2, player1Hit, player2Hit, !player2Winner);
             this.player2.endGame(this.player1, player2Hit, player1Hit, player2Winner);
-            console.log("game ended");
-            if(this.wonPlayerId !== null && this.wonPlayerId !== undefined) {
+            if (this.wonPlayerId !== null && this.wonPlayerId !== undefined) {
                 DatabaseConnection.getDatabaseConnection().setGameWinner(this.id, this.wonPlayerId);
             }
             Game.removeGame(this);
         }
     }
-    
+
     /**
      * forces the game to end and the player to loose
      * @param playerId the id of the player that left
      */
     private setPlayerLeft(playerId: number) {
         this.running = false;
-        if(this.user1.getDatabaseId() === playerId) {
+        if (this.user1.getDatabaseId() === playerId) {
             this.player1.leaveGame();
-            if(this.user2 !== null) {
+            if (this.user2 !== null) {
                 this.wonPlayerId = this.user2.getDatabaseId();
             }
         }
-        if(this.user2 !== null && this.user2.getDatabaseId() === playerId) {
+        if (this.user2 !== null && this.user2.getDatabaseId() === playerId) {
             this.player2.leaveGame();
             this.wonPlayerId = this.user1.getDatabaseId();
         }
@@ -205,7 +283,7 @@ private static AllGames: Game[];
         this.timeOfLastUpdate = Date.now();
         this.player1.initGameInputListeners();
         this.player2.initGameInputListeners();
-        this.doCountdown(3);    
+        this.doCountdown(3);
     }
 
     /**
@@ -216,17 +294,17 @@ private static AllGames: Game[];
     private async doCountdown(time: number) {
         const newTime = Date.now();
         this.timeOfLastUpdate = newTime;
-        const update: GameUpdate = {
-            "type": "countdown",
-            "value": time
-        }
+        const update: IGameUpdate = {
+            type: "countdown",
+            value: time,
+        };
         this.player1.sendGameUpdate(update);
         this.player2.sendGameUpdate(update);
         if (time > 0) {
             setTimeout(() => {
                 this.doCountdown(--time);
             }, 1000);
-        }else {
+        } else {
             this.startGame();
         }
     }
@@ -240,82 +318,6 @@ private static AllGames: Game[];
 
 //#endregion private async methods
 
-//#region private static methods
-
-    /**
-     * removes a game from the list of running games
-     * @param game the game to remove
-     */
-    private static removeGame(game: Game) {
-        const index = Game.AllGames.indexOf(game);
-        if(index >= 0){           
-            Game.AllGames.splice(index, 1);
-        }
-    }
-
-    /**
-     * ends all games containg a specific user
-     * @param user the user to search for
-     */
-    public static endGamesContainingUser(user: User) {
-        if(Game.AllGames === undefined) {
-            return;
-        }
-        for(const game of Game.AllGames) {
-            if(game.user1 === user){
-                game.setPlayerLeft(user.getDatabaseId()); 
-            }else if(game.user2 === user) {
-                game.setPlayerLeft(user.getDatabaseId());
-            }
-        }
-    }
-
-    /**
-     * checks if a user is in a game
-     * @param user the user to search for
-     * @returns if the user is in a game
-     */
-    public static isUserInGame(user: User): boolean {
-        if(Game.AllGames !== undefined) {
-            for(const game of Game.AllGames) {
-                if(game.user1 === user || game.user2 === user) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * gets the amount of running games
-     * @returns the amount of running games
-     */
-    public static getGameCount(): number {
-        if(Game.AllGames === undefined) {
-            return 0
-        }
-        return Game.AllGames.length;
-    }
-
-//#endregion private static methods
-    
-//#region debug
-
-    /**
-     * gets data about the game in a readable format
-     */
-    public getLogObj(): any {
-        const logObj = {
-            id: this.id,
-            player1: this.player1.getLogObj(),
-            player2: this.player2.getLogObj(),
-            width: this.gameWidth
-        };
-        return logObj;
-    }
-
-//#endregion debug
-    
 }
 
 //#region interfaces
@@ -323,9 +325,9 @@ private static AllGames: Game[];
 /**
  * interface for a gameupdate
  */
-export interface GameUpdate {
-    type: string,
-    value: any
+export interface IGameUpdate {
+    type: string;
+    value: any;
 }
 
 //#endregion interfaces
