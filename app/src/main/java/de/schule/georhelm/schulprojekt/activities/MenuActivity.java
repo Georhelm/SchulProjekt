@@ -72,6 +72,7 @@ public class MenuActivity extends AppCompatActivity {
                 if(activity.searchHandler != null) {
                     activity.searchHandler.end();
                 }
+                activity.isSearching = false;
             }
         });
     }
