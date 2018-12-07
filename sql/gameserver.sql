@@ -19,26 +19,9 @@
 -- Current Database: `gameapp`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `testgameapp` /*!40100 DEFAULT CHARACTER SET latin1 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `gameapp` /*!40100 DEFAULT CHARACTER SET latin1 */;
 
-USE `testgameapp`;
-
---
--- Table structure for table `game_winner`
---
-
-DROP TABLE IF EXISTS `game_winner`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `game_winner` (
-  `game_id` int(11) NOT NULL,
-  `player_id` int(11) NOT NULL,
-  PRIMARY KEY (`game_id`,`player_id`),
-  KEY `fk_player_id` (`player_id`),
-  CONSTRAINT `fk_game_id` FOREIGN KEY (`game_id`) REFERENCES `gamedata` (`id`),
-  CONSTRAINT `fk_player_id` FOREIGN KEY (`player_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+USE `gameapp`;
 
 --
 -- Table structure for table `gamedata`
@@ -54,7 +37,7 @@ CREATE TABLE `gamedata` (
   PRIMARY KEY (`id`),
   KEY `FK_GamedataType` (`type`),
   CONSTRAINT `FK_GamedataType` FOREIGN KEY (`type`) REFERENCES `gametype` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1179 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1215 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -100,6 +83,7 @@ DROP TABLE IF EXISTS `user_game`;
 CREATE TABLE `user_game` (
   `gameid` int(11) NOT NULL DEFAULT '0',
   `playerid` int(11) NOT NULL DEFAULT '0',
+  `won` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`gameid`,`playerid`),
   KEY `FK_UsergameUser` (`playerid`),
   CONSTRAINT `FK_UsergameGame` FOREIGN KEY (`gameid`) REFERENCES `gamedata` (`id`),
@@ -157,4 +141,4 @@ CREATE TABLE `weapons` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-12-07 11:03:14
+-- Dump completed on 2018-12-07 13:47:28
