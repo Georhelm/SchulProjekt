@@ -268,7 +268,7 @@ export class DatabaseConnection {
      * @param wonPlayerId the id of the player who won
      */
     public async setGameWinner(gameId: number, wonPlayerId: number) {
-        await this.query("Insert into game_winner (game_id, player_id) Values (?,?)", [gameId, wonPlayerId]);
+        await this.query("Update user_game set won=1 where gameid=? and playerid=?", [gameId, wonPlayerId]);
     }
 
     /**
@@ -287,7 +287,7 @@ export class DatabaseConnection {
      * @returns a promise that resolves to the number of wins
      */
     public async getUserWins(userId: number) {
-        const result = await this.query("Select Count(*) as wins from game_winner where player_id = ?", [userId]);
+        const result = await this.query("Select Count(*) as wins from user_game where playerid = ? and won=1", [userId]);
         return result[0].wins;
     }
 

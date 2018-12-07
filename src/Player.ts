@@ -28,6 +28,8 @@ export class Player {
     private databaseId: number;
     private hitpoints: number;
     private hasLeft: boolean;
+    private inputListener: (data: string) =>  void;
+    private readyStateListener: () => void;
 
 //#endregion private properties
 
@@ -49,7 +51,7 @@ export class Player {
         this.farPlayer = farPlayer;
         this.databaseId = databaseId;
         this.hasLeft = false;
-        this.hitpoints = 100;
+        this.hitpoints = 1;
     }
 
 //#endregion constructor
@@ -185,8 +187,8 @@ export class Player {
     public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, victory: boolean) {
 
         this.sendRoundEndUpdate(enemy, playerHit, enemyHit, "gameEnd", victory);
-        this.socket.removeListener("player_ready", this.onPlayerReady);
-        this.socket.removeListener("game_input", this.onGameInput.bind(this));
+        this.socket.removeListener("player_ready", this.readyStateListener);
+        this.socket.removeListener("game_input", this.inputListener);
     }
 
     /**
@@ -216,7 +218,8 @@ export class Player {
      * initializes the listener for the game_input event
      */
     public initGameInputListeners() {
-        this.socket.on("game_input", this.onGameInput.bind(this));
+        this.inputListener = this.onGameInput.bind(this);
+        this.socket.on("game_input", this.inputListener);
     }
 
     /**
@@ -305,7 +308,8 @@ export class Player {
      */
     private setPlayerReadyListener(playerReadyListener: () => void) {
         this.onPlayerReady = playerReadyListener;
-        this.socket.on("player_ready", this.playerReady.bind(this));
+        this.readyStateListener = this.playerReady.bind(this);
+        this.socket.on("player_ready", this.readyStateListener);
     }
 
     /**

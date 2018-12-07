@@ -81,7 +81,7 @@ export class Npc extends Player  {
      * overrides the players endGame method
      * clears the randomChange timer
      */
-    public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint) {
+    public endGame(enemy: Player, playerHit: HitPoint, enemyHit: HitPoint, victory: boolean) {
         this.isRunning = false;
     }
 
