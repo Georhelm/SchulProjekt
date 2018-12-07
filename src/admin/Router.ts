@@ -5,25 +5,62 @@ import {Dashboard} from "./Dashboard";
 export function createAdminRouter(): Router {
     const AdminRouter: Router = Router();
 
-    AdminRouter.get("/", authAdmin, async (req: Request, resp: Response) => {
-        resp.status(400).send(Dashboard.getOverview());
+    /**
+     * adds middleware to require authentication to access admin panels
+     */
+    AdminRouter.use(async (req: Request, resp: Response, next: NextFunction) => {
+        authAdmin(req, resp, next);
     });
 
-    AdminRouter.get("/queue", authAdmin, async (req: Request, resp: Response) => {
-        resp.status(400).send(Dashboard.getQueueDetails());
+    /**
+     * adds the middleware for the html head
+     */
+    AdminRouter.use(async (req: Request, resp: Response, next: NextFunction) => {
+        resp.write(Dashboard.getHead());
+        next();
     });
 
-    AdminRouter.get("/online", authAdmin, async (req: Request, resp: Response) => {
-        resp.status(400).send(Dashboard.getOnlineDetails());
+    /**
+     * adds route for overview
+     */
+    AdminRouter.get("/", async (req: Request, resp: Response) => {
+        resp.status(400).end(Dashboard.getOverview());
     });
 
-    AdminRouter.get("/games", authAdmin, async (req: Request, resp: Response) => {
-        resp.status(400).send(Dashboard.getGameDetails());
+    /**
+     * adds route for the queue overview
+     */
+    AdminRouter.get("/queue", async (req: Request, resp: Response) => {
+        resp.status(400).end(Dashboard.getQueueDetails());
+    });
+
+    /**
+     * adds route for the online users overview
+     */
+    AdminRouter.get("/online", async (req: Request, resp: Response) => {
+        resp.status(400).end(Dashboard.getOnlineDetails());
+    });
+
+    /**
+     * adds route for the running games overview
+     */
+    AdminRouter.get("/games", async (req: Request, resp: Response) => {
+        resp.status(400).end(Dashboard.getGameDetails());
+    });
+
+    /**
+     * adds redirect for all invalid routes to overview
+     */
+    AdminRouter.get("/*", authAdmin, async (req: Request, resp: Response) => {
+        resp.redirect("/");
     });
 
     return AdminRouter;
 }
 
+/**
+ * authentication middleware to be used in all requests to /admin/*
+ */
 function authAdmin(req: Request, res: Response, next: NextFunction) {
     const credentials = auth(req);
 

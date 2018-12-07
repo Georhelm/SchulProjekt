@@ -47,6 +47,10 @@ export class Mount {
         return this.height;
     }
 
+    public getName(): string {
+        return this.name;
+    }
+
 //#endregion getters
 
 //#region setters

@@ -135,6 +135,10 @@ export class Game {
         return this.id;
     }
 
+    public getWidth(): number {
+        return this.gameWidth;
+    }
+
 //#endregion getters
 
 //#region public async methods
