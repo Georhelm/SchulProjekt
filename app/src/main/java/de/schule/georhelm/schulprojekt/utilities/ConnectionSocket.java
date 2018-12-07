@@ -134,8 +134,7 @@ public class ConnectionSocket {
      */
     public void startMultiplayerGame(final MenuActivity menuActivity){
         startGame(menuActivity);
-        socket.emit("start_multiplayer");
-        socket.once("searching_multiplayer", new Emitter.Listener() {
+        socket.emit("start_multiplayer", new Ack() {
             @Override
             public void call(Object... args) {
                 menuActivity.showSearchingGame();
@@ -146,8 +145,13 @@ public class ConnectionSocket {
     /**
      * Notify server that search is cancelled.
      */
-    public void cancelSearch(){
-        socket.emit("cancel_search");
+    public void cancelSearch(final MenuActivity menuActivity){
+        socket.emit("cancel_search", new Ack() {
+            @Override
+            public void call(Object... args) {
+                menuActivity.resetView();
+            }
+        });
     }
 
     /**

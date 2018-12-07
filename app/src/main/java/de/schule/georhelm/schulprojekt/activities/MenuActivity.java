@@ -25,35 +25,6 @@ public class MenuActivity extends AppCompatActivity {
     private boolean isSearching;
     //#endregion properties
 
-    //#region private methods
-    /**
-     * Resets the View back to inital state.
-     */
-    private void resetView(){
-        final MenuActivity activity = this;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Button btnEquipment = findViewById(R.id.buttonEquipment);
-                btnEquipment.setEnabled(true);
-
-                Button btnLogout = findViewById(R.id.buttonLogout);
-                btnLogout.setEnabled(true);
-
-                Button btnMultiplayer = findViewById(R.id.buttonMultiplayer);
-                btnMultiplayer.setText(R.string.textMultiplayer);
-
-                Button btnSinglePlayer = findViewById(R.id.buttonSingleplayer);
-                btnSinglePlayer.setEnabled(true);
-
-                if(activity.searchHandler != null) {
-                    activity.searchHandler.end();
-                }
-            }
-        });
-    }
-    //#endregion private methods
-
     //#region protected methods
     /**
      * Initializes the socket additionally to the standard onCreate.
@@ -78,6 +49,32 @@ public class MenuActivity extends AppCompatActivity {
     //#endregion protected methods
 
     //#region public methods
+    /**
+     * Resets the View back to inital state.
+     */
+    public void resetView(){
+        final MenuActivity activity = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Button btnEquipment = findViewById(R.id.buttonEquipment);
+                btnEquipment.setEnabled(true);
+
+                Button btnLogout = findViewById(R.id.buttonLogout);
+                btnLogout.setEnabled(true);
+
+                Button btnMultiplayer = findViewById(R.id.buttonMultiplayer);
+                btnMultiplayer.setText(R.string.textMultiplayer);
+
+                Button btnSinglePlayer = findViewById(R.id.buttonSingleplayer);
+                btnSinglePlayer.setEnabled(true);
+
+                if(activity.searchHandler != null) {
+                    activity.searchHandler.end();
+                }
+            }
+        });
+    }
     /**
      * Starts the GameActivity and resets this view.
      * @param startGameSetting A JSONObject with information about the game to be started. This is retrieved by the server.
@@ -147,6 +144,7 @@ public class MenuActivity extends AppCompatActivity {
                 final TextView text = findViewById(R.id.menuText);
                 searchHandler = new SearchHandler(activity, text);
 
+                activity.isSearching= true;
             }
         });
 
@@ -187,11 +185,8 @@ public class MenuActivity extends AppCompatActivity {
      */
     public void startMultiPlayerGame(View view){
         if(this.isSearching){
-            socket.cancelSearch();
-            this.isSearching = false;
-            this.resetView();
+            socket.cancelSearch(this);
         }else{
-            this.isSearching=true;
             socket.startMultiplayerGame(this);
         }
 
