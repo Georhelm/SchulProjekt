@@ -162,8 +162,10 @@ export class Player {
      */
     public leaveGame() {
         this.hasLeft = true;
-        this.ready = true;
-        this.onPlayerReady();
+        if (!this.ready) {
+            this.ready = true;
+            this.onPlayerReady();
+        }
     }
 
     /**

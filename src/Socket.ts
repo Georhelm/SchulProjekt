@@ -21,6 +21,10 @@ export class GameSocket {
         return GameSocket.gameQueue;
     }
 
+    public static isUserInQueue(user: User): boolean {
+        return GameSocket.gameQueue.indexOf(user) !== -1;
+    }
+
 //#endregion public static methods
 
 //#region static properties
@@ -147,13 +151,16 @@ export class GameSocket {
      * then adds the user to the gamequeue or starts a game with another user from the gamequeue
      * @param client the connecting client
      */
-    private async startMultiplayer(client: Socket.Socket) {
+    private async startMultiplayer(client: Socket.Socket, ack: () => void) {
         const player = User.getUserBySocketId(client.id);
         if (player === null)  {
             client.disconnect();
             return;
         }
         if (Game.isUserInGame(player)) {
+            return;
+        }
+        if (GameSocket.isUserInQueue(player)) {
             return;
         }
         if (GameSocket.gameQueue.length > 0) {
@@ -169,8 +176,8 @@ export class GameSocket {
             }
         } else {
             GameSocket.gameQueue.push(player);
-            client.emit("searching_multiplayer");
             client.once("cancel_search", this.cancelSearch.bind(this, client));
+            ack();
         }
     }
 
@@ -179,7 +186,7 @@ export class GameSocket {
      * removes the user from the gamequeue
      * @param client the connecting client
      */
-    private async cancelSearch(client: Socket.Socket) {
+    private async cancelSearch(client: Socket.Socket, ack: () => void) {
         const player = User.getUserBySocketId(client.id);
         if (player === null) {
             client.disconnect();
@@ -188,6 +195,7 @@ export class GameSocket {
         const index = GameSocket.gameQueue.indexOf(player);
         if (index > -1) {
             GameSocket.gameQueue.splice(index, 1);
+            ack();
         }
     }
 
