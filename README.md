@@ -30,3 +30,11 @@ Prerequisites: nodejs and npm
 * typescript: addes typing to javascript
 * source-map-support: changes stacktrace to point to typescript files instead of compiled javascript
 * tslint: code style checking for typescript
+
+## Admin Dashboard
+
+Reachable at `serverName:port/admin`
+Provides live data about gameserver
+* online players
+* players searching for game
+* running games 
