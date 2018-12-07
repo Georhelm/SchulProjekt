@@ -51,7 +51,7 @@ export class Player {
         this.farPlayer = farPlayer;
         this.databaseId = databaseId;
         this.hasLeft = false;
-        this.hitpoints = 1;
+        this.hitpoints = 100;
     }
 
 //#endregion constructor
