@@ -17,6 +17,7 @@ import android.view.SurfaceView;
 
 import org.json.JSONObject;
 
+import de.schule.georhelm.schulprojekt.managers.SoundManager;
 import de.schule.georhelm.schulprojekt.utilities.ConnectionSocket;
 import de.schule.georhelm.schulprojekt.managers.BitmapManager;
 import de.schule.georhelm.schulprojekt.managers.PaintManager;
@@ -88,11 +89,7 @@ public class GameView extends SurfaceView implements Runnable{
     public void run(){
         this.timeOfLastUpdate = System.nanoTime();
         while(playing){
-            update();
-
             draw();
-
-            control();
         }
         //this.finishGame();
     }
@@ -197,8 +194,6 @@ public class GameView extends SurfaceView implements Runnable{
     //#endregion public methods
 
     //#region private methods
-    private void update(){
-    }
     private void draw(){
         SurfaceHolder surfaceHolder = getHolder();
         long newTime = System.nanoTime();
@@ -237,6 +232,7 @@ public class GameView extends SurfaceView implements Runnable{
                 //drawLanceHitHeight(canvas);
                 //drawHitpointMessage(canvas);
                 if(drawCloud){
+                    SoundManager.playCrashSound(context);
                     drawCloud(canvas);
                     this.enemy.updateHitpoints();
                     this.player.updateHitpoints();
@@ -265,6 +261,7 @@ public class GameView extends SurfaceView implements Runnable{
         this.enemy.setEndSpeed(0);
         this.socket.playerReady();
         this.socket.initGame(this);
+        SoundManager.resetCrashSound();
     }
     /**
      * Draws the dusty cloud at the point where both players hit each other.
@@ -450,13 +447,6 @@ public class GameView extends SurfaceView implements Runnable{
         // --------- DEBUG --------------
 
 
-    }
-    private void control(){
-        //try{
-        //    gameThread.sleep(17);
-        //}catch(InterruptedException e){
-        //   e.printStackTrace();
-        //}
     }
     /**
      * Initializes new Round.

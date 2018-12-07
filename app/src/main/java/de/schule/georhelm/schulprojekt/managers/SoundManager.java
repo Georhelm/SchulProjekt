@@ -9,8 +9,10 @@ public class SoundManager {
 
     //#region properties
     private static MediaPlayer themeMusicIntroMP;
-    static MediaPlayer themeMusicLoopMP;
-    static boolean muted = false;
+    private static MediaPlayer themeMusicLoopMP;
+    private static MediaPlayer crashPlayer;
+    private static boolean muted = false;
+    private static boolean playedCrashsound = false;
     //#endregion properties
 
     //#region public static methods
@@ -61,6 +63,26 @@ public class SoundManager {
             stopThemeMusic();
         }
         return muted;
+    }
+
+    public static void playCrashSound(Context context){
+        if(!muted && !playedCrashsound){
+            playedCrashsound = true;
+            crashPlayer =  MediaPlayer.create(context, R.raw.metalcrash);
+            crashPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    crashPlayer.stop();
+                    crashPlayer.release();
+                    crashPlayer = null;
+                }
+            });
+            crashPlayer.start();
+        }
+    }
+
+    public static void resetCrashSound(){
+        playedCrashsound = false;
     }
     //#endregion public static methods
 }
