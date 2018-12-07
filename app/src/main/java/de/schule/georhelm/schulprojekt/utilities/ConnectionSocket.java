@@ -251,6 +251,7 @@ public class ConnectionSocket {
      * @param menuActivity The menuactivity in which the game should be started.
      */
     private void startGame(final MenuActivity menuActivity) {
+        socket.off("found_game");
         socket.once("found_game", new Emitter.Listener() {
             @Override
             public void call(Object... args) {

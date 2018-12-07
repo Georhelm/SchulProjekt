@@ -44,9 +44,12 @@ public class SearchHandler implements Runnable {
         seconds++;
         String searching = String.format(this.context.getString(R.string.textSearching),seconds);
         this.field.setText(searching);
+        System.out.println(this.running);
         if(this.running) {
             handler.postDelayed(this, delay);
         }else {
+            handler.removeCallbacksAndMessages(null);
+            handler = null;
             this.field.setText("");
         }
     }
