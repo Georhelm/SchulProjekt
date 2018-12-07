@@ -5,6 +5,7 @@ Prerequisites: nodejs and npm
 
 * Clone branch
 * `npm install`
+* create database from `gameserver.sql`
 * rename example-config.json to config.json
 * fill config.json with data
 
