@@ -48,8 +48,10 @@ public class RegisterActivity extends AppCompatActivity implements ICommunicatio
             if(response.equals("success")){
                 Toast.makeText(this,"Register Successful!", Toast.LENGTH_LONG).show();
                 this.finish();
-            }else if(response.equals("error")&&result.getString("msg").equals("user_exists")){
-                Toast.makeText(this,"User already exists!", Toast.LENGTH_LONG).show();
+            }else if(response.equals("error")&&result.getString("msg").equals("user_exists")) {
+                Toast.makeText(this, "User already exists!", Toast.LENGTH_LONG).show();
+            }else if(response.equals("error" ) && result.getString("msg").equals("password_short")){
+                Toast.makeText(this, "Password to short!", Toast.LENGTH_LONG).show();
             }else{
                 Toast.makeText(this,"Message send by server was invalid.", Toast.LENGTH_LONG).show();
             }
