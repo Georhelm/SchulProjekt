@@ -75,6 +75,15 @@ export class DatabaseConnection {
      */
     public async registerUser(user: string, pass: string): Promise<ICommunicationData> {
 
+        if (pass.length < 4 || user.length === 0) {
+            const data: ICommunicationData = {
+                method: "register",
+                msg: "password_short",
+                result: "error",
+            };
+            return data;
+        }
+
         const userExists: any[] = await this.query("Select * from users where name=?", [user]);
 
         if (userExists.length !== 0) {
