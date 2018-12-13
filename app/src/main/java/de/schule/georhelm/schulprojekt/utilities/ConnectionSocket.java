@@ -6,6 +6,7 @@ import android.content.Intent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import de.schule.georhelm.schulprojekt.R;
 import de.schule.georhelm.schulprojekt.activities.EquipmentActivity;
 import de.schule.georhelm.schulprojekt.activities.LoginActivity;
 import de.schule.georhelm.schulprojekt.activities.MenuActivity;
@@ -57,7 +58,7 @@ public class ConnectionSocket {
             options.query = "token=" + token;
             String[] transportArray = {"websocket"};
             options.transports = transportArray;
-            socket = IO.socket("http://siffers.de:1234",options);
+            socket = IO.socket(context.getString(R.string.baseURL) + ":" + context.getString(R.string.port), options);
             socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {

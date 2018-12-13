@@ -1,5 +1,6 @@
 package de.schule.georhelm.schulprojekt.utilities;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -7,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import de.schule.georhelm.schulprojekt.R;
 import de.schule.georhelm.schulprojekt.interfaces.ICommunicationResult;
 
 /**
@@ -24,8 +26,8 @@ public class ServerCommunicator extends AsyncTask<String,Void,String> {
      *Servercommunicator to manage Login and Register activity.
      * @param communicationResult where the communicationResult is sent to.
      */
-    public ServerCommunicator(ICommunicationResult communicationResult){
-        this.baseURL = "http://siffers.de:1234"; //Get out of config later
+    public ServerCommunicator(ICommunicationResult communicationResult, Context context){
+        this.baseURL = context.getString(R.string.baseURL) + ":" + context.getString(R.string.port);
         this.communicationResult = communicationResult;
     }
     //#endregion constructor

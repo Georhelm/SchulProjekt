@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity implements ICommunicationRe
         EditText passwordField = this.findViewById(R.id.inputPassword);
         String password = passwordField.getText().toString();
         passwordField.setText("");
-        ServerCommunicator communicator = new ServerCommunicator(this);
+        ServerCommunicator communicator = new ServerCommunicator(this, this);
         communicator.execute("login",user,password);
     }
 

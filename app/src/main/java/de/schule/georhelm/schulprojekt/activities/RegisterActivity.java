@@ -21,7 +21,7 @@ public class RegisterActivity extends AppCompatActivity implements ICommunicatio
      * @param view The register view which should call this method.
      */
     public void tryRegister(View view){
-        ServerCommunicator communicator = new ServerCommunicator(this);
+        ServerCommunicator communicator = new ServerCommunicator(this, this);
 
         EditText userField = this.findViewById(R.id.inputRegisterUser);
         String user = userField.getText().toString();
