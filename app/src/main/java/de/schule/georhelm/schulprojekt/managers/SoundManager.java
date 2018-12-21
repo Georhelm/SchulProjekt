@@ -52,7 +52,7 @@ public class SoundManager {
 
     }
     /**
-     * Toggles music on and off and returns wheter it is then muted or not.
+     * Toggles music on and off and returns whether it is then muted or not.
      * @param context Context from which this method is called.
      * @return Returns the state after toggling.
      */

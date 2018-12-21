@@ -28,9 +28,7 @@ public class GameActivity  extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_game);
         JSONObject gameData = new JSONObject();
-        //Display display = getWindowManager().getDefaultDisplay();
         Bundle bundle = this.getIntent().getExtras();
         try {
             gameData = new JSONObject(bundle.getString("gamedata"));
